@@ -1,0 +1,185 @@
+{
+  "info": {
+    "name": "AI Client Acquisition System v3",
+    "description": "Full API collection including AI lead scoring.\nBase URL: http://localhost:3000\n\nQuick start:\n1. Create a lead → lead_id auto-saved\n2. POST /api/score-lead → AI scores and saves result\n3. GET /api/score-lead/ranked → see all scored leads",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000", "type": "string" },
+    { "key": "lead_id",  "value": "", "type": "string",
+      "description": "Auto-populated by Create Lead test script." }
+  ],
+  "item": [
+    {
+      "name": "1. Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Leads",
+      "item": [
+        {
+          "name": "Create Lead",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.success && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('lead_id', json.data.id);",
+                  "  console.log('lead_id saved:', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/leads",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"business_name\": \"Greenfield Dental Group\",\n  \"industry\": \"Healthcare / Dentistry\",\n  \"location\": \"Austin, TX\",\n  \"website\": \"https://greenfielddental.example.com\",\n  \"notes\": \"Multi-location practice, 3 offices. Owner mentioned they run zero paid ads currently.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List All Leads",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/leads?limit=20&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api","leads"],
+              "query": [
+                { "key": "limit",  "value": "20" },
+                { "key": "offset", "value": "0"  },
+                { "key": "status",   "value": "", "disabled": true },
+                { "key": "industry", "value": "", "disabled": true },
+                { "key": "search",   "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Lead by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/leads/{{lead_id}}"
+          }
+        },
+        {
+          "name": "Update Lead Status",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/leads/{{lead_id}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"contacted\",\n  \"notes\": \"Called owner Jan 15 — interested in a demo next week.\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. AI Scoring",
+      "item": [
+        {
+          "name": "Score Lead (by lead_id)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/score-lead",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lead_id\": \"{{lead_id}}\"\n}"
+            },
+            "description": "Scores an existing lead using AI. Saves the result to the database and updates the lead's score field.\n\nRequires ANTHROPIC_API_KEY in .env."
+          },
+          "response": [
+            {
+              "name": "201 — Tier A Lead",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Lead scored successfully. Tier A — Score 9/10.\",\n  \"data\": {\n    \"lead\": {\n      \"id\": \"a3f1c2d4-...\",\n      \"business_name\": \"Greenfield Dental Group\",\n      \"industry\": \"Healthcare / Dentistry\",\n      \"location\": \"Austin, TX\"\n    },\n    \"score\": {\n      \"id\": \"b7e2f1c8-...\",\n      \"lead_id\": \"a3f1c2d4-...\",\n      \"lead_score\": 9,\n      \"tier\": \"A\",\n      \"estimated_value_range\": \"$3,000–$7,000/mo\",\n      \"confidence\": \"high\",\n      \"reasoning\": \"Dental practices in competitive metros like Austin consistently rank among the highest-value digital marketing clients. Multi-location operations have compounding ROI on local SEO and paid search. The absence of any current paid advertising represents an immediate, high-urgency opportunity — a competitor is likely capturing patients they should be getting.\",\n      \"red_flags\": [],\n      \"recommended_action\": \"Call the owner within 24 hours with a competitive landscape audit showing how rival practices in Austin rank — this creates urgency and positions you as an expert before the first pitch.\",\n      \"model\": \"claude-sonnet-4-5\",\n      \"scored_at\": \"2025-01-15T10:00:00\"\n    }\n  }\n}"
+            },
+            {
+              "name": "201 — Tier C Lead",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Lead scored successfully. Tier C — Score 4/10.\",\n  \"data\": {\n    \"lead\": {\n      \"id\": \"c9d3a2b1-...\",\n      \"business_name\": \"Sunrise Nail Salon\",\n      \"industry\": \"Beauty / Personal Care\",\n      \"location\": \"Rural Nebraska\"\n    },\n    \"score\": {\n      \"lead_score\": 4,\n      \"tier\": \"C\",\n      \"estimated_value_range\": \"$300–$600/mo\",\n      \"confidence\": \"high\",\n      \"reasoning\": \"Single-location nail salons in rural markets operate on thin margins and typically have no digital marketing budget. Rural Nebraska limits the addressable market size and competitive urgency. Historically, this segment requires heavy hand-holding, churns early, and delivers the lowest LTV of any service-based vertical.\",\n      \"red_flags\": [\n        \"Low-margin industry with limited digital advertising budget\",\n        \"Rural location reduces competitive pressure and urgency\",\n        \"Single-location limits upsell potential\"\n      ],\n      \"recommended_action\": \"Add to a low-touch email nurture sequence only — do not invest sales call time until they respond to marketing with a specific request.\"\n    }\n  }\n}"
+            },
+            {
+              "name": "404 — Lead not found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Lead not found: abc-123\"\n}"
+            },
+            {
+              "name": "502 — AI Service Error",
+              "status": "Bad Gateway",
+              "code": 502,
+              "body": "{\n  \"success\": false,\n  \"message\": \"AI scoring service error. Check your ANTHROPIC_API_KEY and try again.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Score Preview (no lead_id needed)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/score-lead/preview",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"business_name\": \"Morrison & Associates Law Firm\",\n  \"industry\": \"Legal / Personal Injury\",\n  \"location\": \"Miami, FL\",\n  \"website\": \"https://morrisonlaw.example.com\",\n  \"notes\": \"Billboard ads on I-95 suggest substantial marketing budget\"\n}"
+            },
+            "description": "Score any lead data on the fly — no saved lead required. Result is NOT stored in the database. Useful for testing the AI prompt or building a UI preview."
+          }
+        },
+        {
+          "name": "Get Latest Score for Lead",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/score-lead/{{lead_id}}",
+            "description": "Returns the most recent AI score for this lead."
+          }
+        },
+        {
+          "name": "Get Scoring History for Lead",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/score-lead/{{lead_id}}/history",
+            "description": "Returns all historical scores for a lead, newest first. Useful for tracking score changes over time."
+          }
+        },
+        {
+          "name": "Get Ranked Leads (All Scored)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/score-lead/ranked?limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api","score-lead","ranked"],
+              "query": [
+                { "key": "limit",     "value": "20" },
+                { "key": "tier",      "value": "A",  "description": "Filter by tier: A, B, C, D", "disabled": true },
+                { "key": "min_score", "value": "7",  "description": "Minimum score (1-10)", "disabled": true }
+              ]
+            },
+            "description": "Returns all scored leads ranked by score descending. Shows latest score per lead.\n\nUseful as a dashboard or priority queue for your sales team."
+          }
+        }
+      ]
+    }
+  ]
+}

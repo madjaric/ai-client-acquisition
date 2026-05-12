@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lead Discovery — LeadFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════════
+       Design: Same warm editorial system as dashboard.html
+    ══════════════════════════════════════════ */
+    :root {
+      --bg:         #f5f3ef;
+      --surface:    #ffffff;
+      --surface2:   #f0ede8;
+      --border:     #e2ddd7;
+      --border2:    #cdc7bf;
+      --ink:        #1a1714;
+      --ink2:       #4a4540;
+      --ink3:       #8a837b;
+      --green:      #1c7c4a;
+      --green-bg:   #edf7f2;
+      --red:        #c0392b;
+      --red-bg:     #fdf0ee;
+      --amber:      #92500c;
+      --amber-bg:   #fdf4e7;
+      --blue:       #1a4f8a;
+      --blue-bg:    #eef4fd;
+      --highlight:  #f0c84a;
+      --radius:     6px;
+      --radius-lg:  12px;
+      --shadow:     0 1px 3px rgba(26,23,20,.08), 0 4px 16px rgba(26,23,20,.06);
+      --shadow-lg:  0 8px 32px rgba(26,23,20,.12), 0 2px 8px rgba(26,23,20,.08);
+      --font-d: 'Syne', sans-serif;
+      --font-b: 'Instrument Sans', sans-serif;
+      --font-m: 'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-b);
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--ink);
+      padding: 0 40px; height: 52px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .topbar-logo {
+      font-family: var(--font-d); font-size: 17px; font-weight: 800;
+      color: #fff; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .topbar-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--highlight); }
+    .topbar-nav { display: flex; gap: 4px; }
+    .topbar-nav a {
+      color: rgba(255,255,255,.5); text-decoration: none;
+      font-size: 13px; font-weight: 500; padding: 6px 14px;
+      border-radius: var(--radius); transition: all .15s; cursor: pointer;
+    }
+    .topbar-nav a:hover  { color: #fff; background: rgba(255,255,255,.08); }
+    .topbar-nav a.active { color: #fff; background: rgba(255,255,255,.14); }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-status {
+      display: flex; align-items: center; gap: 7px;
+      font-family: var(--font-m); font-size: 11px; color: rgba(255,255,255,.4);
+    }
+    .source-badge {
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--font-m); font-size: 10px; letter-spacing: .05em;
+      padding: 3px 9px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.5);
+    }
+    .source-badge.live { border-color: rgba(74,222,128,.4); color: #4ade80; }
+    .source-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    /* ── LAYOUT ── */
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 36px 32px 80px; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      margin-bottom: 32px; padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+    }
+    .page-header h1 {
+      font-family: var(--font-d); font-size: 28px; font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1;
+    }
+    .page-header p { color: var(--ink3); font-size: 13px; margin-top: 5px; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .card-header {
+      padding: 18px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .card-header h2 {
+      font-family: var(--font-d); font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+    }
+    .card-body { padding: 24px; }
+
+    /* ── SEARCH HERO ── */
+    .search-hero {
+      background: var(--ink);
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .search-hero::before {
+      content: '';
+      position: absolute; top: -60px; right: -60px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(240,200,74,.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .search-hero h2 {
+      font-family: var(--font-d); font-size: 22px; font-weight: 800;
+      color: #fff; letter-spacing: -0.02em; margin-bottom: 6px;
+    }
+    .search-hero p { color: rgba(255,255,255,.5); font-size: 13px; margin-bottom: 20px; }
+    .search-row {
+      display: flex; gap: 10px; align-items: center;
+    }
+    .search-input-wrap {
+      flex: 1; position: relative;
+    }
+    .search-input-wrap .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      font-size: 16px; pointer-events: none; color: rgba(255,255,255,.35);
+    }
+    .search-input {
+      width: 100%; background: rgba(255,255,255,.08);
+      border: 1.5px solid rgba(255,255,255,.15);
+      border-radius: var(--radius); padding: 11px 14px 11px 40px;
+      font-family: var(--font-b); font-size: 15px; color: #fff;
+      outline: none; transition: border-color .15s;
+    }
+    .search-input::placeholder { color: rgba(255,255,255,.3); }
+    .search-input:focus { border-color: var(--highlight); }
+    .btn-search {
+      background: var(--highlight); color: var(--ink); border: none;
+      padding: 11px 28px; border-radius: var(--radius);
+      font-family: var(--font-d); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all .15s; white-space: nowrap; letter-spacing: -0.01em;
+    }
+    .btn-search:hover { background: #f5d060; transform: translateY(-1px); }
+    .btn-search:active { transform: translateY(0); }
+    .btn-search:disabled { opacity: .5; pointer-events: none; transform: none; }
+
+    /* ── KEYWORD CHIPS ── */
+    .keyword-chips {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px;
+    }
+    .chip {
+      padding: 4px 12px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.55);
+      font-size: 12px; cursor: pointer; transition: all .15s; font-family: var(--font-b);
+    }
+    .chip:hover { border-color: var(--highlight); color: var(--highlight); }
+
+    /* ── FILTERS BAR ── */
+    .filters-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 0; flex-wrap: wrap;
+    }
+    .filter-label {
+      font-family: var(--font-m); font-size: 10px; letter-spacing: .1em;
+      color: var(--ink3); text-transform: uppercase; white-space: nowrap;
+    }
+    .filter-select, .filter-input {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 7px 11px;
+      font-family: var(--font-b); font-size: 13px; color: var(--ink);
+      outline: none; cursor: pointer;
+    }
+    .filter-select:focus, .filter-input:focus { border-color: var(--ink); }
+    .filter-input { width: 80px; }
+    .filter-divider { width: 1px; height: 20px; background: var(--border2); }
+
+    /* ── SELECT-ALL ROW ── */
+    .select-row {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      background: var(--blue-bg); border-bottom: 1px solid rgba(26,79,138,.12);
+    }
+    .select-count { font-size: 13px; font-weight: 600; color: var(--blue); }
+    .select-hint  { font-size: 12px; color: var(--ink3); margin-right: auto; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-family: var(--font-m); font-size: 10px; letter-spacing: .1em;
+      color: var(--ink3); text-transform: uppercase; text-align: left;
+      padding: 11px 16px; background: var(--surface2);
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    thead th:first-child { width: 40px; text-align: center; }
+    tbody td {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      font-size: 13px; vertical-align: middle;
+    }
+    tbody td:first-child { text-align: center; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #faf9f7; }
+    tbody tr.selected td { background: #eef4fd; }
+    tbody tr.imported td { opacity: .45; }
+    tbody tr.imported .imported-tag {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-family: var(--font-m); font-size: 10px;
+      color: var(--green); background: var(--green-bg);
+      padding: 2px 7px; border-radius: 10px; border: 1px solid rgba(28,124,74,.2);
+    }
+
+    /* ── CHECKBOX ── */
+    .cb {
+      width: 16px; height: 16px; cursor: pointer; accent-color: var(--ink);
+    }
+
+    /* ── STARS ── */
+    .stars { display: inline-flex; align-items: center; gap: 3px; }
+    .star-fill { color: #f59e0b; font-size: 12px; }
+    .star-empty { color: var(--border2); font-size: 12px; }
+    .star-num {
+      font-family: var(--font-m); font-size: 11px; font-weight: 500;
+      color: var(--ink2); margin-left: 2px;
+    }
+    .star-count { font-size: 11px; color: var(--ink3); }
+
+    /* ── SITE LINK ── */
+    .site-link {
+      color: var(--blue); font-size: 12px; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 3px;
+    }
+    .site-link:hover { text-decoration: underline; }
+    .no-site { color: var(--ink3); font-size: 12px; font-style: italic; }
+
+    /* ── SOURCE BADGE ── */
+    .source-tag {
+      font-family: var(--font-m); font-size: 9px; letter-spacing: .06em;
+      text-transform: uppercase; padding: 2px 6px; border-radius: 3px;
+      background: var(--surface2); color: var(--ink3);
+    }
+    .source-tag.live { background: var(--green-bg); color: var(--green); }
+
+    /* ── IMPORT BUTTON ── */
+    .btn-import {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 9px 20px; border-radius: var(--radius);
+      font-family: var(--font-b); font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid transparent; transition: all .15s;
+      background: var(--ink); color: #fff; border-color: var(--ink);
+    }
+    .btn-import:hover { background: #2d2a27; }
+    .btn-import:disabled { opacity: .4; pointer-events: none; }
+    .btn-import-single {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 11px; border-radius: var(--radius);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      border: 1.5px solid var(--border2); background: var(--surface);
+      color: var(--ink2); transition: all .15s; font-family: var(--font-b);
+      white-space: nowrap;
+    }
+    .btn-import-single:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); }
+    .btn-import-single:disabled { opacity: .4; pointer-events: none; }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: var(--radius);
+      font-family: var(--font-b); font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid var(--border2);
+      background: transparent; color: var(--ink2); transition: all .15s;
+    }
+    .btn-outline:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); }
+
+    /* ── SPINNER ── */
+    .spinner {
+      display: inline-block; width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .65s linear infinite; flex-shrink: 0;
+    }
+    .spinner.dark {
+      border-color: rgba(26,23,20,.15); border-top-color: var(--ink);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── EMPTY / STATES ── */
+    .state-box {
+      text-align: center; padding: 60px 32px; color: var(--ink3);
+    }
+    .state-icon { font-size: 40px; display: block; opacity: .3; margin-bottom: 14px; }
+    .state-title { font-family: var(--font-d); font-size: 16px; font-weight: 700; color: var(--ink2); margin-bottom: 6px; }
+    .state-sub   { font-size: 13px; }
+
+    /* ── TOAST ── */
+    #toasts {
+      position: fixed; bottom: 28px; right: 28px;
+      display: flex; flex-direction: column; gap: 8px; z-index: 9000;
+    }
+    .toast {
+      background: var(--ink); color: #fff; padding: 12px 18px; border-radius: var(--radius);
+      font-size: 13px; font-weight: 500; min-width: 260px; max-width: 400px;
+      display: flex; align-items: flex-start; gap: 10px;
+      box-shadow: var(--shadow-lg); animation: toastIn .2s ease;
+      border-left: 3px solid var(--highlight);
+    }
+    .toast.error   { border-left-color: #f87171; }
+    .toast.success { border-left-color: #4ade80; }
+    .toast-msg  { flex: 1; line-height: 1.4; }
+    .toast-x    { color: rgba(255,255,255,.45); cursor: pointer; font-size: 18px; line-height: 1; }
+    .toast-x:hover { color: #fff; }
+    @keyframes toastIn { from { opacity:0; transform: translateX(12px); } to { opacity:1; transform:translateX(0); } }
+
+    /* ── IMPORT SUMMARY ── */
+    .import-summary {
+      display: none; padding: 14px 20px;
+      border-radius: var(--radius); margin-bottom: 16px;
+      background: var(--green-bg); border: 1px solid rgba(28,124,74,.2);
+      font-size: 13px; color: var(--green); font-weight: 500;
+      animation: toastIn .2s ease;
+    }
+    .import-summary.visible { display: block; }
+    .import-summary strong { font-weight: 700; }
+
+    /* ── STATS STRIP ── */
+    .stats-strip {
+      display: flex; gap: 24px; padding: 14px 20px;
+      background: var(--surface2); border-bottom: 1px solid var(--border);
+      font-family: var(--font-m); font-size: 11px; flex-wrap: wrap;
+    }
+    .strip-item { display: flex; align-items: center; gap: 6px; color: var(--ink3); }
+    .strip-item strong { color: var(--ink); }
+
+    /* ── INFO BADGE ── */
+    .info-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 20px;
+      font-family: var(--font-m); font-size: 11px;
+      background: var(--amber-bg); color: var(--amber);
+      border: 1px solid rgba(146,80,12,.15);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .topbar { padding: 0 16px; }
+      .wrap   { padding: 24px 16px 60px; }
+      .search-row { flex-direction: column; }
+      .btn-search { width: 100%; }
+      .page-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hidden connection status element (updated by checkConnection()) -->
+<div id="status" style="display:none" aria-hidden="true"></div>
+
+<!-- ══════════════════════ TOPBAR ══════════════════════ -->
+<header class="topbar">
+  <a href="/dashboard.html" class="topbar-logo">
+    <span class="dot"></span>LeadFlow
+  </a>
+  <nav class="topbar-nav">
+    <a href="/dashboard.html">Leads</a>
+    <a href="/dashboard.html">AI Scoring</a>
+    <a href="/dashboard.html">Outreach</a>
+    <a href="/discovery.html" class="active">Discovery</a>
+  </nav>
+  <div class="topbar-right">
+    <div class="source-badge" id="source-badge">
+      <span class="dot"></span>
+      <span id="source-label">checking...</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════ MAIN ══════════════════════ -->
+<div class="wrap">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1>Lead Discovery</h1>
+      <p>Find local businesses by keyword and import them directly into your pipeline</p>
+    </div>
+    <a href="/dashboard.html" class="btn-outline" style="font-size:12px;padding:7px 14px">← Back to Dashboard</a>
+  </div>
+
+  <!-- Import summary banner -->
+  <div class="import-summary" id="import-summary"></div>
+
+  <!-- ══ SEARCH HERO ══ -->
+  <div class="search-hero">
+    <h2>Find Businesses</h2>
+    <p>Enter a keyword + city to discover local businesses. Try "roofing Austin TX" or "dental Miami FL".</p>
+    <div class="search-row">
+      <div class="search-input-wrap">
+        <span class="search-icon">⊕</span>
+        <input
+          id="search-input"
+          class="search-input"
+          type="text"
+          placeholder='e.g. "roofing Austin TX" or "dentist Chicago IL"'
+          onkeydown="if(event.key==='Enter') doSearch()"
+          autocomplete="off"
+        />
+      </div>
+      <button class="btn-search" id="btn-search" onclick="doSearch()">
+        Search
+      </button>
+    </div>
+    <div class="keyword-chips" id="chips">
+      <span class="chip" onclick="fillSearch('roofing Austin TX')">roofing Austin TX</span>
+      <span class="chip" onclick="fillSearch('dental Miami FL')">dental Miami FL</span>
+      <span class="chip" onclick="fillSearch('HVAC Phoenix AZ')">HVAC Phoenix AZ</span>
+      <span class="chip" onclick="fillSearch('plumbing Chicago IL')">plumbing Chicago IL</span>
+      <span class="chip" onclick="fillSearch('law firm Dallas TX')">law firm Dallas TX</span>
+      <span class="chip" onclick="fillSearch('restaurant San Francisco CA')">restaurant San Francisco</span>
+      <span class="chip" onclick="fillSearch('gym New York NY')">gym New York NY</span>
+    </div>
+  </div>
+
+  <!-- ══ RESULTS CARD ══ -->
+  <div class="card" id="results-card">
+
+    <!-- Initial empty state -->
+    <div id="state-initial" class="state-box">
+      <span class="state-icon">⊕</span>
+      <div class="state-title">Enter a keyword to discover leads</div>
+      <p class="state-sub">Search for any business type + city.<br>Results come from Google Maps (SerpAPI) or realistic mock data.</p>
+    </div>
+
+    <!-- Loading state (hidden) -->
+    <div id="state-loading" class="state-box" style="display:none">
+      <span style="font-size:32px;display:block;margin-bottom:16px">
+        <span class="spinner dark" style="width:28px;height:28px;border-width:3px"></span>
+      </span>
+      <div class="state-title">Searching...</div>
+      <p class="state-sub" id="loading-keyword"></p>
+    </div>
+
+    <!-- Error state (hidden) -->
+    <div id="state-error" class="state-box" style="display:none">
+      <span class="state-icon">⚠</span>
+      <div class="state-title">Search failed</div>
+      <p class="state-sub" id="error-msg"></p>
+    </div>
+
+    <!-- Results (hidden until search) -->
+    <div id="state-results" style="display:none">
+
+      <!-- Stats strip -->
+      <div class="stats-strip" id="stats-strip">
+        <div class="strip-item"><strong id="strip-count">0</strong> results</div>
+        <div class="strip-item">Source: <strong id="strip-source">—</strong></div>
+        <div class="strip-item">Keyword: <strong id="strip-keyword">—</strong></div>
+        <div class="strip-item" id="strip-filtered-wrap" style="display:none">
+          Showing: <strong id="strip-filtered">—</strong> after filters
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2)">
+        <div class="filters-bar" style="padding:0">
+          <span class="filter-label">Filters:</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--ink2)">Min Rating</span>
+            <select class="filter-select" id="filter-rating" onchange="applyFilters()">
+              <option value="0">Any</option>
+              <option value="3">3.0+</option>
+              <option value="3.5">3.5+</option>
+              <option value="4">4.0+</option>
+              <option value="4.5">4.5+</option>
+            </select>
+          </div>
+          <div class="filter-divider"></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--ink2)">Website</span>
+            <select class="filter-select" id="filter-website" onchange="applyFilters()">
+              <option value="any">Any</option>
+              <option value="yes">Has website</option>
+              <option value="no">No website</option>
+            </select>
+          </div>
+          <div class="filter-divider"></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--ink2)">Min Reviews</span>
+            <input class="filter-input" id="filter-reviews" type="number" min="0" placeholder="0" oninput="applyFilters()" />
+          </div>
+          <div class="filter-divider"></div>
+          <button class="btn-outline" style="padding:6px 12px;font-size:12px" onclick="clearFilters()">Clear filters</button>
+        </div>
+      </div>
+
+      <!-- Selection action bar (shown when items selected) -->
+      <div class="select-row" id="select-row" style="display:none">
+        <span class="select-count" id="select-count">0 selected</span>
+        <span class="select-hint">— ready to import</span>
+        <button class="btn-import" id="btn-import-selected" onclick="importSelected()">
+          ↓ Import Selected to Leads
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" class="cb" id="cb-all" onchange="toggleAll(this.checked)" title="Select all" />
+              </th>
+              <th>Business</th>
+              <th>Location</th>
+              <th>Rating</th>
+              <th>Reviews</th>
+              <th>Website</th>
+              <th>Industry</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Bottom import bar -->
+      <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <p style="font-size:12px;color:var(--ink3)">
+          Select rows then click <strong>Import Selected</strong>, or use the row button to import individually.
+          Duplicates are automatically skipped.
+        </p>
+        <button class="btn-import" id="btn-import-bottom" onclick="importSelected()" disabled>
+          ↓ Import Selected
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ HOW IT WORKS ══ -->
+  <div style="margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+    <div class="card">
+      <div class="card-body" style="display:flex;gap:14px;align-items:flex-start">
+        <div style="font-size:22px;line-height:1;margin-top:2px">⊕</div>
+        <div>
+          <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:4px">1. Search</div>
+          <p style="font-size:12px;color:var(--ink3);line-height:1.5">Enter a business type and city. Uses Google Maps data (SerpAPI) or realistic mock data.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body" style="display:flex;gap:14px;align-items:flex-start">
+        <div style="font-size:22px;line-height:1;margin-top:2px">◈</div>
+        <div>
+          <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:4px">2. Filter</div>
+          <p style="font-size:12px;color:var(--ink3);line-height:1.5">Filter by minimum rating, website presence, and review count. Focus on quality prospects.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body" style="display:flex;gap:14px;align-items:flex-start">
+        <div style="font-size:22px;line-height:1;margin-top:2px">↓</div>
+        <div>
+          <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:4px">3. Import</div>
+          <p style="font-size:12px;color:var(--ink3);line-height:1.5">Select any businesses and click Import. They're added to your leads pipeline, ready to score.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ TOASTS ══ -->
+<div id="toasts"></div>
+
+
+<!-- ════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+"use strict";
+
+const API_BASE = '';  // relative — works when served from Express at localhost:3000
+const API      = API_BASE; // alias for compatibility
+
+// ─────────────────────────────────────────────
+//  CONNECTION STATUS
+// ─────────────────────────────────────────────
+async function checkConnection() {
+  try {
+    const res = await fetch('/api/health');
+    if (!res.ok) throw new Error();
+    const d  = await res.json();
+    const el = document.getElementById('status');
+    if (el) el.innerText = d.status === 'healthy' ? '🟢 Connected' : '🟡 Degraded';
+  } catch {
+    const el = document.getElementById('status');
+    if (el) el.innerText = '🔴 Offline';
+  }
+}
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let allResults      = [];   // raw results from search
+let filteredResults = [];   // after filters applied
+let importedIds     = new Set(); // track which rows were imported this session
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function apiFetch(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(API_BASE + path, opts);
+    if (!res.ok) {
+      const text = await res.text();
+      try { return JSON.parse(text); } catch { return { success: false, message: 'HTTP ' + res.status }; }
+    }
+    return res.json();
+  } catch (err) {
+    console.error('[apiFetch]', method, path, err.message);
+    return { success: false, message: 'Network error — is the server running?' };
+  }
+}
+
+function toast(msg, type = 'info') {
+  const icons = { info: '→', success: '✓', error: '✕' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]||'→'}</span><span class="toast-msg">${esc(msg)}</span><span class="toast-x" onclick="this.parentElement.remove()">×</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el?.remove(), 5000);
+}
+
+function showState(name) {
+  ['initial','loading','error','results'].forEach(s => {
+    document.getElementById(`state-${s}`).style.display = s === name ? '' : 'none';
+  });
+}
+
+function stars(rating) {
+  if (rating === null || rating === undefined) return '<span style="color:var(--ink3);font-size:12px">—</span>';
+  const full  = Math.floor(rating);
+  const half  = rating % 1 >= 0.5 ? 1 : 0;
+  const empty = 5 - full - half;
+  let html = '<span class="stars">';
+  for (let i = 0; i < full;  i++) html += '<span class="star-fill">★</span>';
+  if (half)                        html += '<span class="star-fill" style="opacity:.5">★</span>';
+  for (let i = 0; i < empty; i++) html += '<span class="star-empty">★</span>';
+  html += `<span class="star-num">${rating.toFixed(1)}</span></span>`;
+  return html;
+}
+
+// ─────────────────────────────────────────────
+//  DATA SOURCE
+// ─────────────────────────────────────────────
+async function checkSource() {
+  try {
+    const d = await apiFetch('GET', '/api/discovery/source');
+    const badge = document.getElementById('source-badge');
+    const label = document.getElementById('source-label');
+    if (d.source === 'serpapi') {
+      badge.classList.add('live');
+      label.textContent = 'SerpAPI live';
+    } else {
+      label.textContent = 'Mock data';
+    }
+  } catch { /* non-critical */ }
+}
+
+// ─────────────────────────────────────────────
+//  SEARCH
+// ─────────────────────────────────────────────
+function fillSearch(kw) {
+  document.getElementById('search-input').value = kw;
+  document.getElementById('search-input').focus();
+}
+
+async function doSearch() {
+  const keyword = document.getElementById('search-input').value.trim();
+  if (!keyword) { toast('Enter a keyword to search.', 'error'); return; }
+
+  const btn = document.getElementById('btn-search');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="border-top-color:var(--ink)"></span> Searching...';
+
+  document.getElementById('loading-keyword').textContent = `"${keyword}"`;
+  showState('loading');
+
+  const d = await apiFetch('POST', '/api/discovery/search', { keyword, limit: 20 });
+
+  btn.disabled = false;
+  btn.textContent = 'Search';
+
+  if (!d.success) {
+    document.getElementById('error-msg').textContent = d.message || 'Search failed. Please try again.';
+    showState('error');
+    return;
+  }
+
+  allResults = d.data || [];
+  document.getElementById('strip-count').textContent   = allResults.length;
+  document.getElementById('strip-source').textContent  = d.source === 'serpapi' ? 'Google Maps (SerpAPI)' : 'Mock data';
+  document.getElementById('strip-keyword').textContent = `"${d.keyword}"`;
+  document.getElementById('import-summary').classList.remove('visible');
+  importedIds.clear();
+  clearFilters();
+  applyFilters();
+  showState('results');
+}
+
+// ─────────────────────────────────────────────
+//  FILTERS
+// ─────────────────────────────────────────────
+function applyFilters() {
+  const minRating  = parseFloat(document.getElementById('filter-rating').value)  || 0;
+  const website    = document.getElementById('filter-website').value;
+  const minReviews = parseInt(document.getElementById('filter-reviews').value, 10) || 0;
+
+  filteredResults = allResults.filter(b => {
+    if (minRating  > 0 && (b.rating === null || b.rating < minRating))      return false;
+    if (website === 'yes' && !b.website)                                      return false;
+    if (website === 'no'  && b.website)                                       return false;
+    if (minReviews > 0 && (b.review_count === null || b.review_count < minReviews)) return false;
+    return true;
+  });
+
+  const filtered = filteredResults.length;
+  const total    = allResults.length;
+  const stripWrap = document.getElementById('strip-filtered-wrap');
+  if (filtered < total) {
+    stripWrap.style.display = '';
+    document.getElementById('strip-filtered').textContent = `${filtered} of ${total}`;
+  } else {
+    stripWrap.style.display = 'none';
+  }
+
+  renderTable(filteredResults);
+  updateSelectUI();
+}
+
+function clearFilters() {
+  document.getElementById('filter-rating').value  = '0';
+  document.getElementById('filter-website').value = 'any';
+  document.getElementById('filter-reviews').value = '';
+  filteredResults = [...allResults];
+  if (allResults.length) { renderTable(filteredResults); updateSelectUI(); }
+}
+
+// ─────────────────────────────────────────────
+//  TABLE RENDERING
+// ─────────────────────────────────────────────
+function renderTable(list) {
+  const tbody = document.getElementById('results-tbody');
+  document.getElementById('cb-all').checked = false;
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="state-box" style="padding:40px"><span class="state-icon">◈</span><div class="state-title">No results match your filters</div><p class="state-sub">Try loosening the filter criteria.</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((b, i) => {
+    const imported = importedIds.has(b._idx ?? i);
+    const siteHtml = b.website
+      ? `<a href="${esc(b.website)}" target="_blank" rel="noopener" class="site-link">↗ ${esc(trimUrl(b.website))}</a>`
+      : `<span class="no-site">No website</span>`;
+    const srcTag = b.source === 'serpapi'
+      ? '<span class="source-tag live">live</span>'
+      : '<span class="source-tag">mock</span>';
+
+    return `
+      <tr id="row-${i}" class="${imported ? 'imported' : ''}" data-idx="${i}">
+        <td>
+          <input type="checkbox" class="cb row-cb" data-idx="${i}"
+            onchange="rowCheckChanged()"
+            ${imported ? 'disabled' : ''} />
+        </td>
+        <td>
+          <div style="font-weight:600;font-size:13px">${esc(b.name)}</div>
+          ${b.phone ? `<div style="font-size:11px;color:var(--ink3);font-family:var(--font-m)">${esc(b.phone)}</div>` : ''}
+        </td>
+        <td style="color:var(--ink2)">${esc(b.location)}</td>
+        <td>${stars(b.rating)}</td>
+        <td style="font-family:var(--font-m);font-size:11px;color:var(--ink3)">${b.review_count !== null ? b.review_count.toLocaleString() : '—'}</td>
+        <td>${siteHtml}</td>
+        <td>
+          <span style="font-size:12px;color:var(--ink2)">${esc(b.industry)}</span>
+          ${srcTag}
+        </td>
+        <td>
+          ${imported
+            ? '<span class="imported-tag">✓ Imported</span>'
+            : `<button class="btn-import-single" onclick="importOne(${i})" id="btn-row-${i}">↓ Import</button>`
+          }
+        </td>
+      </tr>`;
+  }).join('');
+
+  // Attach index to filteredResults for mapping back
+  list.forEach((b, i) => b._idx = i);
+}
+
+function trimUrl(url) {
+  return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '').slice(0, 30);
+}
+
+// ─────────────────────────────────────────────
+//  SELECTION
+// ─────────────────────────────────────────────
+function rowCheckChanged() {
+  updateSelectUI();
+}
+
+function toggleAll(checked) {
+  document.querySelectorAll('.row-cb:not(:disabled)').forEach(cb => { cb.checked = checked; });
+  updateSelectUI();
+}
+
+function getSelectedIndices() {
+  return Array.from(document.querySelectorAll('.row-cb:checked')).map(cb => parseInt(cb.dataset.idx, 10));
+}
+
+function updateSelectUI() {
+  const selected = getSelectedIndices().length;
+  const row      = document.getElementById('select-row');
+  const btn1     = document.getElementById('btn-import-selected');
+  const btn2     = document.getElementById('btn-import-bottom');
+
+  document.getElementById('select-count').textContent = `${selected} selected`;
+  row.style.display = selected > 0 ? '' : 'none';
+  if (btn1) btn1.disabled = selected === 0;
+  if (btn2) btn2.disabled = selected === 0;
+}
+
+// ─────────────────────────────────────────────
+//  IMPORT
+// ─────────────────────────────────────────────
+async function importSelected() {
+  const indices    = getSelectedIndices();
+  if (!indices.length) { toast('Select at least one business.', 'error'); return; }
+
+  const businesses = indices.map(i => filteredResults[i]).filter(Boolean);
+
+  const btn1 = document.getElementById('btn-import-selected');
+  const btn2 = document.getElementById('btn-import-bottom');
+  [btn1, btn2].forEach(b => { if(b) { b.disabled = true; b.innerHTML = '<span class="spinner"></span> Importing...'; } });
+
+  const d = await apiFetch('POST', '/api/discovery/import', { businesses });
+
+  [btn1, btn2].forEach(b => { if(b) { b.disabled = false; b.innerHTML = '↓ Import Selected'; } });
+
+  if (!d.success && !d.summary) {
+    toast(d.message || 'Import failed.', 'error');
+    return;
+  }
+
+  const s = d.summary;
+  showImportSummary(s);
+
+  // Mark imported rows
+  if (d.data?.imported) {
+    indices.forEach(i => importedIds.add(i));
+  }
+
+  // Re-render to show imported state
+  renderTable(filteredResults);
+
+  // Uncheck all
+  document.getElementById('cb-all').checked = false;
+  updateSelectUI();
+
+  if (s.imported > 0) toast(`${s.imported} lead${s.imported > 1 ? 's' : ''} imported successfully.`, 'success');
+  if (s.skipped  > 0) toast(`${s.skipped} duplicate${s.skipped > 1 ? 's' : ''} skipped.`, 'info');
+}
+
+async function importOne(idx) {
+  const b = filteredResults[idx];
+  if (!b) return;
+
+  const btn = document.getElementById(`btn-row-${idx}`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner dark"></span>'; }
+
+  const d = await apiFetch('POST', '/api/discovery/import-one', {
+    business_name : b.name,
+    location      : b.location,
+    industry      : b.industry,
+    website       : b.website || undefined,
+    notes         : buildNotes(b),
+  });
+
+  if (d.success) {
+    importedIds.add(idx);
+    const row = document.getElementById(`row-${idx}`);
+    if (row) {
+      row.classList.add('imported');
+      const lastTd = row.querySelector('td:last-child');
+      if (lastTd) lastTd.innerHTML = '<span class="imported-tag">✓ Imported</span>';
+    }
+    toast(`"${b.name}" added to leads.`, 'success');
+  } else if (d.message?.includes('already exists')) {
+    toast(`"${b.name}" is already in your leads.`, 'info');
+    if (btn) { btn.disabled = true; btn.textContent = 'Duplicate'; }
+  } else {
+    toast(d.message || 'Import failed.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '↓ Import'; }
+  }
+}
+
+function buildNotes(b) {
+  const parts = [];
+  if (b.rating)       parts.push(`Rating: ${b.rating}/5`);
+  if (b.review_count) parts.push(`${b.review_count} reviews`);
+  if (b.phone)        parts.push(`Phone: ${b.phone}`);
+  parts.push('Imported via Lead Discovery Engine');
+  return parts.join(' · ');
+}
+
+function showImportSummary(s) {
+  const el = document.getElementById('import-summary');
+  el.innerHTML = `
+    <strong>Import complete:</strong>
+    ${s.imported} imported, ${s.skipped} duplicate${s.skipped !== 1 ? 's' : ''} skipped${s.failed > 0 ? `, ${s.failed} failed` : ''}.
+    <a href="/dashboard.html" style="color:var(--green);font-weight:600;margin-left:8px">View in pipeline →</a>
+  `;
+  el.classList.add('visible');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+checkConnection();   // confirm API is reachable, update status
+checkSource();       // show which data source (SerpAPI vs mock) is active
+</script>
+
+</body>
+</html>

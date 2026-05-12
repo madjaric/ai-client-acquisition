@@ -1,0 +1,204 @@
+{
+  "info": {
+    "name": "AI Client Acquisition System",
+    "description": "Complete API collection for the AI Client Acquisition MVP.\nBase URL: http://localhost:3000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000", "type": "string" },
+    { "key": "lead_id",  "value": "",                     "type": "string",
+      "description": "Auto-populated by the 'Create Lead' request via test script." }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/health",
+            "description": "Returns system and database health status."
+          },
+          "response": [
+            {
+              "name": "200 Healthy",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2025-01-15T10:00:00.000Z\",\n  \"environment\": \"development\",\n  \"uptime_seconds\": 42,\n  \"services\": {\n    \"database\": { \"ok\": true, \"message\": \"SQLite is connected and responsive\" },\n    \"api\":      { \"ok\": true, \"message\": \"Express API is running\" }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Leads",
+      "item": [
+        {
+          "name": "Create Lead",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.success && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('lead_id', json.data.id);",
+                  "  console.log('lead_id saved:', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/leads",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"business_name\": \"Acme Digital Solutions\",\n  \"industry\": \"SaaS / Software\",\n  \"location\": \"Austin, TX\",\n  \"website\": \"https://acme.example.com\",\n  \"notes\": \"Fast-growing startup, 20-50 employees. CEO active on LinkedIn.\"\n}"
+            },
+            "description": "Creates a new lead. `business_name`, `industry`, and `location` are required. `website` and `notes` are optional.\n\nThe test script auto-saves `lead_id` for use in subsequent requests."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Lead \\\"Acme Digital Solutions\\\" created successfully.\",\n  \"data\": {\n    \"id\": \"a3f1c2d4-...\",\n    \"business_name\": \"Acme Digital Solutions\",\n    \"industry\": \"SaaS / Software\",\n    \"location\": \"Austin, TX\",\n    \"website\": \"https://acme.example.com\",\n    \"notes\": \"Fast-growing startup, 20-50 employees.\",\n    \"status\": \"new\",\n    \"score\": 0,\n    \"created_at\": \"2025-01-15T10:00:00\",\n    \"updated_at\": \"2025-01-15T10:00:00\"\n  }\n}"
+            },
+            {
+              "name": "400 Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed.\",\n  \"errors\": {\n    \"business_name\": [\"business_name is required.\"],\n    \"industry\":      [\"industry is required.\"],\n    \"website\":       [\"Must be a valid URL (include https://).\"]\n  }\n}"
+            },
+            {
+              "name": "409 Duplicate Lead",
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"success\": false,\n  \"message\": \"A lead for \\\"Acme Digital Solutions\\\" in \\\"Austin, TX\\\" already exists.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List All Leads",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/leads?limit=20&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "leads"],
+              "query": [
+                { "key": "limit",    "value": "20",    "description": "Max records to return (default 50)" },
+                { "key": "offset",   "value": "0",     "description": "Pagination offset" },
+                { "key": "status",   "value": "",      "description": "Filter: new | contacted | qualified | converted | lost", "disabled": true },
+                { "key": "industry", "value": "",      "description": "Partial match on industry", "disabled": true },
+                { "key": "location", "value": "",      "description": "Partial match on location", "disabled": true },
+                { "key": "search",   "value": "",      "description": "Partial match on business_name", "disabled": true }
+              ]
+            },
+            "description": "Returns paginated list of leads with meta information.\nAll query params are optional."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"meta\": {\n    \"total\": 42,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"count\": 20\n  },\n  \"data\": [\n    {\n      \"id\": \"a3f1c2d4-...\",\n      \"business_name\": \"Acme Digital Solutions\",\n      \"industry\": \"SaaS / Software\",\n      \"location\": \"Austin, TX\",\n      \"website\": \"https://acme.example.com\",\n      \"status\": \"new\",\n      \"score\": 0,\n      \"created_at\": \"2025-01-15T10:00:00\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Leads — Filter by Industry",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/leads?industry=SaaS&status=new",
+              "host": ["{{base_url}}"],
+              "path": ["api", "leads"],
+              "query": [
+                { "key": "industry", "value": "SaaS" },
+                { "key": "status",   "value": "new" }
+              ]
+            },
+            "description": "Example: filter leads by industry and status."
+          }
+        },
+        {
+          "name": "Get Lead by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/leads/{{lead_id}}",
+            "description": "Fetch a single lead. Requires `lead_id` variable (auto-set by Create Lead)."
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Lead not found.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Lead",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/leads/{{lead_id}}",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"contacted\",\n  \"notes\": \"Spoke with CEO on 15 Jan. Interested in Q2 pilot.\"\n}"
+            },
+            "description": "Partial update — only send fields you want to change.\nAllowed: business_name, industry, location, website, notes, status"
+          }
+        },
+        {
+          "name": "Delete Lead",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/leads/{{lead_id}}",
+            "description": "Permanently deletes a lead and all related interactions (cascade)."
+          }
+        },
+        {
+          "name": "AI — Score Lead",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/leads/{{lead_id}}/score",
+            "description": "Uses Claude AI to score the lead 0–100 based on their profile. Requires ANTHROPIC_API_KEY in .env."
+          },
+          "response": [
+            {
+              "name": "200 Scored",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"a3f1c2d4-...\",\n    \"business_name\": \"Acme Digital Solutions\",\n    \"score\": 82,\n    \"ai_score_reason\": \"Fast-growing SaaS company in a strong market with clear budget signals.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "AI — Generate Outreach Email",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/leads/{{lead_id}}/email",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaign_context\": \"We are selling a B2B analytics platform that reduces reporting time by 60%.\"\n}"
+            },
+            "description": "Uses Claude AI to write a personalised cold outreach email for this lead. `campaign_context` is optional but improves quality."
+          }
+        }
+      ]
+    }
+  ]
+}

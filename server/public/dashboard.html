@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeadFlow — AI Client Acquisition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════
+       DESIGN SYSTEM — Warm off-white + ink
+       Editorial / refined SaaS aesthetic
+    ══════════════════════════════════════ */
+    :root {
+      --bg:         #f5f3ef;
+      --surface:    #ffffff;
+      --surface2:   #f0ede8;
+      --border:     #e2ddd7;
+      --border2:    #cdc7bf;
+      --ink:        #1a1714;
+      --ink2:       #4a4540;
+      --ink3:       #8a837b;
+      --accent:     #1a1714;
+      --green:      #1c7c4a;
+      --green-bg:   #edf7f2;
+      --red:        #c0392b;
+      --red-bg:     #fdf0ee;
+      --amber:      #92500c;
+      --amber-bg:   #fdf4e7;
+      --blue:       #1a4f8a;
+      --blue-bg:    #eef4fd;
+      --highlight:  #f0c84a;
+      --radius:     6px;
+      --radius-lg:  12px;
+      --shadow:     0 1px 3px rgba(26,23,20,.08), 0 4px 16px rgba(26,23,20,.06);
+      --shadow-lg:  0 8px 32px rgba(26,23,20,.12), 0 2px 8px rgba(26,23,20,.08);
+      --font-display: 'Syne', sans-serif;
+      --font-body:    'Instrument Sans', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--ink);
+      padding: 0 40px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .topbar-logo {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .topbar-logo .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--highlight);
+      display: inline-block;
+    }
+    .topbar-nav {
+      display: flex;
+      gap: 4px;
+    }
+    .topbar-nav a {
+      color: rgba(255,255,255,.5);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: var(--radius);
+      transition: all .15s;
+      cursor: pointer;
+    }
+    .topbar-nav a:hover  { color: #fff; background: rgba(255,255,255,.08); }
+    .topbar-nav a.active { color: #fff; background: rgba(255,255,255,.14); }
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+    }
+    .status-orb {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #888;
+      transition: all .3s;
+      flex-shrink: 0;
+    }
+    .status-orb.ok  { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+    .status-orb.err { background: #f87171; box-shadow: 0 0 6px #f87171; }
+
+    /* ── LAYOUT ── */
+    .page {
+      display: none;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 36px 32px 80px;
+      animation: pageFade .25s ease;
+    }
+    .page.active { display: block; }
+    @keyframes pageFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      margin-bottom: 32px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .page-header p {
+      color: var(--ink3);
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .card-header h2 {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .card-body { padding: 24px; }
+
+    /* ── GRID HELPERS ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .span-2 { grid-column: 1 / -1; }
+
+    /* ── FORM ── */
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      color: var(--ink3);
+      text-transform: uppercase;
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 13px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+    }
+    .field input::placeholder,
+    .field textarea::placeholder { color: var(--ink3); }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px rgba(26,23,20,.06);
+    }
+    .field textarea { resize: vertical; min-height: 88px; line-height: 1.5; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 20px;
+      border-radius: var(--radius);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all .15s;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+    .btn-primary:hover { background: #2d2a27; }
+    .btn-outline {
+      background: transparent;
+      color: var(--ink2);
+      border-color: var(--border2);
+    }
+    .btn-outline:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); }
+    .btn-green {
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: rgba(28,124,74,.2);
+    }
+    .btn-green:hover { background: #d9f0e7; }
+    .btn-amber {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border-color: rgba(146,80,12,.2);
+    }
+    .btn-amber:hover { background: #faebd4; }
+    .btn-blue {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border-color: rgba(26,79,138,.2);
+    }
+    .btn-blue:hover { background: #ddeaf9; }
+    .btn:disabled { opacity: .45; pointer-events: none; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-icon { padding: 8px 10px; }
+
+    /* ── STATS ── */
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--stat-color, var(--border));
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      color: var(--ink3);
+      text-transform: uppercase;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-top: 8px;
+    }
+    .stat-sub { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      color: var(--ink3);
+      text-transform: uppercase;
+      text-align: left;
+      padding: 11px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #faf9f7; }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge-new       { background: var(--blue-bg);  color: var(--blue);  }
+    .badge-contacted { background: var(--amber-bg); color: var(--amber); }
+    .badge-qualified { background: var(--green-bg); color: var(--green); }
+    .badge-converted { background: var(--green-bg); color: var(--green); font-weight: 700; }
+    .badge-lost      { background: var(--red-bg);   color: var(--red);   }
+
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px; height: 26px;
+      border-radius: 5px;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .tier-A { background: var(--green-bg);  color: var(--green); }
+    .tier-B { background: var(--blue-bg);   color: var(--blue); }
+    .tier-C { background: var(--amber-bg);  color: var(--amber); }
+    .tier-D { background: var(--red-bg);    color: var(--red); }
+
+    /* ── SCORE BAR ── */
+    .score-row { display: flex; align-items: center; gap: 8px; }
+    .score-track {
+      flex: 1;
+      height: 5px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+      max-width: 72px;
+    }
+    .score-fill { height: 100%; border-radius: 3px; }
+    .score-num  { font-family: var(--font-mono); font-size: 12px; font-weight: 500; min-width: 22px; }
+
+    /* ── RESULT BLOCK ── */
+    .result-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      color: var(--ink2);
+    }
+    .result-subject {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--blue);
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-body);
+    }
+
+    /* ── AI RESULT PANEL ── */
+    .ai-result-panel {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: pageFade .2s ease;
+    }
+    .ai-result-panel.visible { display: flex; }
+
+    .score-display {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .score-big {
+      font-family: var(--font-display);
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .score-meta { flex: 1; }
+    .score-meta-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      color: var(--ink3);
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .score-meta-value {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .score-meta-value.value-range { color: var(--green); }
+
+    /* ── RED FLAGS ── */
+    .red-flags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .red-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid rgba(192,57,43,.15);
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    /* ── TOAST ── */
+    #toasts {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9000;
+    }
+    .toast {
+      background: var(--ink);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      min-width: 260px;
+      max-width: 380px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      box-shadow: var(--shadow-lg);
+      animation: toastIn .2s ease;
+      border-left: 3px solid var(--highlight);
+    }
+    .toast.error { border-left-color: #f87171; }
+    .toast.success { border-left-color: #4ade80; }
+    .toast-msg { flex: 1; line-height: 1.4; }
+    .toast-close { color: rgba(255,255,255,.5); cursor: pointer; font-size: 17px; line-height: 1; flex-shrink: 0; }
+    .toast-close:hover { color: #fff; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* ── SPINNER ── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+      flex-shrink: 0;
+    }
+    .spinner.dark {
+      border-color: rgba(26,23,20,.15);
+      border-top-color: var(--ink);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 56px 32px;
+      color: var(--ink3);
+    }
+    .empty-icon {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 12px;
+      opacity: .35;
+    }
+    .empty p { font-size: 13px; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 8px 0;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink3);
+      margin-bottom: 14px;
+    }
+
+    /* ── ACTION ROW ── */
+    .action-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* ── REASONING QUOTE ── */
+    .reasoning {
+      font-size: 13px;
+      color: var(--ink2);
+      line-height: 1.65;
+      border-left: 3px solid var(--border2);
+      padding: 4px 0 4px 14px;
+      font-style: italic;
+    }
+
+    /* ── COPY BUTTON MICRO-ANIMATION ── */
+    .copied { color: var(--green) !important; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .topbar { padding: 0 20px; }
+      .page   { padding: 24px 16px 60px; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .span-2 { grid-column: 1; }
+      .page-header { flex-direction: column; align-items: flex-start; }
+      .score-display { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ══════ TOPBAR ══════ -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <span class="dot"></span>
+    LeadFlow
+  </div>
+  <nav class="topbar-nav">
+    <a class="active" onclick="navigate('leads')">Leads</a>
+    <a onclick="navigate('scoring')">AI Scoring</a>
+    <a onclick="navigate('outreach')">Outreach</a>
+    <a href="/discovery.html" style="background:rgba(240,200,74,.12);color:#f0c84a">⊕ Discovery</a>
+  </nav>
+  <div class="topbar-status">
+    <div class="status-orb" id="status-orb"></div>
+    <span id="status-text">checking...</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     PAGE 1 — LEADS
+══════════════════════════════════════════ -->
+<div class="page active" id="page-leads">
+  <div class="page-header">
+    <div>
+      <h1>Leads</h1>
+      <p>Manage your prospect pipeline</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:28px">
+    <div class="stat-card" style="--stat-color:#4ade80">
+      <div class="stat-label">Total Leads</div>
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-sub">in pipeline</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#60a5fa">
+      <div class="stat-label">New</div>
+      <div class="stat-value" id="stat-new" style="color:var(--blue)">—</div>
+      <div class="stat-sub">awaiting contact</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#f59e0b">
+      <div class="stat-label">In Progress</div>
+      <div class="stat-value" id="stat-active" style="color:var(--amber)">—</div>
+      <div class="stat-sub">contacted or qualified</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#34d399">
+      <div class="stat-label">Converted</div>
+      <div class="stat-value" id="stat-converted" style="color:var(--green)">—</div>
+      <div class="stat-sub">closed</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="gap:24px;align-items:start">
+
+    <!-- Add Lead Form -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Add New Lead</h2>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="grid-2">
+            <div class="field">
+              <label>Business Name *</label>
+              <input id="f-name" placeholder="Acme Dental Group" />
+            </div>
+            <div class="field">
+              <label>Industry *</label>
+              <input id="f-industry" placeholder="Healthcare / Dentistry" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Location *</label>
+            <input id="f-location" placeholder="Austin, TX" />
+          </div>
+          <div class="field">
+            <label>Website</label>
+            <input id="f-website" placeholder="https://..." type="url" />
+          </div>
+          <div class="field">
+            <label>Notes</label>
+            <textarea id="f-notes" placeholder="Any context about this prospect…"></textarea>
+          </div>
+          <div class="action-row">
+            <button class="btn btn-primary" id="btn-add-lead" onclick="addLead()">
+              + Add Lead
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="clearForm()">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lead List -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Pipeline</h2>
+        <div style="display:flex;gap:6px">
+          <input id="lead-search" placeholder="Search…" style="padding:6px 11px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--ink);outline:none;width:150px;font-family:var(--font-body)" oninput="filterLeads()" />
+          <button class="btn btn-outline btn-sm btn-icon" onclick="loadLeads()" title="Refresh">↺</button>
+        </div>
+      </div>
+      <div id="leads-list">
+        <div class="empty">
+          <span class="empty-icon">◎</span>
+          <p>No leads yet.<br>Add one using the form.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     PAGE 2 — AI SCORING
+══════════════════════════════════════════ -->
+<div class="page" id="page-scoring">
+  <div class="page-header">
+    <div>
+      <h1>AI Scoring</h1>
+      <p>Estimate lead value and prioritize your pipeline</p>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="loadScoredLeads()">↺ Refresh</button>
+  </div>
+
+  <div class="grid-2" style="gap:24px;align-items:start">
+
+    <!-- Score a lead -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <h2>Score a Lead</h2>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+          <div class="field">
+            <label>Select Lead</label>
+            <select id="score-select">
+              <option value="">— choose a lead —</option>
+            </select>
+          </div>
+          <button class="btn btn-amber" id="btn-score" onclick="scoreLead()">
+            ◆ Run AI Score
+          </button>
+        </div>
+      </div>
+
+      <!-- Score result -->
+      <div class="ai-result-panel" id="score-result" style="margin-top:20px">
+        <div class="score-display">
+          <div>
+            <div class="score-meta-label">Lead Score</div>
+            <div class="score-big" id="res-score-num">—</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink3);margin-top:2px">/10</div>
+          </div>
+          <div class="score-meta">
+            <div style="margin-bottom:12px">
+              <div class="score-meta-label">Tier</div>
+              <div id="res-tier"></div>
+            </div>
+            <div>
+              <div class="score-meta-label">Estimated Value</div>
+              <div class="score-meta-value value-range" id="res-value">—</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="score-meta-label" style="margin-bottom:6px">Confidence</div>
+            <div id="res-confidence"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Analysis</h2>
+            <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">
+              → Generate Outreach
+            </button>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div>
+              <div class="section-title">Reasoning</div>
+              <p class="reasoning" id="res-reasoning">—</p>
+            </div>
+            <div id="res-red-flags-wrap">
+              <div class="section-title">Red Flags</div>
+              <div class="red-flags" id="res-red-flags"></div>
+            </div>
+            <div>
+              <div class="section-title">Recommended Action</div>
+              <p id="res-action" style="font-size:13px;font-weight:500;color:var(--ink)">—</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ranked leads table -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Ranked Leads</h2>
+        <select id="tier-filter" onchange="loadScoredLeads()" style="font-size:12px;padding:5px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--ink);outline:none;font-family:var(--font-body)">
+          <option value="">All Tiers</option>
+          <option>A</option><option>B</option><option>C</option><option>D</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Business</th>
+              <th>Tier</th>
+              <th>Score</th>
+              <th>Est. Value</th>
+            </tr>
+          </thead>
+          <tbody id="scored-tbody">
+            <tr><td colspan="4"><div class="empty"><span class="empty-icon">◆</span><p>No scored leads yet.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     PAGE 3 — OUTREACH
+══════════════════════════════════════════ -->
+<div class="page" id="page-outreach">
+  <div class="page-header">
+    <div>
+      <h1>Outreach Generator</h1>
+      <p>AI-written emails and DMs, personalised to each lead</p>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="loadOutreachHistory()">↺ History</button>
+  </div>
+
+  <div class="grid-2" style="gap:24px;align-items:start">
+
+    <!-- Generate form -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card">
+        <div class="card-header">
+          <h2>Generate Messages</h2>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+          <div class="field">
+            <label>Select Lead *</label>
+            <select id="out-select">
+              <option value="">— choose a lead —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tone</label>
+            <select id="out-tone">
+              <option value="">Auto (based on AI score)</option>
+              <option value="consultative">Consultative</option>
+              <option value="soft">Soft</option>
+              <option value="aggressive">Aggressive</option>
+              <option value="casual">Casual</option>
+            </select>
+          </div>
+          <button class="btn btn-blue" id="btn-generate" onclick="generateOutreach()">
+            ✦ Generate All Formats
+          </button>
+        </div>
+      </div>
+
+      <!-- Output panels -->
+      <div class="ai-result-panel" id="out-result">
+
+        <!-- Subject + Email -->
+        <div class="card">
+          <div class="card-header">
+            <h2>📧 Email</h2>
+            <button class="btn btn-outline btn-sm" onclick="copyText('out-email-body', this)">Copy</button>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div class="section-title">Subject Line</div>
+              <div id="out-subject" style="font-size:15px;font-weight:600;color:var(--blue);padding:10px 14px;background:var(--blue-bg);border-radius:var(--radius);border:1px solid rgba(26,79,138,.12)">—</div>
+            </div>
+            <div>
+              <div class="section-title">Body</div>
+              <div class="result-block" id="out-email-body">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Short DM -->
+        <div class="card">
+          <div class="card-header">
+            <h2>💬 Short DM</h2>
+            <button class="btn btn-outline btn-sm" onclick="copyText('out-dm', this)">Copy</button>
+          </div>
+          <div class="card-body">
+            <div class="result-block" id="out-dm">—</div>
+            <div style="margin-top:12px">
+              <div class="section-title">Personalization Notes</div>
+              <p class="reasoning" id="out-notes" style="margin-top:4px">—</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Generation History</h2>
+        <span id="history-count" style="font-family:var(--font-mono);font-size:11px;color:var(--ink3)"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Business</th>
+              <th>Subject</th>
+              <th>Score</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <tr><td colspan="4"><div class="empty"><span class="empty-icon">✦</span><p>No messages generated yet.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══ TOASTS ══ -->
+<div id="toasts"></div>
+
+
+<!-- ════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════ -->
+<script>
+"use strict";
+
+// ─────────────────────────────────────────────
+//  CONFIG — relative paths, works when served by Express at localhost:3000
+// ─────────────────────────────────────────────
+const API_BASE = '';   // empty = same origin; no hardcoded localhost needed
+const API      = API_BASE; // alias kept for any legacy references
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let allLeads     = [];
+let lastScoredId = null;
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function apiFetch(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(API_BASE + path, opts);
+    if (!res.ok) {
+      const text = await res.text();
+      try { return JSON.parse(text); } catch { return { success: false, message: 'HTTP ' + res.status }; }
+    }
+    return res.json();
+  } catch (err) {
+    console.error('[apiFetch]', method, path, err.message);
+    return { success: false, message: 'Network error — is the server running on port 3000?' };
+  }
+}
+
+// ─────────────────────────────────────────────
+//  CONNECTION STATUS
+//  checkConnection() is the canonical name per spec.
+//  checkHealth() is kept as an alias so all existing call sites work.
+// ─────────────────────────────────────────────
+async function checkConnection() {
+  const orb  = document.getElementById('status-orb');
+  const text = document.getElementById('status-text');
+  try {
+    const res = await fetch('/api/health');
+    if (!res.ok) throw new Error('not ok');
+    const d  = await res.json();
+    const ok = d.status === 'healthy';
+    if (orb)  orb.className    = 'status-orb ' + (ok ? 'ok' : 'err');
+    if (text) text.textContent = ok ? '🟢 Connected' : '🟡 Degraded';
+  } catch {
+    if (orb)  orb.className    = 'status-orb err';
+    if (text) text.textContent = '🔴 Offline';
+  }
+}
+const checkHealth = checkConnection; // alias — existing callers still work
+
+function toast(msg, type = 'info') {
+  const icons = { info: '→', success: '✓', error: '✕' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type] || '→'}</span><span class="toast-msg">${esc(msg)}</span><span class="toast-close" onclick="this.parentElement.remove()">×</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el?.remove(), 5000);
+}
+
+function setBtn(id, loading, text) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? `<span class="spinner"></span> ${text || 'Working...'}`
+    : text;
+}
+
+function scoreColor(n) {
+  if (n >= 8) return 'var(--green)';
+  if (n >= 6) return 'var(--blue)';
+  if (n >= 4) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function scoreBar(n) {
+  const col = scoreColor(n);
+  return `
+    <div class="score-row">
+      <span class="score-num" style="color:${col}">${n}</span>
+      <div class="score-track">
+        <div class="score-fill" style="width:${n*10}%;background:${col}"></div>
+      </div>
+    </div>`;
+}
+
+function badgeStatus(s) {
+  return `<span class="badge badge-${s}">${s}</span>`;
+}
+
+function tierBadge(t) {
+  return `<span class="tier-badge tier-${t}">${t}</span>`;
+}
+
+function confidenceBadge(c) {
+  const map = { high: 'badge-qualified', medium: 'badge-contacted', low: 'badge-lost' };
+  return `<span class="badge ${map[c] || 'badge-new'}">${c}</span>`;
+}
+
+async function copyText(id, btn) {
+  const text = document.getElementById(id)?.textContent || '';
+  try {
+    await navigator.clipboard.writeText(text);
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+    toast('Copied to clipboard.', 'success');
+  } catch { toast('Copy failed — select text manually.', 'error'); }
+}
+
+// ─────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.topbar-nav a').forEach(a => a.classList.remove('active'));
+
+  document.getElementById(`page-${page}`)?.classList.add('active');
+  const navIdx = { leads: 0, scoring: 1, outreach: 2 };
+  const links = document.querySelectorAll('.topbar-nav a');
+  if (links[navIdx[page]]) links[navIdx[page]].classList.add('active');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Lazy load on navigate
+  if (page === 'leads')    { loadLeads(); refreshSelects(); }
+  if (page === 'scoring')  { loadScoredLeads(); refreshSelects(); }
+  if (page === 'outreach') { loadOutreachHistory(); refreshSelects(); }
+}
+
+// ─────────────────────────────────────────────
+//  HEALTH CHECK — handled by checkConnection() above
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+//  LEADS
+// ─────────────────────────────────────────────
+async function loadLeads() {
+  const d = await apiFetch('GET', '/api/leads?limit=200');
+  allLeads = d.data || [];
+  renderLeads(allLeads);
+  updateStats(allLeads);
+  refreshSelects();
+}
+
+function updateStats(leads) {
+  document.getElementById('stat-total').textContent     = leads.length;
+  document.getElementById('stat-new').textContent       = leads.filter(l => l.status === 'new').length;
+  document.getElementById('stat-active').textContent    = leads.filter(l => ['contacted','qualified'].includes(l.status)).length;
+  document.getElementById('stat-converted').textContent = leads.filter(l => l.status === 'converted').length;
+}
+
+function renderLeads(list) {
+  const el = document.getElementById('leads-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><span class="empty-icon">◎</span><p>No leads found.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Business</th>
+            <th>Industry</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(l => `
+            <tr>
+              <td>
+                <strong style="font-size:13px">${esc(l.business_name || l.name)}</strong>
+                ${l.website ? `<br><a href="${esc(l.website)}" target="_blank" style="font-size:11px;color:var(--ink3);text-decoration:none">${esc(l.website.replace('https://',''))}</a>` : ''}
+              </td>
+              <td style="color:var(--ink2)">${esc(l.industry || '—')}</td>
+              <td style="color:var(--ink2)">${esc(l.location || '—')}</td>
+              <td>${badgeStatus(l.status)}</td>
+              <td>${l.score ? scoreBar(l.score) : `<span style="color:var(--ink3);font-family:var(--font-mono);font-size:11px">—</span>`}</td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn-amber btn-sm" onclick="quickScore('${l.id}')">Score</button>
+                  <button class="btn btn-blue btn-sm" onclick="quickOutreach('${l.id}')">Outreach</button>
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function filterLeads() {
+  const q = document.getElementById('lead-search').value.toLowerCase();
+  renderLeads(q ? allLeads.filter(l => (l.business_name||l.name||'').toLowerCase().includes(q) || (l.industry||'').toLowerCase().includes(q) || (l.location||'').toLowerCase().includes(q)) : allLeads);
+}
+
+async function addLead() {
+  const name     = document.getElementById('f-name').value.trim();
+  const industry = document.getElementById('f-industry').value.trim();
+  const location = document.getElementById('f-location').value.trim();
+  const website  = document.getElementById('f-website').value.trim();
+  const notes    = document.getElementById('f-notes').value.trim();
+
+  if (!name || !industry || !location) {
+    toast('Business name, industry, and location are required.', 'error');
+    return;
+  }
+
+  setBtn('btn-add-lead', true, 'Adding…');
+
+  const d = await apiFetch('POST', '/api/leads', {
+    business_name: name, industry, location,
+    website: website || undefined,
+    notes:   notes   || undefined,
+  });
+
+  setBtn('btn-add-lead', false, '+ Add Lead');
+
+  if (d.success) {
+    toast(`"${name}" added to pipeline.`, 'success');
+    clearForm();
+    loadLeads();
+  } else {
+    const errMsg = d.errors
+      ? Object.values(d.errors).flat().join(' · ')
+      : d.message || 'Failed to add lead.';
+    toast(errMsg, 'error');
+  }
+}
+
+function clearForm() {
+  ['f-name','f-industry','f-location','f-website','f-notes']
+    .forEach(id => { document.getElementById(id).value = ''; });
+}
+
+function refreshSelects() {
+  const opts = '<option value="">— choose a lead —</option>' +
+    allLeads.map(l => `<option value="${l.id}">${esc(l.business_name||l.name)} · ${esc(l.location||'')}${l.score ? ` · ${l.score}/10` : ''}</option>`).join('');
+  ['score-select','out-select'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { const v = el.value; el.innerHTML = opts; el.value = v; }
+  });
+}
+
+// ─────────────────────────────────────────────
+//  SCORING
+// ─────────────────────────────────────────────
+async function scoreLead() {
+  const leadId = document.getElementById('score-select').value;
+  if (!leadId) { toast('Select a lead first.', 'error'); return; }
+
+  setBtn('btn-score', true, 'Analyzing…');
+
+  const d = await apiFetch('POST', '/api/score-lead', { lead_id: leadId });
+
+  setBtn('btn-score', false, '◆ Run AI Score');
+
+  if (!d.success) { toast(d.message || 'Scoring failed.', 'error'); return; }
+
+  const s = d.data.score;
+  lastScoredId = leadId;
+  renderScoreResult(s);
+  loadLeads();
+  loadScoredLeads();
+  toast(`Scored: Tier ${s.tier} · ${s.lead_score}/10`, 'success');
+}
+
+function renderScoreResult(s) {
+  const panel = document.getElementById('score-result');
+  panel.classList.add('visible');
+
+  const col = scoreColor(s.lead_score);
+  document.getElementById('res-score-num').textContent = s.lead_score;
+  document.getElementById('res-score-num').style.color = col;
+  document.getElementById('res-tier').innerHTML = tierBadge(s.tier);
+  document.getElementById('res-value').textContent = s.estimated_value_range || '—';
+  document.getElementById('res-confidence').innerHTML = confidenceBadge(s.confidence);
+  document.getElementById('res-reasoning').textContent = s.reasoning || '—';
+  document.getElementById('res-action').textContent = s.recommended_action || '—';
+
+  const flags = Array.isArray(s.red_flags) ? s.red_flags
+    : (typeof s.red_flags === 'string' ? JSON.parse(s.red_flags || '[]') : []);
+
+  const flagWrap = document.getElementById('res-red-flags-wrap');
+  if (flags.length) {
+    document.getElementById('res-red-flags').innerHTML =
+      flags.map(f => `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
+    flagWrap.style.display = 'block';
+  } else {
+    flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--green)">✓ None identified</span>`;
+  }
+}
+
+async function loadScoredLeads() {
+  const tier = document.getElementById('tier-filter')?.value || '';
+  const url  = '/api/score-lead/ranked?limit=100' + (tier ? `&tier=${tier}` : '');
+  const d    = await apiFetch('GET', url);
+  const list = d.data || [];
+
+  const tbody = document.getElementById('scored-tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><span class="empty-icon">◆</span><p>No scored leads yet.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(s => `
+    <tr style="cursor:pointer" onclick="showScoredDetail('${s.score_id || s.id}')">
+      <td>
+        <strong>${esc(s.business_name)}</strong>
+        <div style="font-size:11px;color:var(--ink3)">${esc(s.industry || '')} · ${esc(s.location || '')}</div>
+      </td>
+      <td>${tierBadge(s.tier)}</td>
+      <td>${scoreBar(s.lead_score)}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--green);font-weight:500">${esc(s.estimated_value_range)}</td>
+    </tr>`).join('');
+}
+
+async function showScoredDetail(scoreId) {
+  const d = await apiFetch('GET', `/api/score-lead/${scoreId}`);
+  if (!d.success) return;
+  renderScoreResult(d.data);
+  // Scroll to result
+  document.getElementById('score-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function quickScore(leadId) {
+  navigate('scoring');
+  setTimeout(() => {
+    const sel = document.getElementById('score-select');
+    if (sel) { sel.value = leadId; }
+    scoreLead();
+  }, 100);
+}
+
+// ─────────────────────────────────────────────
+//  OUTREACH GENERATOR
+// ─────────────────────────────────────────────
+async function generateOutreach() {
+  const leadId = document.getElementById('out-select').value;
+  const tone   = document.getElementById('out-tone').value;
+
+  if (!leadId) { toast('Select a lead first.', 'error'); return; }
+
+  setBtn('btn-generate', true, 'Generating…');
+
+  const body = { lead_id: leadId };
+  if (tone) body.tone_override = tone;
+
+  const d = await apiFetch('POST', '/api/generate-outreach', body);
+
+  setBtn('btn-generate', false, '✦ Generate All Formats');
+
+  if (!d.success) { toast(d.message || 'Generation failed.', 'error'); return; }
+
+  const msg = d.data.message;
+  renderOutreachResult(msg);
+  loadOutreachHistory();
+  toast('Email + DM generated and saved.', 'success');
+}
+
+function renderOutreachResult(msg) {
+  const panel = document.getElementById('out-result');
+  panel.classList.add('visible');
+
+  document.getElementById('out-subject').textContent    = msg.subject_line || '—';
+  document.getElementById('out-email-body').textContent = msg.email_body   || '—';
+  document.getElementById('out-dm').textContent         = msg.short_dm     || '—';
+  document.getElementById('out-notes').textContent      = msg.personalization_notes || '—';
+}
+
+async function loadOutreachHistory() {
+  const d = await apiFetch('GET', '/api/generate-outreach?limit=30');
+  const list = d.data || [];
+  const count = d.meta?.total ?? list.length;
+  document.getElementById('history-count').textContent = count ? `${count} total` : '';
+
+  const tbody = document.getElementById('history-tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><span class="empty-icon">✦</span><p>No messages yet.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(m => `
+    <tr style="cursor:pointer" onclick="loadHistoricMessage('${m.id}')">
+      <td>
+        <strong style="font-size:13px">${esc(m.business_name || '—')}</strong>
+        <div style="font-size:11px;color:var(--ink3)">${esc(m.industry || '')}</div>
+      </td>
+      <td style="font-size:12px;color:var(--blue);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.subject_line || '—')}</td>
+      <td>${m.lead_score_at_generation ? scoreBar(m.lead_score_at_generation) : `<span style="color:var(--ink3);font-size:11px">—</span>`}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--ink3)">${m.created_at ? new Date(m.created_at).toLocaleDateString() : '—'}</td>
+    </tr>`).join('');
+}
+
+async function loadHistoricMessage(id) {
+  const d = await apiFetch('GET', `/api/generate-outreach/${id}`);
+  if (!d.success) return;
+  renderOutreachResult(d.data);
+  document.getElementById('out-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function quickOutreach(leadId) {
+  navigate('outreach');
+  setTimeout(() => {
+    const sel = document.getElementById('out-select');
+    if (sel) { sel.value = leadId; }
+  }, 120);
+}
+
+function setOutreachLead() {
+  if (!lastScoredId) return;
+  const sel = document.getElementById('out-select');
+  if (sel) sel.value = lastScoredId;
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+checkConnection();                        // immediately check & update status indicator
+setInterval(checkConnection, 30000);      // recheck every 30 s
+loadLeads();
+loadScoredLeads();
+loadOutreachHistory();
+</script>
+
+</body>
+</html>
