@@ -1,8 +1,6 @@
 {
   "name": "ai-client-acquisition",
   "version": "1.0.0",
-  "engines": {
-    "node": "20.x"
   "description": "AI Client Acquisition System - MVP",
   "main": "server/index.js",
   "scripts": {
@@ -26,6 +24,6 @@
     "nodemon": "^3.1.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   }
 }
