@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation – LeadFlow AI</title>
+  <meta name="description" content="LeadFlow AI documentation. Get started, learn the API, and master every feature." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#080a10;--bg-card:#0f1319;--bg-el:#161c28;--border:rgba(255,255,255,0.07);--border-h:rgba(255,255,255,0.12);--purple:#8b5cf6;--blue:#3b82f6;--cyan:#06b6d4;--green:#34d399;--text:#f0f2f8;--text-2:#8892a4;--text-3:#4f5b70;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh}
+    h1,h2,h3,h4{font-family:'Syne',sans-serif}
+    a{color:var(--purple);text-decoration:none}a:hover{text-decoration:underline}
+    code,pre{font-family:'DM Mono',monospace;}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#1e2433;border-radius:4px}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");z-index:0}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);background:rgba(8,10,16,0.92);border-bottom:1px solid var(--border);}
+    .nav-in{max-width:1160px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+    .logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+    .logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(139,92,246,0.4);}
+    .logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);}
+    .logo-text span{color:var(--purple);}
+    .nav-search{flex:1;max-width:320px;display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;}
+    .nav-search input{background:none;border:none;outline:none;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;width:100%;}
+    .nav-search input::placeholder{color:var(--text-3);}
+    .back-btn{font-size:13px;color:var(--text-2);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color 0.2s;white-space:nowrap;}
+    .back-btn:hover{color:var(--text);text-decoration:none;}
+    .app-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:#34d399;padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;text-decoration:none;transition:all 0.2s;white-space:nowrap;}
+    .app-btn:hover{background:rgba(16,185,129,0.15);text-decoration:none;}
+    .app-dot{width:6px;height:6px;background:#34d399;border-radius:50%;animation:pulse 2s infinite;box-shadow:0 0 5px #34d399;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.3);}}
+
+    /* LAYOUT */
+    .docs-layout{display:grid;grid-template-columns:240px 1fr;max-width:1160px;margin:0 auto;padding:0 24px;min-height:calc(100vh - 60px);position:relative;z-index:1;}
+    @media(max-width:768px){.docs-layout{grid-template-columns:1fr;}.docs-sidebar{display:none;}}
+
+    /* SIDEBAR */
+    .docs-sidebar{padding:32px 24px 60px 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;}
+    .sidebar-section{margin-bottom:28px;}
+    .sidebar-section-title{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;padding-left:10px;}
+    .sidebar-link{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2);padding:6px 10px;border-radius:7px;cursor:pointer;transition:all 0.15s;text-decoration:none;}
+    .sidebar-link:hover{background:rgba(255,255,255,0.04);color:var(--text);text-decoration:none;}
+    .sidebar-link.active{background:rgba(139,92,246,0.1);color:#a78bfa;}
+    .sidebar-link-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.4;}
+
+    /* CONTENT */
+    .docs-content{padding:40px 0 100px 40px;border-left:1px solid var(--border);}
+    @media(max-width:768px){.docs-content{padding:32px 0 80px;border-left:none;}}
+    .docs-header{margin-bottom:48px;}
+    .docs-label{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--purple);margin-bottom:10px;}
+    .docs-title{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1.2px;color:var(--text);margin-bottom:14px;}
+    .docs-sub{font-size:16px;color:var(--text-2);max-width:560px;line-height:1.7;}
+
+    /* Quick start cards */
+    .quickstart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:32px 0 48px;}
+    @media(max-width:540px){.quickstart-grid{grid-template-columns:1fr;}}
+    .qs-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:22px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;}
+    .qs-card:hover{border-color:var(--border-h);transform:translateY(-2px);text-decoration:none;}
+    .qs-icon{font-size:22px;margin-bottom:12px;}
+    .qs-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;}
+    .qs-desc{font-size:13px;color:var(--text-2);line-height:1.6;}
+    .qs-arrow{font-size:14px;color:var(--purple);margin-top:10px;}
+
+    /* Doc sections */
+    .doc-section{margin-bottom:52px;padding-bottom:52px;border-bottom:1px solid var(--border);}
+    .doc-section:last-child{border-bottom:none;}
+    .doc-section h2{font-size:22px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+    .sec-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:rgba(139,92,246,0.12);color:#a78bfa;letter-spacing:0.04em;}
+    .doc-section p{font-size:15px;color:var(--text-2);margin-bottom:14px;line-height:1.75;}
+    .doc-section ul,.doc-section ol{padding-left:20px;margin-bottom:14px;}
+    .doc-section li{font-size:15px;color:var(--text-2);margin-bottom:8px;line-height:1.7;}
+    .doc-section h3{font-size:16px;font-weight:600;color:var(--text);margin:24px 0 10px;}
+    .step-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:12px;}
+    .step-item{display:flex;gap:14px;align-items:flex-start;}
+    .step-num{width:26px;height:26px;border-radius:50%;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);color:#a78bfa;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+    .step-body{}
+    .step-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;}
+    .step-desc{font-size:14px;color:var(--text-2);line-height:1.65;}
+
+    /* Code blocks */
+    .code-block{background:#0a0d14;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:16px 0 20px;}
+    .code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02);}
+    .code-lang{font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:0.06em;text-transform:uppercase;}
+    .code-copy{font-size:11px;color:var(--text-3);cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .code-copy:hover{color:var(--text);border-color:var(--border-h);}
+    pre{padding:16px 18px;overflow-x:auto;font-size:13px;line-height:1.65;color:#c9d1d9;}
+    .kw{color:#ff7b72;}.str{color:#a5d6ff;}.fn{color:#d2a8ff;}.cm{color:#8b949e;}.num{color:#79c0ff;}.prop{color:#79c0ff;}
+
+    /* API ref table */
+    .api-table{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0 20px;}
+    .api-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;letter-spacing:0.06em;color:var(--text-2);border-bottom:1px solid var(--border);background:var(--bg-card);}
+    .api-table td{padding:10px 14px;color:var(--text-2);border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:top;}
+    .api-table tr:hover td{background:rgba(255,255,255,0.01);}
+    code{background:rgba(139,92,246,0.1);color:#c4b5fd;padding:2px 6px;border-radius:4px;font-size:12px;}
+    .method-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;font-family:'DM Mono',monospace;}
+    .get{background:rgba(52,211,153,0.12);color:#34d399;}
+    .post{background:rgba(139,92,246,0.12);color:#a78bfa;}
+    .delete{background:rgba(239,68,68,0.1);color:#f87171;}
+
+    /* Info callout */
+    .callout{display:flex;gap:12px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:10px;padding:14px 18px;margin:16px 0;}
+    .callout-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+    .callout p{margin:0;font-size:14px;color:#93c5fd;}
+
+    .doc-footer{border-top:1px solid var(--border);padding:32px 0 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+    .doc-footer-links{display:flex;gap:20px;flex-wrap:wrap;}
+    .doc-footer-links a{font-size:13px;color:var(--text-3);text-decoration:none;transition:color 0.2s;}
+    .doc-footer-links a:hover{color:var(--text-2);}
+    .doc-footer-copy{font-size:13px;color:var(--text-3);}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a href="pricing.html" class="logo">
+      <div class="logo-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <span class="logo-text">LeadFlow <span>AI</span></span>
+    </a>
+    <div class="nav-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4f5b70" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search documentation..." />
+    </div>
+    <a href="https://leadflowai-2nl0.onrender.com/" target="_blank" class="app-btn">
+      <span class="app-dot"></span>Open App
+    </a>
+    <a href="pricing.html" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Pricing
+    </a>
+  </div>
+</nav>
+
+<div class="docs-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Getting Started</div>
+      <a href="#overview" class="sidebar-link active"><span class="sidebar-link-dot"></span>Overview</a>
+      <a href="#quickstart" class="sidebar-link"><span class="sidebar-link-dot"></span>Quick Start</a>
+      <a href="#dashboard" class="sidebar-link"><span class="sidebar-link-dot"></span>Dashboard</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Core Features</div>
+      <a href="#leads" class="sidebar-link"><span class="sidebar-link-dot"></span>Leads</a>
+      <a href="#scoring" class="sidebar-link"><span class="sidebar-link-dot"></span>AI Scoring</a>
+      <a href="#email-gen" class="sidebar-link"><span class="sidebar-link-dot"></span>Email Generator</a>
+      <a href="#campaigns" class="sidebar-link"><span class="sidebar-link-dot"></span>Campaigns</a>
+      <a href="#smtp" class="sidebar-link"><span class="sidebar-link-dot"></span>Send Email (SMTP)</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">API Reference</div>
+      <a href="#api-auth" class="sidebar-link"><span class="sidebar-link-dot"></span>Authentication</a>
+      <a href="#api-leads" class="sidebar-link"><span class="sidebar-link-dot"></span>Leads API</a>
+      <a href="#api-scoring" class="sidebar-link"><span class="sidebar-link-dot"></span>Scoring API</a>
+      <a href="#api-email" class="sidebar-link"><span class="sidebar-link-dot"></span>Email API</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Account</div>
+      <a href="#billing-docs" class="sidebar-link"><span class="sidebar-link-dot"></span>Billing & Plans</a>
+      <a href="#export" class="sidebar-link"><span class="sidebar-link-dot"></span>CSV Export</a>
+      <a href="#white-label" class="sidebar-link"><span class="sidebar-link-dot"></span>White Label</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="docs-content">
+
+    <div class="docs-header">
+      <div class="docs-label">Documentation</div>
+      <h1 class="docs-title">LeadFlow AI Docs</h1>
+      <p class="docs-sub">Everything you need to find leads, score them with AI, generate personalized cold emails, and run outreach campaigns.</p>
+    </div>
+
+    <!-- QUICK START CARDS -->
+    <div class="quickstart-grid">
+      <a href="#quickstart" class="qs-card">
+        <div class="qs-icon">🚀</div>
+        <div class="qs-title">Quick Start Guide</div>
+        <div class="qs-desc">Go from zero to your first scored lead and generated email in under 5 minutes.</div>
+        <div class="qs-arrow">→</div>
+      </a>
+      <a href="#api-auth" class="qs-card">
+        <div class="qs-icon">🔌</div>
+        <div class="qs-title">API Reference</div>
+        <div class="qs-desc">Integrate LeadFlow AI into your own tools. Full REST API available on Agency plans.</div>
+        <div class="qs-arrow">→</div>
+      </a>
+      <a href="#email-gen" class="qs-card">
+        <div class="qs-icon">✦</div>
+        <div class="qs-title">AI Email Generator</div>
+        <div class="qs-desc">Learn how to generate cold emails, LinkedIn DMs, and personalization notes.</div>
+        <div class="qs-arrow">→</div>
+      </a>
+      <a href="#smtp" class="qs-card">
+        <div class="qs-icon">◉</div>
+        <div class="qs-title">SMTP Sending</div>
+        <div class="qs-desc">Connect your Gmail or custom SMTP to send outreach directly from LeadFlow AI.</div>
+        <div class="qs-arrow">→</div>
+      </a>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="doc-section" id="overview">
+      <h2>Overview</h2>
+      <p>LeadFlow AI is an AI-powered lead generation and outreach platform built for agencies and B2B teams. The platform has six core modules:</p>
+      <ul>
+        <li><strong style="color:var(--text);">Dashboard</strong> — a real-time overview of your pipeline, top-scored leads, and campaign activity</li>
+        <li><strong style="color:var(--text);">Leads</strong> — manage your prospect pipeline with status tracking</li>
+        <li><strong style="color:var(--text);">AI Scoring</strong> — automatically rank leads by estimated value and conversion potential</li>
+        <li><strong style="color:var(--text);">Campaigns</strong> — organize outreach sequences by type (email, LinkedIn, cold call)</li>
+        <li><strong style="color:var(--text);">Email Generator / Outreach Generator</strong> — AI tools to write personalized cold emails, subject lines, and LinkedIn DMs</li>
+        <li><strong style="color:var(--text);">Send Email</strong> — SMTP-based email sending with delivery logging</li>
+      </ul>
+    </div>
+
+    <!-- QUICK START -->
+    <div class="doc-section" id="quickstart">
+      <h2>Quick Start <span class="sec-tag">5 MIN</span></h2>
+      <ol class="step-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Open the App</div>
+            <div class="step-desc">Go to <a href="https://leadflowai-2nl0.onrender.com/" target="_blank">leadflowai-2nl0.onrender.com</a> and sign in. No install required.</div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Add Your First Lead</div>
+            <div class="step-desc">Click <strong style="color:var(--text);">+ Add Lead</strong> in the Leads section. Enter a business name, industry, and location. Optionally add a website URL and notes.</div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Score the Lead with AI</div>
+            <div class="step-desc">Navigate to <strong style="color:var(--text);">AI Scoring</strong> → click <strong style="color:var(--text);">⚡ Score a Lead</strong>, select your lead, and run the AI scorer. You'll receive a score (0–100), tier (A–D), estimated value, and confidence rating.</div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Generate a Cold Email</div>
+            <div class="step-desc">Go to <strong style="color:var(--text);">⚡ Generator</strong>. Select your lead, choose a tone (Auto, Consultative, Aggressive, Casual, etc.), and click <strong style="color:var(--text);">Generate All Formats</strong>. You'll get a full email, subject line, LinkedIn DM, and personalization notes.</div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Send the Email</div>
+            <div class="step-desc">Head to <strong style="color:var(--text);">◉ Send Email</strong>. Verify your SMTP, select the generated message, enter the recipient's email, and hit Send. All sent emails appear in your audit log.</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- LEADS -->
+    <div class="doc-section" id="leads">
+      <h2>Leads</h2>
+      <p>The Leads module is your central prospect pipeline. Each lead has a status that you can update as you progress through your outreach:</p>
+      <ul>
+        <li><code>new</code> — freshly added, not yet contacted</li>
+        <li><code>contacted</code> — outreach has been sent</li>
+        <li><code>qualified</code> — lead has expressed interest or fits your ICP</li>
+        <li><code>converted</code> — became a customer or signed a contract</li>
+        <li><code>lost</code> — not interested or unresponsive</li>
+      </ul>
+      <h3>Adding Leads</h3>
+      <p>Click <strong style="color:var(--text);">+ Add Lead</strong> and fill in: Business Name (required), Industry (required), Location (required), Website (optional), Notes (optional). Notes are passed to the AI generator for richer personalization.</p>
+      <h3>Filtering & Search</h3>
+      <p>Use the status filter dropdown to view leads by stage. Refreshing the view syncs with the latest data from the server.</p>
+    </div>
+
+    <!-- AI SCORING -->
+    <div class="doc-section" id="scoring">
+      <h2>AI Scoring</h2>
+      <p>The AI Scoring module evaluates each lead and assigns a score from 0 to 100, a tier (A, B, C, or D), an estimated deal value, and a confidence percentage.</p>
+      <div class="callout">
+        <span class="callout-icon">ℹ</span>
+        <p>Scoring uses a combination of the lead's industry, location, website presence, and any notes you've provided. The more context you add, the more accurate the score.</p>
+      </div>
+      <h3>Score Tiers</h3>
+      <ul>
+        <li><strong style="color:#34d399;">Tier A (75–100)</strong> — High-value targets, prioritize immediately</li>
+        <li><strong style="color:#60a5fa;">Tier B (50–74)</strong> — Good fit, worth nurturing</li>
+        <li><strong style="color:#fbbf24;">Tier C (25–49)</strong> — Possible fit, lower priority</li>
+        <li><strong style="color:#f87171;">Tier D (0–24)</strong> — Poor fit, deprioritize</li>
+      </ul>
+    </div>
+
+    <!-- EMAIL GENERATOR -->
+    <div class="doc-section" id="email-gen">
+      <h2>Email Generator <span class="sec-tag">GPT-4o</span></h2>
+      <p>The Outreach Generator produces three outputs simultaneously from a single lead and tone selection:</p>
+      <ul>
+        <li>📧 <strong style="color:var(--text);">Full Email</strong> — subject line + complete email body</li>
+        <li>💬 <strong style="color:var(--text);">Short DM</strong> — concise LinkedIn message (under 300 characters)</li>
+        <li>🎯 <strong style="color:var(--text);">Personalization Notes</strong> — talking points and hooks specific to the lead</li>
+      </ul>
+      <h3>Tones</h3>
+      <ul>
+        <li><strong style="color:var(--text);">Auto</strong> — AI picks tone based on lead score (high score = consultative; low score = soft)</li>
+        <li><strong style="color:var(--text);">Consultative</strong> — advisory, positions you as an expert</li>
+        <li><strong style="color:var(--text);">Soft</strong> — low-pressure, relationship-focused</li>
+        <li><strong style="color:var(--text);">Aggressive</strong> — direct, urgency-driven</li>
+        <li><strong style="color:var(--text);">Casual</strong> — friendly and informal</li>
+      </ul>
+      <h3>Generation History</h3>
+      <p>Every generated message is saved to your history with the lead name, subject, score, tone, and date. Click any row to restore the content.</p>
+    </div>
+
+    <!-- SMTP -->
+    <div class="doc-section" id="smtp">
+      <h2>Send Email (SMTP)</h2>
+      <p>Connect your own email account to send outreach directly from LeadFlow AI. This works with Gmail SMTP, custom SMTP servers, or any provider that supports SMTP.</p>
+      <h3>Setup</h3>
+      <ol class="step-list" style="gap:10px;">
+        <li class="step-item"><div class="step-num">1</div><div class="step-body"><div class="step-title">Verify SMTP</div><div class="step-desc">Click <strong style="color:var(--text);">◎ Verify SMTP</strong> and enter your host, port, username, and password. For Gmail, use <code>smtp.gmail.com:587</code> with an App Password.</div></div></li>
+        <li class="step-item"><div class="step-num">2</div><div class="step-body"><div class="step-title">Compose</div><div class="step-desc">Select a generated message from the dropdown, or compose manually. Set recipient email, optional reply-to, and link to a lead for tracking.</div></div></li>
+        <li class="step-item"><div class="step-num">3</div><div class="step-body"><div class="step-title">Send & Monitor</div><div class="step-desc">Hit Send. The Email Log shows delivery status, timestamp, and source for every email sent.</div></div></li>
+      </ol>
+    </div>
+
+    <!-- API REFERENCE -->
+    <div class="doc-section" id="api-auth">
+      <h2>API Reference <span class="sec-tag">AGENCY</span></h2>
+      <p>The LeadFlow AI REST API is available on Agency plans. Base URL:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">Base URL</span></div>
+        <pre><span class="str">https://leadflowai-2nl0.onrender.com/api/v1</span></pre>
+      </div>
+      <h3>Authentication</h3>
+      <p>Include your API key in the <code>Authorization</code> header on every request:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">HTTP Header</span><button class="code-copy" onclick="this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+        <pre><span class="prop">Authorization</span>: Bearer <span class="str">lf_live_xxxxxxxxxxxxxxxxxxxx</span></pre>
+      </div>
+    </div>
+
+    <div class="doc-section" id="api-leads">
+      <h2>Leads API</h2>
+      <table class="api-table">
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method-badge get">GET</span></td><td><code>/leads</code></td><td>List all leads (supports <code>?status=</code> filter)</td></tr>
+          <tr><td><span class="method-badge post">POST</span></td><td><code>/leads</code></td><td>Create a new lead</td></tr>
+          <tr><td><span class="method-badge get">GET</span></td><td><code>/leads/:id</code></td><td>Get a single lead by ID</td></tr>
+          <tr><td><span class="method-badge post">POST</span></td><td><code>/leads/:id</code></td><td>Update lead fields or status</td></tr>
+          <tr><td><span class="method-badge delete">DEL</span></td><td><code>/leads/:id</code></td><td>Delete a lead permanently</td></tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">JavaScript — Create Lead</span><button class="code-copy" onclick="this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+        <pre><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'https://leadflowai-2nl0.onrender.com/api/v1/leads'</span>, {
+  <span class="prop">method</span>: <span class="str">'POST'</span>,
+  <span class="prop">headers</span>: {
+    <span class="str">'Authorization'</span>: <span class="str">'Bearer lf_live_xxx'</span>,
+    <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>
+  },
+  <span class="prop">body</span>: <span class="fn">JSON.stringify</span>({
+    <span class="prop">business_name</span>: <span class="str">'Jensen Roofing'</span>,
+    <span class="prop">industry</span>: <span class="str">'Roofing'</span>,
+    <span class="prop">location</span>: <span class="str">'Austin, TX'</span>,
+    <span class="prop">website</span>: <span class="str">'https://jensenroofing.com'</span>
+  })
+});
+<span class="kw">const</span> lead = <span class="kw">await</span> res.<span class="fn">json</span>();</pre>
+      </div>
+    </div>
+
+    <div class="doc-section" id="billing-docs">
+      <h2>Billing & Plans</h2>
+      <p>Plan details, upgrade/downgrade, and billing history are managed from your account settings inside the app. For refund requests, see our <a href="refund.html">Refund Policy</a>. For plan comparison, see the <a href="pricing.html">Pricing page</a>.</p>
+    </div>
+
+    <div class="doc-section" id="export">
+      <h2>CSV Export</h2>
+      <p>Pro and Agency plans can export their full leads database as a CSV file. Navigate to the Leads section and click the Export button in the toolbar. The export includes all lead fields and their current AI scores.</p>
+    </div>
+
+    <div class="doc-section" id="white-label">
+      <h2>White Label <span class="sec-tag">AGENCY</span></h2>
+      <p>Agency plan users can remove LeadFlow AI branding from client-facing exports and reports. White-label settings are available in Account Settings → Branding. You can set your agency name and logo, which will appear on all exported PDF/CSV reports.</p>
+    </div>
+
+    <div class="doc-footer">
+      <div class="doc-footer-copy">© 2026 LeadFlow AI, Inc.</div>
+      <div class="doc-footer-links">
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="refund.html">Refunds</a>
+        <a href="security.html">Security</a>
+        <a href="status.html">Status</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Active sidebar link on scroll
+  const sections = document.querySelectorAll('.doc-section');
+  const links = document.querySelectorAll('.sidebar-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar-link[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

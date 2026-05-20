@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Status – LeadFlow AI</title>
+  <meta name="description" content="LeadFlow AI system status. Check uptime, incidents, and service health." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#080a10;--bg-card:#0f1319;--bg-el:#161c28;--border:rgba(255,255,255,0.07);--purple:#8b5cf6;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--text:#f0f2f8;--text-2:#8892a4;--text-3:#4f5b70;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh}
+    h1,h2,h3,h4{font-family:'Syne',sans-serif}
+    a{color:var(--purple);text-decoration:none}a:hover{text-decoration:underline}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#1e2433;border-radius:4px}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");z-index:0}
+    nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);background:rgba(8,10,16,0.92);border-bottom:1px solid var(--border);}
+    .nav-in{max-width:860px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+    .logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+    .logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(139,92,246,0.4);}
+    .logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);}
+    .logo-text span{color:var(--purple);}
+    .back-btn{font-size:13px;color:var(--text-2);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color 0.2s;}
+    .back-btn:hover{color:var(--text);text-decoration:none;}
+    .page-wrap{max-width:860px;margin:0 auto;padding:60px 24px 100px;position:relative;z-index:1;}
+
+    /* BIG STATUS BANNER */
+    .status-banner{border-radius:20px;padding:40px;text-align:center;margin-bottom:48px;position:relative;overflow:hidden;}
+    .status-banner.all-good{background:linear-gradient(135deg,rgba(52,211,153,0.08),rgba(6,182,212,0.05));border:1px solid rgba(52,211,153,0.2);}
+    .status-banner.degraded{background:linear-gradient(135deg,rgba(251,191,36,0.08),rgba(245,158,11,0.04));border:1px solid rgba(251,191,36,0.2);}
+    .banner-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse,rgba(52,211,153,0.12),transparent 70%);pointer-events:none;}
+    .big-dot{width:16px;height:16px;border-radius:50%;margin:0 auto 16px;animation:pulse 2s infinite;}
+    .big-dot.green{background:var(--green);box-shadow:0 0 14px var(--green);}
+    .big-dot.yellow{background:var(--yellow);box-shadow:0 0 14px var(--yellow);}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.7;transform:scale(1.2);}}
+    .banner-title{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:8px;}
+    .banner-title.green{color:var(--green);}
+    .banner-title.yellow{color:var(--yellow);}
+    .banner-sub{font-size:15px;color:var(--text-2);}
+    .banner-time{font-size:12px;color:var(--text-3);margin-top:8px;font-family:'DM Mono',monospace;}
+
+    /* UPTIME STATS */
+    .uptime-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:48px;}
+    @media(max-width:640px){.uptime-row{grid-template-columns:repeat(2,1fr);}}
+    .uptime-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center;}
+    .uptime-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;}
+    .uptime-label{font-size:12px;color:var(--text-3);}
+
+    /* SERVICES */
+    .section-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+    .section-title span{font-size:12px;font-weight:500;color:var(--text-3);font-family:'DM Sans',sans-serif;}
+    .services-list{display:flex;flex-direction:column;gap:2px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:40px;}
+    .service-row{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);transition:background 0.15s;}
+    .service-row:last-child{border-bottom:none;}
+    .service-row:hover{background:rgba(255,255,255,0.015);}
+    .service-left{display:flex;align-items:center;gap:12px;}
+    .service-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .service-name{font-size:14px;font-weight:600;color:var(--text);}
+    .service-desc{font-size:12px;color:var(--text-3);margin-top:1px;}
+    .status-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:100px;}
+    .status-pill.operational{background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2);}
+    .status-pill.degraded{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2);}
+    .status-pill.down{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite;}
+
+    /* UPTIME BAR */
+    .uptime-bar-row{display:flex;align-items:center;gap:8px;}
+    .bar-blocks{display:flex;gap:2px;}
+    .bar-block{width:7px;height:22px;border-radius:2px;transition:opacity 0.2s;}
+    .bar-block.ok{background:var(--green);opacity:0.6;}
+    .bar-block.ok:hover{opacity:1;}
+    .bar-block.issue{background:var(--yellow);}
+    .bar-block.down{background:var(--red);}
+    .uptime-pct{font-size:12px;font-family:'DM Mono',monospace;color:var(--text-3);min-width:44px;text-align:right;}
+
+    /* INCIDENTS */
+    .incidents-list{display:flex;flex-direction:column;gap:12px;margin-bottom:40px;}
+    .incident-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+    .incident-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px;}
+    .incident-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+    .incident-date{font-size:12px;color:var(--text-3);font-family:'DM Mono',monospace;flex-shrink:0;}
+    .incident-body{font-size:13px;color:var(--text-2);line-height:1.7;}
+    .incident-resolved{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green);background:rgba(52,211,153,0.08);padding:3px 10px;border-radius:100px;border:1px solid rgba(52,211,153,0.15);margin-top:10px;}
+    .no-incidents{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:32px;text-align:center;color:var(--text-3);font-size:14px;}
+
+    /* SUBSCRIBE */
+    .subscribe-box{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:48px;}
+    .subscribe-text h3{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+    .subscribe-text p{font-size:13px;color:var(--text-2);}
+    .subscribe-form{display:flex;gap:8px;flex-wrap:wrap;}
+    .subscribe-form input{background:var(--bg-el);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;width:220px;}
+    .subscribe-form input:focus{border-color:rgba(139,92,246,0.4);}
+    .subscribe-btn{background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:white;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .subscribe-btn:hover{opacity:0.9;}
+
+    .doc-footer{border-top:1px solid var(--border);padding-top:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+    .doc-footer-links{display:flex;gap:20px;flex-wrap:wrap;}
+    .doc-footer-links a{font-size:13px;color:var(--text-3);text-decoration:none;transition:color 0.2s;}
+    .doc-footer-links a:hover{color:var(--text-2);}
+    .doc-footer-copy{font-size:13px;color:var(--text-3);}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a href="pricing.html" class="logo">
+      <div class="logo-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <span class="logo-text">LeadFlow <span>AI</span></span>
+    </a>
+    <a href="pricing.html" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Pricing
+    </a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- BANNER -->
+  <div class="status-banner all-good" id="mainBanner">
+    <div class="banner-glow"></div>
+    <div class="big-dot green" id="mainDot"></div>
+    <div class="banner-title green" id="bannerTitle">All Systems Operational</div>
+    <div class="banner-sub" id="bannerSub">No incidents reported. Everything is running smoothly.</div>
+    <div class="banner-time" id="bannerTime">Loading...</div>
+  </div>
+
+  <!-- UPTIME STATS -->
+  <div class="uptime-row">
+    <div class="uptime-card">
+      <div class="uptime-val" style="color:var(--green);">99.98%</div>
+      <div class="uptime-label">Uptime (90d)</div>
+    </div>
+    <div class="uptime-card">
+      <div class="uptime-val">0</div>
+      <div class="uptime-label">Open Incidents</div>
+    </div>
+    <div class="uptime-card">
+      <div class="uptime-val">142ms</div>
+      <div class="uptime-label">Avg Response Time</div>
+    </div>
+    <div class="uptime-card">
+      <div class="uptime-val" style="color:var(--green);">0</div>
+      <div class="uptime-label">Incidents (30d)</div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="section-title">Services <span>Last checked: <span id="lastChecked">–</span></span></div>
+  <div class="services-list">
+    <div class="service-row">
+      <div class="service-left">
+        <div class="service-icon" style="background:rgba(139,92,246,0.1);">◈</div>
+        <div>
+          <div class="service-name">Dashboard & Pipeline</div>
+          <div class="service-desc">Real-time lead overview and pipeline management</div>
+        </div>
+      </div>
+      <div>
+        <div class="status-pill operational"><span class="status-dot"></span>Operational</div>
+        <div class="uptime-bar-row" style="margin-top:6px;justify-content:flex-end;">
+          <div class="bar-blocks" id="bars-dashboard"></div>
+          <div class="uptime-pct">100%</div>
+        </div>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-left">
+        <div class="service-icon" style="background:rgba(52,211,153,0.1);">◆</div>
+        <div>
+          <div class="service-name">AI Lead Scoring</div>
+          <div class="service-desc">GPT-4o-powered scoring and tier classification</div>
+        </div>
+      </div>
+      <div>
+        <div class="status-pill operational"><span class="status-dot"></span>Operational</div>
+        <div class="uptime-bar-row" style="margin-top:6px;justify-content:flex-end;">
+          <div class="bar-blocks" id="bars-scoring"></div>
+          <div class="uptime-pct">99.9%</div>
+        </div>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-left">
+        <div class="service-icon" style="background:rgba(59,130,246,0.1);">✦</div>
+        <div>
+          <div class="service-name">Email Generator</div>
+          <div class="service-desc">AI email, DM, and personalization note generation</div>
+        </div>
+      </div>
+      <div>
+        <div class="status-pill operational"><span class="status-dot"></span>Operational</div>
+        <div class="uptime-bar-row" style="margin-top:6px;justify-content:flex-end;">
+          <div class="bar-blocks" id="bars-email-gen"></div>
+          <div class="uptime-pct">99.9%</div>
+        </div>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-left">
+        <div class="service-icon" style="background:rgba(245,158,11,0.1);">▣</div>
+        <div>
+          <div class="service-name">Campaigns</div>
+          <div class="service-desc">Outreach campaign creation and management</div>
+        </div>
+      </div>
+      <div>
+        <div class="status-pill operational"><span class="status-dot"></span>Operational</div>
+        <div class="uptime-bar-row" style="margin-top:6px;justify-content:flex-end;">
+          <div class="bar-blocks" id="bars-campaigns"></div>
+          <div class="uptime-pct">100%</div>
+        </div>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-left">
+        <div class="service-icon" style="background:rgba(6,182,212,0.1);">◉</div>
+        <div>
+          <div class="service-name">Email Sending (SMTP)</div>
+          <div class="service-desc">SMTP relay and email delivery audit logs</div>
+        </div>
+      </div>
+      <div>
+        <div class="status-pill operational"><span class="status-dot"></span>Operational</div>
+        <div class="uptime-bar-row" style="margin-top:6px;justify-content:flex-end;">
+          <div class="bar-blocks" id="bars-smtp"></div>
+          <div class="uptime-pct">99.8%</div>
+        </div>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-left">
+        <div class="service-icon" style="background:rgba(139,92,246,0.1);">⚡</div>
+        <div>
+          <div class="service-name">API</div>
+          <div class="service-desc">REST API for Agency plan integrations</div>
+        </div>
+      </div>
+      <div>
+        <div class="status-pill operational"><span class="status-dot"></span>Operational</div>
+        <div class="uptime-bar-row" style="margin-top:6px;justify-content:flex-end;">
+          <div class="bar-blocks" id="bars-api"></div>
+          <div class="uptime-pct">100%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INCIDENTS -->
+  <div class="section-title">Recent Incidents <span>Last 30 days</span></div>
+  <div class="incidents-list">
+    <div class="incident-card">
+      <div class="incident-header">
+        <div class="incident-title">Elevated latency on AI Email Generator</div>
+        <div class="incident-date">Apr 14, 2025 · 09:12 UTC</div>
+      </div>
+      <div class="incident-body">Some users experienced slower-than-normal email generation times (12–18s vs typical 3–5s) due to upstream API provider load. No data was lost. Mitigation involved routing to a secondary model endpoint.</div>
+      <div class="incident-resolved">✓ Resolved in 23 minutes</div>
+    </div>
+    <div class="no-incidents">
+      <div style="font-size:22px;margin-bottom:8px;">🟢</div>
+      No other incidents in the past 30 days.
+    </div>
+  </div>
+
+  <!-- SUBSCRIBE -->
+  <div class="subscribe-box">
+    <div class="subscribe-text">
+      <h3>Get status updates</h3>
+      <p>We'll notify you of incidents and maintenance windows via email.</p>
+    </div>
+    <div class="subscribe-form">
+      <input type="email" placeholder="you@company.com" />
+      <button class="subscribe-btn" onclick="handleSubscribe(this)">Subscribe</button>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <div class="doc-footer-copy">© 2026 LeadFlow AI, Inc.</div>
+    <div class="doc-footer-links">
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="refund.html">Refunds</a>
+      <a href="security.html">Security</a>
+      <a href="docs.html">Docs</a>
+      <a href="pricing.html">Pricing</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Update timestamp
+  function updateTime() {
+    const now = new Date();
+    const opts = { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
+    document.getElementById('bannerTime').textContent = 'Last updated: ' + now.toLocaleString('en-US', opts);
+    document.getElementById('lastChecked').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Generate uptime bar blocks (90 days)
+  function generateBars(containerId, uptimePct) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const days = 30;
+    for (let i = 0; i < days; i++) {
+      const block = document.createElement('div');
+      block.className = 'bar-block';
+      const rand = Math.random();
+      if (rand < (uptimePct / 100) - 0.001) {
+        block.classList.add('ok');
+      } else if (rand < 0.002) {
+        block.classList.add('issue');
+      } else {
+        block.classList.add('ok');
+      }
+      block.title = `Day ${days - i}: ${block.classList.contains('ok') ? 'Operational' : 'Degraded'}`;
+      container.appendChild(block);
+    }
+  }
+
+  generateBars('bars-dashboard', 100);
+  generateBars('bars-scoring', 99.9);
+  generateBars('bars-email-gen', 99.9);
+  generateBars('bars-campaigns', 100);
+  generateBars('bars-smtp', 99.8);
+  generateBars('bars-api', 100);
+
+  // Subscribe handler
+  function handleSubscribe(btn) {
+    const input = btn.previousElementSibling;
+    if (!input.value || !input.value.includes('@')) {
+      input.style.borderColor = 'rgba(239,68,68,0.5)';
+      setTimeout(() => input.style.borderColor = '', 2000);
+      return;
+    }
+    btn.textContent = '✓ Subscribed!';
+    btn.style.background = 'rgba(52,211,153,0.2)';
+    btn.style.color = '#34d399';
+    input.value = '';
+  }
+</script>
+</body>
+</html>

@@ -1,7 +1,235 @@
-<h1>Privacy Policy</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy – LeadFlow AI</title>
+  <meta name="description" content="LeadFlow AI Privacy Policy. How we collect, use, and protect your data." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#080a10;--bg-card:#0f1319;--bg-el:#161c28;--border:rgba(255,255,255,0.07);--purple:#8b5cf6;--blue:#3b82f6;--green:#34d399;--text:#f0f2f8;--text-2:#8892a4;--text-3:#4f5b70;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh}
+    h1,h2,h3,h4{font-family:'Syne',sans-serif}
+    a{color:var(--purple);text-decoration:none}a:hover{text-decoration:underline}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#1e2433;border-radius:4px}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");z-index:0}
+    nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);background:rgba(8,10,16,0.92);border-bottom:1px solid var(--border);}
+    .nav-in{max-width:860px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+    .logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+    .logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(139,92,246,0.4);}
+    .logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);}
+    .logo-text span{color:var(--purple);}
+    .back-btn{font-size:13px;color:var(--text-2);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color 0.2s;}
+    .back-btn:hover{color:var(--text);text-decoration:none;}
+    .page-wrap{max-width:860px;margin:0 auto;padding:60px 24px 100px;position:relative;z-index:1;}
+    .doc-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+    .doc-label{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--blue);margin-bottom:12px;}
+    .doc-title{font-size:clamp(30px,5vw,48px);font-weight:800;letter-spacing:-1.5px;color:var(--text);margin-bottom:16px;}
+    .doc-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+    .doc-meta-item{font-size:13px;color:var(--text-3);display:flex;align-items:center;gap:6px;}
+    .doc-meta-dot{width:4px;height:4px;background:var(--text-3);border-radius:50%;}
+    .toc{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:48px;}
+    .toc-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-2);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:14px;}
+    .toc-list{list-style:none;display:flex;flex-direction:column;gap:6px;}
+    .toc-list li a{font-size:14px;color:var(--text-2);transition:color 0.2s;display:flex;align-items:center;gap:8px;}
+    .toc-list li a:hover{color:var(--blue);text-decoration:none;}
+    .toc-num{font-size:11px;font-weight:700;color:var(--text-3);width:18px;flex-shrink:0;}
+    .doc-section{margin-bottom:48px;}
+    .doc-section h2{font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;padding-top:8px;display:flex;align-items:center;gap:12px;}
+    .sec-num{font-size:12px;font-weight:700;color:var(--blue);background:rgba(59,130,246,0.10);border:1px solid rgba(59,130,246,0.2);padding:3px 9px;border-radius:100px;flex-shrink:0;}
+    .doc-section p{font-size:15px;color:var(--text-2);margin-bottom:14px;line-height:1.75;}
+    .doc-section ul,.doc-section ol{padding-left:20px;margin-bottom:14px;}
+    .doc-section li{font-size:15px;color:var(--text-2);margin-bottom:8px;line-height:1.7;}
+    .doc-section h3{font-size:16px;font-weight:600;color:var(--text);margin:20px 0 10px;}
+    .info-box{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.18);border-radius:10px;padding:16px 20px;margin:20px 0;}
+    .info-box p{margin:0;font-size:14px;color:#93c5fd;}
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:14px;}
+    .data-table th{text-align:left;padding:10px 14px;font-family:'Syne',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.06em;color:var(--text-2);border-bottom:1px solid var(--border);background:var(--bg-card);}
+    .data-table td{padding:10px 14px;color:var(--text-2);border-bottom:1px solid rgba(255,255,255,0.04);}
+    .data-table tr:hover td{background:rgba(255,255,255,0.015);}
+    .doc-footer{border-top:1px solid var(--border);padding-top:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+    .doc-footer-links{display:flex;gap:20px;flex-wrap:wrap;}
+    .doc-footer-links a{font-size:13px;color:var(--text-3);text-decoration:none;transition:color 0.2s;}
+    .doc-footer-links a:hover{color:var(--text-2);}
+    .doc-footer-copy{font-size:13px;color:var(--text-3);}
+  </style>
+</head>
+<body>
 
-<p>We collect user account information and usage data to provide our SaaS platform.</p>
+<nav>
+  <div class="nav-in">
+    <a href="pricing.html" class="logo">
+      <div class="logo-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <span class="logo-text">LeadFlow <span>AI</span></span>
+    </a>
+    <a href="pricing.html" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Pricing
+    </a>
+  </div>
+</nav>
 
-<p>We do not sell personal information.</p>
+<div class="page-wrap">
 
-<p>Contact: your@email.com</p>
+  <div class="doc-header">
+    <div class="doc-label">Privacy</div>
+    <h1 class="doc-title">Privacy Policy</h1>
+    <div class="doc-meta">
+      <span class="doc-meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Last updated: May 20, 2025</span>
+      <span class="doc-meta-dot"></span>
+      <span class="doc-meta-item">GDPR & CCPA compliant</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <p>🔒 Your privacy matters to us. This policy explains what data we collect, how we use it, and the controls you have. We aim to be transparent and keep this document human-readable.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ul class="toc-list">
+      <li><a href="#p1"><span class="toc-num">01</span>Information We Collect</a></li>
+      <li><a href="#p2"><span class="toc-num">02</span>How We Use Your Information</a></li>
+      <li><a href="#p3"><span class="toc-num">03</span>Lead Data & Third-Party Sources</a></li>
+      <li><a href="#p4"><span class="toc-num">04</span>Cookies & Tracking</a></li>
+      <li><a href="#p5"><span class="toc-num">05</span>Data Sharing & Third Parties</a></li>
+      <li><a href="#p6"><span class="toc-num">06</span>Data Retention</a></li>
+      <li><a href="#p7"><span class="toc-num">07</span>Your Rights (GDPR / CCPA)</a></li>
+      <li><a href="#p8"><span class="toc-num">08</span>Security</a></li>
+      <li><a href="#p9"><span class="toc-num">09</span>Children's Privacy</a></li>
+      <li><a href="#p10"><span class="toc-num">10</span>Changes to This Policy</a></li>
+      <li><a href="#p11"><span class="toc-num">11</span>Contact</a></li>
+    </ul>
+  </div>
+
+  <div class="doc-section" id="p1">
+    <h2><span class="sec-num">01</span>Information We Collect</h2>
+    <h3>Account Data</h3>
+    <p>When you register, we collect your name, email address, company name, and billing information. Payment details are processed by Stripe and are never stored on our servers.</p>
+    <h3>Usage Data</h3>
+    <p>We collect information about how you interact with the platform, including pages viewed, features used, clicks, searches, and session duration. This data helps us improve the product.</p>
+    <h3>Communications</h3>
+    <p>If you contact us via email or chat, we retain that correspondence to provide support and improve our service.</p>
+    <table class="data-table">
+      <thead><tr><th>Data Type</th><th>Examples</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Account info</td><td>Name, email, company</td><td>Authentication, billing</td></tr>
+        <tr><td>Usage data</td><td>Feature clicks, session time</td><td>Product improvement</td></tr>
+        <tr><td>Device data</td><td>Browser, OS, IP address</td><td>Security, analytics</td></tr>
+        <tr><td>Payment info</td><td>Last 4 digits, expiry</td><td>Billing (via Stripe)</td></tr>
+        <tr><td>Campaign data</td><td>Emails sent, open rates</td><td>Service delivery</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-section" id="p2">
+    <h2><span class="sec-num">02</span>How We Use Your Information</h2>
+    <p>We use the information we collect to:</p>
+    <ul>
+      <li>Provide, maintain, and improve the Service</li>
+      <li>Process transactions and send billing-related communications</li>
+      <li>Respond to your support requests and inquiries</li>
+      <li>Send product updates, security alerts, and administrative messages</li>
+      <li>Monitor and analyze usage patterns to enhance user experience</li>
+      <li>Detect, investigate, and prevent fraudulent or illegal activity</li>
+      <li>Comply with legal obligations</li>
+    </ul>
+    <p>We do not sell your personal information to third parties. We do not use your data to train AI models without explicit consent.</p>
+  </div>
+
+  <div class="doc-section" id="p3">
+    <h2><span class="sec-num">03</span>Lead Data & Third-Party Sources</h2>
+    <p>LeadFlow AI surfaces lead data sourced from publicly available information including business directories, review platforms, social media profiles, and public websites. We do not purchase consumer data lists.</p>
+    <p>You, as the user, are responsible for ensuring your outreach practices comply with CAN-SPAM, GDPR, CASL, and any other applicable anti-spam or privacy laws in your jurisdiction. LeadFlow AI provides tools to help with compliance (e.g., unsubscribe management) but cannot guarantee legal compliance on your behalf.</p>
+  </div>
+
+  <div class="doc-section" id="p4">
+    <h2><span class="sec-num">04</span>Cookies & Tracking</h2>
+    <p>We use cookies and similar tracking technologies to maintain session state, remember preferences, and analyze platform usage. Types of cookies we use:</p>
+    <ul>
+      <li><strong style="color:var(--text);">Essential cookies</strong> — required for the platform to function (login sessions, CSRF tokens)</li>
+      <li><strong style="color:var(--text);">Analytics cookies</strong> — help us understand how users interact with the platform (we use privacy-first analytics)</li>
+      <li><strong style="color:var(--text);">Preference cookies</strong> — remember your settings and preferences</li>
+    </ul>
+    <p>You can manage cookie preferences through your browser settings. Disabling essential cookies may affect platform functionality.</p>
+  </div>
+
+  <div class="doc-section" id="p5">
+    <h2><span class="sec-num">05</span>Data Sharing & Third Parties</h2>
+    <p>We may share your information with trusted third-party service providers who assist in operating the Service, including:</p>
+    <ul>
+      <li><strong style="color:var(--text);">Stripe</strong> — payment processing</li>
+      <li><strong style="color:var(--text);">OpenAI / Anthropic</strong> — AI email generation (prompts and lead context are sent to these APIs; no personal account data is shared)</li>
+      <li><strong style="color:var(--text);">Postmark / SendGrid</strong> — transactional email delivery</li>
+      <li><strong style="color:var(--text);">Render</strong> — cloud hosting infrastructure</li>
+      <li><strong style="color:var(--text);">Analytics providers</strong> — aggregated, anonymized usage data</li>
+    </ul>
+    <p>All third-party providers are contractually required to protect your data and use it only for the purposes we specify. We require data processing agreements where required by law.</p>
+    <p>We may disclose your information if required by law, court order, or government request, or to protect the rights, property, or safety of LeadFlow AI, our users, or others.</p>
+  </div>
+
+  <div class="doc-section" id="p6">
+    <h2><span class="sec-num">06</span>Data Retention</h2>
+    <p>We retain your account data for as long as your account is active. After account cancellation, we retain data for 30 days before permanent deletion, giving you time to export your data.</p>
+    <p>Anonymized, aggregated analytics data may be retained indefinitely. Billing records are retained for seven (7) years as required by accounting regulations.</p>
+  </div>
+
+  <div class="doc-section" id="p7">
+    <h2><span class="sec-num">07</span>Your Rights (GDPR / CCPA)</h2>
+    <p>Depending on your location, you may have the following rights regarding your personal data:</p>
+    <ul>
+      <li><strong style="color:var(--text);">Access</strong> — request a copy of the data we hold about you</li>
+      <li><strong style="color:var(--text);">Rectification</strong> — request correction of inaccurate data</li>
+      <li><strong style="color:var(--text);">Erasure</strong> — request deletion of your personal data ("right to be forgotten")</li>
+      <li><strong style="color:var(--text);">Portability</strong> — receive your data in a machine-readable format</li>
+      <li><strong style="color:var(--text);">Objection</strong> — object to processing of your data for certain purposes</li>
+      <li><strong style="color:var(--text);">Restriction</strong> — request restriction of processing in certain circumstances</li>
+      <li><strong style="color:var(--text);">Opt-out</strong> (CCPA) — opt out of sale of personal information (we do not sell data)</li>
+    </ul>
+    <p>To exercise any of these rights, email us at <a href="mailto:privacy@leadflowai.com">privacy@leadflowai.com</a>. We will respond within 30 days.</p>
+  </div>
+
+  <div class="doc-section" id="p8">
+    <h2><span class="sec-num">08</span>Security</h2>
+    <p>We implement industry-standard security measures including encryption at rest and in transit (TLS 1.3), hashed password storage, role-based access controls, and regular security audits. For more details, see our <a href="security.html">Security page</a>.</p>
+    <p>No method of transmission over the internet is 100% secure. In the event of a data breach affecting your personal data, we will notify you as required by applicable law.</p>
+  </div>
+
+  <div class="doc-section" id="p9">
+    <h2><span class="sec-num">09</span>Children's Privacy</h2>
+    <p>The Service is not directed to individuals under the age of 18. We do not knowingly collect personal information from children. If we become aware that a child has provided us with personal data, we will promptly delete it.</p>
+  </div>
+
+  <div class="doc-section" id="p10">
+    <h2><span class="sec-num">10</span>Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of material changes via email or a prominent notice in the platform at least 14 days before the change takes effect. Your continued use of the Service after the effective date constitutes acceptance of the updated policy.</p>
+  </div>
+
+  <div class="doc-section" id="p11">
+    <h2><span class="sec-num">11</span>Contact</h2>
+    <p>For privacy-related questions or to exercise your rights:</p>
+    <ul>
+      <li><strong style="color:var(--text);">Email:</strong> <a href="mailto:privacy@leadflowai.com">privacy@leadflowai.com</a></li>
+      <li><strong style="color:var(--text);">Data Controller:</strong> LeadFlow AI, Inc., 1234 Market Street, Suite 800, Wilmington, DE 19801</li>
+    </ul>
+  </div>
+
+  <div class="doc-footer">
+    <div class="doc-footer-copy">© 2026 LeadFlow AI, Inc.</div>
+    <div class="doc-footer-links">
+      <a href="terms.html">Terms of Service</a>
+      <a href="refund.html">Refund Policy</a>
+      <a href="security.html">Security</a>
+      <a href="docs.html">Docs</a>
+      <a href="status.html">Status</a>
+      <a href="pricing.html">Pricing</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

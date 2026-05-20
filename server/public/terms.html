@@ -1,5 +1,249 @@
-<h1>Terms of Service</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service – LeadFlow AI</title>
+  <meta name="description" content="LeadFlow AI Terms of Service. Read our terms before using the platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#080a10;--bg-card:#0f1319;--bg-el:#161c28;
+      --border:rgba(255,255,255,0.07);--border-h:rgba(255,255,255,0.12);
+      --purple:#8b5cf6;--text:#f0f2f8;--text-2:#8892a4;--text-3:#4f5b70;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh}
+    h1,h2,h3,h4{font-family:'Syne',sans-serif}
+    a{color:var(--purple);text-decoration:none}a:hover{text-decoration:underline}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#1e2433;border-radius:4px}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");z-index:0}
 
-<p>By using LeadFlow AI, you agree not to abuse the platform or send illegal spam.</p>
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);background:rgba(8,10,16,0.92);border-bottom:1px solid var(--border);}
+    .nav-in{max-width:860px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+    .logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+    .logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(139,92,246,0.4);}
+    .logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);}
+    .logo-text span{color:var(--purple);}
+    .back-btn{font-size:13px;color:var(--text-2);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color 0.2s;}
+    .back-btn:hover{color:var(--text);text-decoration:none;}
 
-<p>Users are responsible for complying with anti-spam laws and regulations.<p>
+    /* LAYOUT */
+    .page-wrap{max-width:860px;margin:0 auto;padding:60px 24px 100px;position:relative;z-index:1;}
+    .doc-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+    .doc-label{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--purple);margin-bottom:12px;}
+    .doc-title{font-size:clamp(30px,5vw,48px);font-weight:800;letter-spacing:-1.5px;color:var(--text);margin-bottom:16px;}
+    .doc-meta{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+    .doc-meta-item{font-size:13px;color:var(--text-3);display:flex;align-items:center;gap:6px;}
+    .doc-meta-dot{width:4px;height:4px;background:var(--text-3);border-radius:50%;}
+
+    /* TOC */
+    .toc{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:48px;}
+    .toc-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-2);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:14px;}
+    .toc-list{list-style:none;display:flex;flex-direction:column;gap:6px;}
+    .toc-list li a{font-size:14px;color:var(--text-2);transition:color 0.2s;display:flex;align-items:center;gap:8px;}
+    .toc-list li a:hover{color:var(--purple);text-decoration:none;}
+    .toc-num{font-size:11px;font-weight:700;color:var(--text-3);width:18px;flex-shrink:0;}
+
+    /* CONTENT */
+    .doc-section{margin-bottom:48px;}
+    .doc-section h2{font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;padding-top:8px;display:flex;align-items:center;gap:12px;}
+    .sec-num{font-size:12px;font-weight:700;color:var(--purple);background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2);padding:3px 9px;border-radius:100px;flex-shrink:0;}
+    .doc-section p{font-size:15px;color:var(--text-2);margin-bottom:14px;line-height:1.75;}
+    .doc-section ul,.doc-section ol{padding-left:20px;margin-bottom:14px;}
+    .doc-section li{font-size:15px;color:var(--text-2);margin-bottom:8px;line-height:1.7;}
+    .doc-section h3{font-size:16px;font-weight:600;color:var(--text);margin:20px 0 10px;}
+    .highlight-box{background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.18);border-radius:10px;padding:16px 20px;margin:20px 0;}
+    .highlight-box p{margin:0;font-size:14px;}
+    .warn-box{background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:16px 20px;margin:20px 0;}
+    .warn-box p{margin:0;font-size:14px;color:#fbbf24;}
+
+    /* FOOTER */
+    .doc-footer{border-top:1px solid var(--border);padding-top:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:gap;gap:16px;}
+    .doc-footer-links{display:flex;gap:20px;flex-wrap:wrap;}
+    .doc-footer-links a{font-size:13px;color:var(--text-3);text-decoration:none;transition:color 0.2s;}
+    .doc-footer-links a:hover{color:var(--text-2);}
+    .doc-footer-copy{font-size:13px;color:var(--text-3);}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a href="pricing.html" class="logo">
+      <div class="logo-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <span class="logo-text">LeadFlow <span>AI</span></span>
+    </a>
+    <a href="pricing.html" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Pricing
+    </a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="doc-header">
+    <div class="doc-label">Legal</div>
+    <h1 class="doc-title">Terms of Service</h1>
+    <div class="doc-meta">
+      <span class="doc-meta-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Last updated: May 20, 2025
+      </span>
+      <span class="doc-meta-dot"></span>
+      <span class="doc-meta-item">Effective: May 20, 2025</span>
+      <span class="doc-meta-dot"></span>
+      <span class="doc-meta-item">LeadFlow AI, Inc.</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ul class="toc-list">
+      <li><a href="#s1"><span class="toc-num">01</span>Acceptance of Terms</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span>Description of Service</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span>Account Registration</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span>Subscription & Billing</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span>Acceptable Use Policy</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span>Intellectual Property</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span>Data & Privacy</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span>Disclaimers & Limitation of Liability</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span>Termination</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span>Governing Law</a></li>
+      <li><a href="#s11"><span class="toc-num">11</span>Contact</a></li>
+    </ul>
+  </div>
+
+  <div class="highlight-box">
+    <p>Please read these Terms carefully. By accessing or using LeadFlow AI, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree, do not use the service.</p>
+  </div>
+
+  <div class="doc-section" id="s1">
+    <h2><span class="sec-num">01</span>Acceptance of Terms</h2>
+    <p>These Terms of Service ("Terms") govern your access to and use of LeadFlow AI's platform, website, APIs, and all related services (collectively, the "Service") operated by LeadFlow AI, Inc. ("LeadFlow AI," "we," "us," or "our").</p>
+    <p>By creating an account, clicking "I agree," or otherwise accessing the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you are using the Service on behalf of an organization, you represent and warrant that you have authority to bind that organization to these Terms.</p>
+  </div>
+
+  <div class="doc-section" id="s2">
+    <h2><span class="sec-num">02</span>Description of Service</h2>
+    <p>LeadFlow AI provides an AI-powered lead generation and outreach automation platform, including:</p>
+    <ul>
+      <li>Local business lead discovery and enrichment</li>
+      <li>AI-powered lead scoring and qualification</li>
+      <li>Personalized cold email generation via large language models</li>
+      <li>Email campaign management and SMTP sending infrastructure</li>
+      <li>Analytics dashboards and reporting tools</li>
+      <li>API access (Agency plan and above)</li>
+    </ul>
+    <p>We reserve the right to modify, suspend, or discontinue any aspect of the Service at any time, with or without notice. We will endeavor to provide reasonable advance notice for material changes.</p>
+  </div>
+
+  <div class="doc-section" id="s3">
+    <h2><span class="sec-num">03</span>Account Registration</h2>
+    <p>To use LeadFlow AI, you must create an account. You agree to:</p>
+    <ul>
+      <li>Provide accurate, current, and complete information during registration</li>
+      <li>Maintain and promptly update your account information</li>
+      <li>Keep your login credentials confidential and secure</li>
+      <li>Immediately notify us of any unauthorized use of your account</li>
+      <li>Accept responsibility for all activities that occur under your account</li>
+    </ul>
+    <p>You must be at least 18 years of age to create an account. Accounts may not be shared between individuals. Each seat on your plan corresponds to one authorized user.</p>
+  </div>
+
+  <div class="doc-section" id="s4">
+    <h2><span class="sec-num">04</span>Subscription & Billing</h2>
+    <h3>Plans</h3>
+    <p>LeadFlow AI offers Free, Pro ($49/mo), and Agency ($149/mo) subscription tiers. Feature access and usage limits are defined by your current plan. Annual billing is available at a 20% discount.</p>
+    <h3>Payment</h3>
+    <p>Paid subscriptions are billed in advance on a monthly or annual basis. All fees are in USD and are non-refundable except as outlined in our <a href="refund.html">Refund Policy</a>. We use third-party payment processors and do not store full payment card details.</p>
+    <h3>Upgrades & Downgrades</h3>
+    <p>You may upgrade your plan at any time; the new plan takes effect immediately and you will be charged a prorated amount for the remainder of the billing period. Downgrades take effect at the next billing date.</p>
+    <h3>Failed Payments</h3>
+    <p>If a payment fails, we will attempt to retry the charge. After three failed attempts, your account may be downgraded to the Free tier or suspended until payment is resolved.</p>
+    <div class="warn-box">
+      <p>⚠ Exceeding your plan's usage limits will not automatically result in overage charges—instead, access to the affected feature may be throttled or paused until the next billing cycle.</p>
+    </div>
+  </div>
+
+  <div class="doc-section" id="s5">
+    <h2><span class="sec-num">05</span>Acceptable Use Policy</h2>
+    <p>You agree to use the Service only for lawful purposes and in compliance with all applicable laws, including CAN-SPAM, GDPR, CASL, and other anti-spam regulations. You must not:</p>
+    <ul>
+      <li>Send unsolicited bulk email or spam</li>
+      <li>Use the Service to harass, threaten, or harm any person</li>
+      <li>Scrape, crawl, or extract data from the platform except via authorized API</li>
+      <li>Reverse engineer, decompile, or attempt to derive source code</li>
+      <li>Use the Service to send phishing, malware, or fraudulent communications</li>
+      <li>Resell or sublicense the Service without written consent</li>
+      <li>Attempt to circumvent usage limits or access controls</li>
+      <li>Upload or transmit any content that infringes third-party intellectual property rights</li>
+    </ul>
+    <p>Violation of this policy may result in immediate termination of your account without refund.</p>
+  </div>
+
+  <div class="doc-section" id="s6">
+    <h2><span class="sec-num">06</span>Intellectual Property</h2>
+    <p>The Service, including its software, design, text, graphics, and all content created by LeadFlow AI, is owned by or licensed to LeadFlow AI and is protected by copyright, trademark, and other intellectual property laws.</p>
+    <p>We grant you a limited, non-exclusive, non-transferable, revocable license to access and use the Service for your internal business purposes, subject to these Terms.</p>
+    <p>You retain ownership of data and content you upload to the platform ("Your Content"). By uploading Your Content, you grant us a license to use, process, and store it solely for the purpose of providing the Service.</p>
+  </div>
+
+  <div class="doc-section" id="s7">
+    <h2><span class="sec-num">07</span>Data & Privacy</h2>
+    <p>Your use of the Service is also governed by our <a href="privacy.html">Privacy Policy</a>, which is incorporated by reference into these Terms. Please review it carefully to understand our data practices.</p>
+    <p>LeadFlow AI processes lead data sourced from publicly available information. You are responsible for ensuring your use of this data complies with applicable privacy laws in your jurisdiction.</p>
+  </div>
+
+  <div class="doc-section" id="s8">
+    <h2><span class="sec-num">08</span>Disclaimers & Limitation of Liability</h2>
+    <p>The Service is provided "as is" and "as available" without warranties of any kind, express or implied, including but not limited to merchantability, fitness for a particular purpose, and non-infringement.</p>
+    <p>We do not warrant that the Service will be uninterrupted, error-free, or free of viruses or other harmful components. We do not guarantee the accuracy of AI-generated content or lead data.</p>
+    <p>To the maximum extent permitted by applicable law, LeadFlow AI's total liability for any claims arising out of or related to these Terms or the Service shall not exceed the amounts paid by you in the twelve (12) months preceding the claim.</p>
+    <p>In no event shall LeadFlow AI be liable for indirect, incidental, special, consequential, or punitive damages, including loss of profits, revenue, data, or goodwill.</p>
+  </div>
+
+  <div class="doc-section" id="s9">
+    <h2><span class="sec-num">09</span>Termination</h2>
+    <p>You may cancel your account at any time from your account settings. Cancellation takes effect at the end of your current billing period.</p>
+    <p>We may suspend or terminate your account immediately, without prior notice, if you violate these Terms, engage in fraudulent activity, or for any other reason at our sole discretion. Upon termination, your right to use the Service ceases immediately.</p>
+    <p>We will retain your data for 30 days after termination, after which it may be permanently deleted. You may request an export of your data before account deletion.</p>
+  </div>
+
+  <div class="doc-section" id="s10">
+    <h2><span class="sec-num">10</span>Governing Law</h2>
+    <p>These Terms are governed by and construed in accordance with the laws of the State of Delaware, United States, without regard to its conflict of law principles.</p>
+    <p>Any disputes arising from these Terms shall be resolved through binding arbitration in accordance with the American Arbitration Association's rules, except that either party may seek injunctive relief in a court of competent jurisdiction.</p>
+    <p>You waive any right to participate in class-action lawsuits or class-wide arbitration against LeadFlow AI.</p>
+  </div>
+
+  <div class="doc-section" id="s11">
+    <h2><span class="sec-num">11</span>Contact</h2>
+    <p>If you have questions about these Terms, please contact us:</p>
+    <ul>
+      <li><strong style="color:var(--text);">Email:</strong> legal@leadflowai.com</li>
+      <li><strong style="color:var(--text);">Address:</strong> LeadFlow AI, Inc., 1234 Market Street, Suite 800, Wilmington, DE 19801</li>
+      <li><strong style="color:var(--text);">App:</strong> <a href="https://leadflowai-2nl0.onrender.com/">leadflowai-2nl0.onrender.com</a></li>
+    </ul>
+  </div>
+
+  <div class="doc-footer">
+    <div class="doc-footer-copy">© 2026 LeadFlow AI, Inc.</div>
+    <div class="doc-footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="refund.html">Refund Policy</a>
+      <a href="security.html">Security</a>
+      <a href="docs.html">Docs</a>
+      <a href="status.html">Status</a>
+      <a href="pricing.html">Pricing</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
