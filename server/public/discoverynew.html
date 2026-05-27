@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lead Discovery — LeadFlow AI</title>
+
+<!-- ─── Fonts ──────────────────────────────────────────────────── -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+
+<style>
+/* ═══════════════════════════════════════════════════
+   DESIGN TOKENS — single source of truth
+═══════════════════════════════════════════════════ */
+:root {
+  --brand:          #16a34a;
+  --brand-hover:    #15803d;
+  --brand-light:    #dcfce7;
+  --brand-mid:      #bbf7d0;
+  --brand-dim:      rgba(22,163,74,.12);
+  --brand-glow:     rgba(22,163,74,.20);
+
+  --bg:             #f8fafc;
+  --bg-card:        #ffffff;
+  --bg-hover:       #f1f5f9;
+  --bg-sidebar:     #0f172a;
+
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+  --text-inverse:   #ffffff;
+
+  --border:         rgba(15,23,42,.09);
+  --border-strong:  rgba(15,23,42,.16);
+
+  --radius-sm:      6px;
+  --radius:         10px;
+  --radius-lg:      14px;
+  --radius-xl:      18px;
+
+  --shadow-sm:      0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+  --shadow:         0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
+  --shadow-lg:      0 12px 32px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.06);
+
+  --sidebar-w:      220px;
+  --topbar-h:       60px;
+
+  --tier-a-bg:      #dcfce7; --tier-a-text: #15803d;
+  --tier-b-bg:      #dbeafe; --tier-b-text: #1d4ed8;
+  --tier-c-bg:      #fef9c3; --tier-c-text: #a16207;
+  --tier-d-bg:      #fee2e2; --tier-d-text: #b91c1c;
+
+  --transition:     180ms cubic-bezier(.4,0,.2,1);
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET + BASE
+═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+}
+
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+input, select { font-family: inherit; }
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR  (matches app shell)
+═══════════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 30;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.logo-flame {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-flame svg { width: 16px; height: 16px; }
+.logo-wordmark { line-height: 1; }
+.logo-name { font-size: 15px; font-weight: 600; color: #f8fafc; letter-spacing: -.01em; }
+.logo-plan { font-size: 10px; font-weight: 600; color: #22c55e; letter-spacing: .08em; text-transform: uppercase; }
+
+.sidebar-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; scrollbar-width: none; }
+.sidebar-scroll::-webkit-scrollbar { display: none; }
+
+.nav-group-label {
+  font-size: 10px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: rgba(255,255,255,.28);
+  padding: 10px 18px 3px;
+}
+.nav-divider { height: 1px; background: rgba(255,255,255,.06); margin: 4px 0; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 12px 8px 14px;
+  margin: 1px 8px;
+  border-radius: 8px;
+  color: rgba(255,255,255,.55);
+  font-size: 13.5px;
+  transition: background var(--transition), color var(--transition);
+  white-space: nowrap;
+  position: relative;
+}
+.nav-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.85); }
+.nav-item.active {
+  background: rgba(34,197,94,.14);
+  color: #f1f5f9;
+  box-shadow: inset 2px 0 0 #22c55e;
+  font-weight: 500;
+}
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.nav-item .nav-chip {
+  font-size: 9px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase;
+  background: rgba(34,197,94,.2); color: #4ade80;
+  border-radius: 4px; padding: 2px 5px; margin-left: auto;
+}
+.nav-item .nav-badge {
+  margin-left: auto;
+  font-size: 10px; font-weight: 600;
+  background: rgba(255,255,255,.1); color: rgba(255,255,255,.4);
+  border-radius: 99px; padding: 1px 6px;
+}
+
+.sidebar-bottom {
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding: 8px;
+}
+.user-row {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.user-row:hover { background: rgba(255,255,255,.06); }
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0;
+}
+.user-info .user-name { font-size: 13px; font-weight: 500; color: #f1f5f9; }
+.user-info .user-plan { font-size: 10px; color: #22c55e; font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════════════════ */
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Topbar ── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+.topbar-title { font-size: 16px; font-weight: 600; }
+.topbar-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.topbar-spacer { flex: 1; }
+.status-dot {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text-muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 99px;
+}
+.status-dot::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-dim);
+}
+.topbar-back {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 13px; color: var(--text-secondary);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), color var(--transition);
+}
+.topbar-back:hover { background: var(--bg-hover); color: var(--text-primary); }
+.topbar-back svg { width: 14px; height: 14px; }
+
+/* ── Content scroll ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 28px 28px 120px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SEARCH PANEL
+═══════════════════════════════════════════════════ */
+.search-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.search-panel-header {
+  margin-bottom: 16px;
+}
+.search-panel-title {
+  font-size: 18px; font-weight: 600; color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.search-panel-sub {
+  font-size: 13px; color: var(--text-secondary);
+}
+
+/* Split inputs row */
+.search-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 140px auto;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.input-group { display: flex; flex-direction: column; gap: 5px; }
+.input-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.input-wrap {
+  position: relative;
+  display: flex; align-items: center;
+}
+.input-wrap svg.input-icon {
+  position: absolute; left: 11px;
+  width: 16px; height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.search-input {
+  width: 100%;
+  height: 42px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  padding: 0 12px 0 36px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+.search-input:hover { border-color: rgba(15,23,42,.22); }
+.search-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-dim);
+  background: var(--bg-card);
+}
+.search-input::placeholder { color: var(--text-muted); }
+
+.search-btn-wrap { display: flex; align-items: flex-end; }
+.btn-search {
+  height: 42px; padding: 0 22px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; gap: 7px;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(22,163,74,.3);
+}
+.btn-search:hover { background: var(--brand-hover); box-shadow: 0 3px 8px rgba(22,163,74,.35); }
+.btn-search:active { transform: scale(.98); }
+.btn-search svg { width: 15px; height: 15px; }
+.btn-search.loading { pointer-events: none; opacity: .8; }
+
+/* Quick-start pills */
+.quickstart-row {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.qs-label {
+  font-size: 11px; color: var(--text-muted); font-weight: 500;
+  white-space: nowrap;
+}
+.qs-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 99px;
+  font-size: 12px; font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition),
+              color var(--transition), transform var(--transition);
+  white-space: nowrap;
+}
+.qs-pill:hover {
+  background: var(--brand-light);
+  border-color: var(--brand-mid);
+  color: var(--brand-hover);
+  transform: translateY(-1px);
+}
+.qs-pill:active { transform: translateY(0); }
+.qs-pill svg { width: 12px; height: 12px; opacity: .6; }
+
+/* ═══════════════════════════════════════════════════
+   FILTERS BAR  (shown only after search)
+═══════════════════════════════════════════════════ */
+.filters-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+  animation: slideDown .2s ease;
+}
+.filters-bar.hidden { display: none; }
+.filter-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.filter-select {
+  height: 34px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 0 28px 0 10px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  transition: border-color var(--transition);
+}
+.filter-select:focus { border-color: var(--brand); }
+.filter-reviews {
+  display: flex; align-items: center; gap: 8px;
+}
+.filter-reviews input[type="range"] {
+  width: 90px; accent-color: var(--brand);
+}
+.filter-reviews-val {
+  font-size: 12px; font-weight: 500;
+  color: var(--text-secondary); min-width: 28px;
+}
+.filter-spacer { flex: 1; }
+.btn-clear-filters {
+  font-size: 12px; color: var(--text-muted);
+  background: none; border: none; padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+}
+.btn-clear-filters:hover { color: var(--text-secondary); background: var(--bg-hover); }
+.results-meta {
+  font-size: 12px; color: var(--text-muted);
+  white-space: nowrap;
+}
+.results-meta strong { color: var(--text-secondary); }
+
+/* ═══════════════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════════════ */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 64px 24px 48px;
+  text-align: center;
+}
+.empty-state.hidden { display: none; }
+.empty-illustration {
+  width: 80px; height: 80px;
+  border-radius: 22px;
+  background: var(--brand-light);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+.empty-illustration svg { width: 38px; height: 38px; color: var(--brand); }
+.empty-illustration::after {
+  content: '';
+  position: absolute; inset: -6px;
+  border-radius: 28px;
+  border: 1.5px dashed var(--brand-mid);
+  animation: spin 18s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-title {
+  font-size: 20px; font-weight: 600;
+  color: var(--text-primary); margin-bottom: 8px;
+  letter-spacing: -.02em;
+}
+.empty-desc {
+  font-size: 14px; color: var(--text-secondary);
+  max-width: 400px; line-height: 1.65;
+  margin-bottom: 28px;
+}
+.empty-pills {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.empty-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 99px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition),
+              color var(--transition), transform .15s ease;
+}
+.empty-pill:hover {
+  background: var(--brand-light);
+  border-color: var(--brand);
+  color: var(--brand-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px var(--brand-glow);
+}
+.empty-pill:active { transform: translateY(0); }
+.empty-pill svg { width: 14px; height: 14px; }
+.empty-hint { font-size: 12px; color: var(--text-muted); }
+.empty-hint span { color: var(--brand); }
+
+/* ═══════════════════════════════════════════════════
+   LOADING STATE
+═══════════════════════════════════════════════════ */
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 64px 24px 48px; text-align: center;
+}
+.loading-state.hidden { display: none; }
+.loading-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--brand-light);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin-fast .7s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin-fast { to { transform: rotate(360deg); } }
+.loading-msgs { font-size: 14px; color: var(--text-secondary); }
+.loading-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* ═══════════════════════════════════════════════════
+   ERROR STATE
+═══════════════════════════════════════════════════ */
+.error-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 24px; text-align: center;
+}
+.error-state.hidden { display: none; }
+.error-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #fee2e2;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+.error-icon svg { width: 24px; height: 24px; color: #dc2626; }
+.error-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.error-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; max-width: 340px; line-height: 1.6; }
+.btn-retry {
+  padding: 8px 20px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 500;
+  color: var(--text-primary);
+  transition: background var(--transition);
+}
+.btn-retry:hover { background: var(--bg-hover); }
+
+/* ═══════════════════════════════════════════════════
+   RESULTS TABLE
+═══════════════════════════════════════════════════ */
+.results-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  animation: slideDown .22s ease;
+}
+.results-card.hidden { display: none; }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.results-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.results-header-left { flex: 1; }
+.results-count {
+  font-size: 15px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+.results-count .source-badge {
+  font-size: 10px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 2px 8px; border-radius: 99px;
+  background: var(--brand-light); color: var(--brand-hover);
+}
+.results-count .source-badge.mock {
+  background: #fef9c3; color: #a16207;
+}
+.no-website-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+  border-radius: 99px;
+  padding: 3px 9px;
+  cursor: default;
+  transition: background var(--transition);
+}
+.no-website-badge:hover { background: #ffedd5; }
+.no-website-badge.hidden { display: none; }
+.no-website-badge svg { width: 11px; height: 11px; }
+
+/* ── Export no-website button ── */
+.btn-export-nowebsite {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+  color: #c2410c;
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), transform var(--transition);
+  white-space: nowrap;
+}
+.btn-export-nowebsite:hover { background: #ffedd5; transform: scale(1.02); }
+.btn-export-nowebsite:active { transform: scale(.98); }
+.btn-export-nowebsite.hidden { display: none; }
+.btn-export-nowebsite svg { width: 13px; height: 13px; }
+.btn-export-count {
+  background: #fed7aa; color: #c2410c;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 99px;
+  min-width: 18px; text-align: center;
+}
+.results-keyword {
+  font-size: 12px; color: var(--text-muted); margin-top: 1px;
+}
+.results-keyword strong { color: var(--text-secondary); }
+
+.btn-select-all {
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  background: none; border: 1px solid var(--border-strong);
+  padding: 5px 12px; border-radius: var(--radius-sm);
+  transition: background var(--transition), color var(--transition);
+}
+.btn-select-all:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* Table wrapper */
+.table-wrap { overflow-x: auto; }
+table.results-table {
+  width: 100%; min-width: 680px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.results-table thead tr {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.results-table th {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.results-table th:first-child { width: 42px; padding-left: 16px; }
+.results-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.results-table td:first-child { padding-left: 16px; }
+.results-table tbody tr { transition: background var(--transition); }
+.results-table tbody tr:hover { background: var(--bg-hover); }
+.results-table tbody tr.selected { background: var(--brand-dim); }
+.results-table tbody tr:last-child td { border-bottom: none; }
+
+/* Checkbox */
+.row-check {
+  width: 16px; height: 16px;
+  border-radius: 4px; border: 1.5px solid var(--border-strong);
+  cursor: pointer; accent-color: var(--brand);
+}
+
+/* Business cell */
+.biz-cell { display: flex; align-items: center; gap: 10px; }
+.biz-avatar {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--brand-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: var(--brand-hover);
+  flex-shrink: 0;
+  border: 1px solid var(--brand-mid);
+}
+.biz-name { font-weight: 500; color: var(--text-primary); line-height: 1.3; }
+.biz-industry { font-size: 11px; color: var(--text-muted); }
+
+/* Rating */
+.rating-cell { display: flex; align-items: center; gap: 4px; }
+.star-icon { color: #f59e0b; width: 12px; height: 12px; }
+.rating-val { font-weight: 500; color: var(--text-primary); }
+.rating-count { font-size: 11px; color: var(--text-muted); }
+
+/* Website badge */
+.website-yes {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500;
+  color: var(--brand-hover);
+  background: var(--brand-light);
+  border: 1px solid var(--brand-mid);
+  padding: 2px 8px; border-radius: 99px;
+}
+.website-yes svg { width: 10px; height: 10px; }
+.website-no {
+  font-size: 11px; color: var(--text-muted);
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  padding: 2px 8px; border-radius: 99px;
+}
+
+/* Action buttons */
+.row-actions { display: flex; align-items: center; gap: 6px; }
+.btn-import-row {
+  font-size: 12px; font-weight: 500; color: var(--brand-hover);
+  background: var(--brand-light);
+  border: 1px solid var(--brand-mid);
+  padding: 4px 12px; border-radius: var(--radius-sm);
+  transition: background var(--transition), transform var(--transition);
+  white-space: nowrap;
+}
+.btn-import-row:hover { background: var(--brand-mid); transform: scale(1.02); }
+.btn-import-row:disabled {
+  color: var(--text-muted); background: var(--bg-hover);
+  border-color: var(--border); pointer-events: none;
+}
+.btn-import-row.done {
+  color: var(--text-muted); background: var(--bg-hover);
+  border-color: var(--border); pointer-events: none;
+}
+
+/* Table footer */
+.table-footer {
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 12px; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* ═══════════════════════════════════════════════════
+   HOW IT WORKS  (steps — shown in empty state)
+═══════════════════════════════════════════════════ */
+.how-steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+.step-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  text-align: left;
+}
+.step-num {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--brand-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; color: var(--brand);
+  margin-bottom: 10px;
+}
+.step-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.step-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.55; }
+
+/* ═══════════════════════════════════════════════════
+   FLOATING IMPORT BAR
+═══════════════════════════════════════════════════ */
+.import-bar {
+  position: fixed;
+  bottom: 24px;
+  left: calc(var(--sidebar-w) + 28px);
+  right: 28px;
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 40;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s ease;
+  pointer-events: none;
+}
+.import-bar.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+.import-bar-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(255,255,255,.12);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.import-bar-icon svg { width: 18px; height: 18px; }
+.import-bar-text { flex: 1; }
+.import-bar-count {
+  font-size: 15px; font-weight: 600; line-height: 1.2;
+}
+.import-bar-sub { font-size: 12px; color: rgba(255,255,255,.55); margin-top: 1px; }
+.import-bar-actions { display: flex; align-items: center; gap: 8px; }
+.btn-import-cancel {
+  font-size: 13px; color: rgba(255,255,255,.55);
+  background: none; border: none; padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+}
+.btn-import-cancel:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.07); }
+.btn-import-main {
+  font-size: 14px; font-weight: 500;
+  background: var(--brand);
+  color: #fff; border: none;
+  padding: 9px 22px; border-radius: var(--radius);
+  display: flex; align-items: center; gap: 7px;
+  transition: background var(--transition), transform var(--transition);
+  box-shadow: 0 2px 8px rgba(22,163,74,.4);
+}
+.btn-import-main:hover { background: var(--brand-hover); transform: scale(1.02); }
+.btn-import-main:active { transform: scale(.98); }
+.btn-import-main svg { width: 15px; height: 15px; }
+.btn-import-main.loading { pointer-events: none; opacity: .8; }
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed; top: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 999; pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  font-size: 13px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  min-width: 280px;
+  pointer-events: all;
+  animation: toastIn .25s cubic-bezier(.34,1.56,.64,1);
+  border-left: 3px solid var(--brand);
+}
+.toast.exiting { animation: toastOut .2s ease forwards; }
+@keyframes toastIn  { from { opacity:0; transform:translateX(16px); } }
+@keyframes toastOut { to   { opacity:0; transform:translateX(16px); } }
+.toast svg { width:16px; height:16px; color:var(--brand); flex-shrink:0; }
+.toast-msg { flex: 1; }
+.toast-action {
+  font-size: 12px; color: var(--brand);
+  background: none; border: none;
+  font-weight: 600; cursor: pointer; white-space: nowrap;
+  padding: 0; transition: opacity var(--transition);
+}
+.toast-action:hover { opacity: .8; }
+.toast-close {
+  background: none; border: none; color: rgba(255,255,255,.4);
+  cursor: pointer; padding: 0; display: flex;
+  transition: color var(--transition);
+}
+.toast-close:hover { color: rgba(255,255,255,.7); }
+
+/* ═══════════════════════════════════════════════════
+   MOBILE
+═══════════════════════════════════════════════════ */
+.mobile-menu-btn {
+  display: none;
+  position: fixed; top: 12px; left: 12px; z-index: 50;
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--bg-sidebar);
+  border: 1px solid rgba(255,255,255,.1);
+  align-items: center; justify-content: center;
+  color: rgba(255,255,255,.7);
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 29;
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; left: 0; top: 0;
+    transform: translateX(-100%);
+    transition: transform .22s cubic-bezier(.4,0,.2,1);
+    z-index: 30;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.open { display: block; }
+  .mobile-menu-btn { display: flex; }
+  .main { margin-left: 0; }
+  .topbar { padding: 0 16px 0 58px; }
+  .content { padding: 20px 16px 120px; }
+  .search-inputs { grid-template-columns: 1fr 1fr; }
+  .search-btn-wrap { grid-column: 1 / -1; }
+  .search-btn-wrap { width: 100%; }
+  .btn-search { width: 100%; justify-content: center; }
+  .how-steps { grid-template-columns: 1fr; }
+  .import-bar { left: 16px; right: 16px; bottom: 16px; }
+  .results-table th:nth-child(4),
+  .results-table td:nth-child(4) { display: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Mobile menu button -->
+<button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ═══════ SIDEBAR ═══════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar" aria-label="Main navigation">
+  <div class="sidebar-logo">
+    <div class="logo-flame">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 3C12 3 7 8 7 12.5C7 15.5 9.2 18 12 18C14.8 18 17 15.5 17 12.5C17 8 12 3 12 3Z" fill="white" opacity=".9"/>
+        <path d="M9.5 14C9.5 12.5 10.7 11 12 9.5C13.3 11 14.5 12.5 14.5 14C14.5 15.4 13.38 16.5 12 16.5C10.62 16.5 9.5 15.4 9.5 14Z" fill="rgba(255,255,255,.45)"/>
+      </svg>
+    </div>
+    <div class="logo-wordmark">
+      <div class="logo-name">LeadFlow</div>
+      <div class="logo-plan">AI · Pro</div>
+    </div>
+  </div>
+
+  <div class="sidebar-scroll">
+    <div class="nav-group-label">Pipeline</div>
+    <a class="nav-item" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Leads
+      <span class="nav-badge" id="sidebarLeadCount">—</span>
+    </a>
+    <a class="nav-item" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="4" height="18" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="5" width="4" height="16" rx="1"/></svg>
+      Pipeline
+    </a>
+    <a class="nav-item" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Campaigns
+    </a>
+
+    <div class="nav-divider"></div>
+    <div class="nav-group-label">AI Tools</div>
+    <a class="nav-item" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg>
+      AI Scoring
+    </a>
+    <a class="nav-item" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Email Gen
+    </a>
+    <a class="nav-item" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Generator
+    </a>
+    <a class="nav-item active" href="./discovery.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Discovery
+      <span class="nav-chip">New</span>
+    </a>
+
+    <div class="nav-divider"></div>
+    <div class="nav-group-label">Insights</div>
+    <a class="nav-item" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </a>
+
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-row">
+      <div class="user-avatar">AP</div>
+      <div class="user-info">
+        <div class="user-name">Ana Petrović</div>
+        <div class="user-plan">Pro plan</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════ MAIN ════════════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">Lead Discovery</div>
+      <div class="topbar-sub">Find and import local businesses</div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <span class="status-dot" id="statusDot">Live</span>
+    <a class="topbar-back" href="./dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Dashboard
+    </a>
+  </header>
+
+  <!-- Scrollable content -->
+  <div class="content">
+
+    <!-- ── Search panel ── -->
+    <div class="search-panel">
+      <div class="search-panel-header">
+        <div class="search-panel-title">Find your next clients</div>
+        <div class="search-panel-sub">Search Google Maps data by business type and city — then import directly to your pipeline</div>
+      </div>
+
+      <div class="search-inputs">
+        <div class="input-group">
+          <label class="input-label" for="industryInput">Business type</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <input class="search-input" id="industryInput" type="text" placeholder="e.g. roofing, dental, HVAC…" autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="locationInput">City / Location</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input class="search-input" id="locationInput" type="text" placeholder="e.g. Austin TX, Miami FL…" autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="resultLimit">Results</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <select class="search-input search-input-select" id="resultLimit" style="padding-left:34px;cursor:pointer;appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center;padding-right:30px">
+              <option value="10">10 results</option>
+              <option value="25">25 results</option>
+              <option value="50" selected>50 results</option>
+            </select>
+          </div>
+        </div>
+        <div class="search-btn-wrap">
+          <button class="btn-search" id="searchBtn" onclick="handleSearch()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick-start pills -->
+      <div class="quickstart-row">
+        <span class="qs-label">Try:</span>
+        <button class="qs-pill" onclick="quickSearch('Roofing','Austin TX')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Roofing · Austin TX
+        </button>
+        <button class="qs-pill" onclick="quickSearch('Dental','Miami FL')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C9 2 7 4 7 7c0 2.5 1 4.5 1 7 0 2 1 4 4 4s4-2 4-4c0-2.5 1-4.5 1-7 0-3-2-5-5-5z"/></svg>
+          Dental · Miami FL
+        </button>
+        <button class="qs-pill" onclick="quickSearch('HVAC','Phoenix AZ')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          HVAC · Phoenix AZ
+        </button>
+        <button class="qs-pill" onclick="quickSearch('Plumbing','Chicago IL')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Plumbing · Chicago IL
+        </button>
+        <button class="qs-pill" onclick="quickSearch('Law Firm','Dallas TX')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+          Law Firm · Dallas TX
+        </button>
+        <button class="qs-pill" onclick="quickSearch('Gym','New York NY')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+          Gym · New York NY
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Filters bar (hidden until results) ── -->
+    <div class="filters-bar hidden" id="filtersBar">
+      <span class="filter-label">Filter:</span>
+
+      <select class="filter-select" id="filterRating" onchange="applyFilters()">
+        <option value="">Any rating</option>
+        <option value="3.0">3.0+ stars</option>
+        <option value="3.5">3.5+ stars</option>
+        <option value="4.0">4.0+ stars</option>
+        <option value="4.5">4.5+ stars</option>
+      </select>
+
+      <select class="filter-select" id="filterWebsite" onchange="applyFilters()">
+        <option value="">Any website</option>
+        <option value="yes">Has website</option>
+        <option value="no">No website</option>
+      </select>
+
+      <div class="filter-reviews">
+        <span class="filter-label">Min reviews:</span>
+        <input type="range" min="0" max="500" value="0" step="10" id="filterReviews" oninput="updateReviewsLabel();applyFilters()" />
+        <span class="filter-reviews-val" id="reviewsLabel">Any</span>
+      </div>
+
+      <div class="filter-spacer"></div>
+      <span class="results-meta" id="resultsMeta"></span>
+      <button class="btn-clear-filters" onclick="clearFilters()">Clear filters</button>
+    </div>
+
+    <!-- ── Empty state ── -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-illustration">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <h2 class="empty-title">Find your next 10 clients in 30 seconds</h2>
+      <p class="empty-desc">Enter any business type and city above. We search Google Maps data, score results by opportunity, and let you import directly into your pipeline.</p>
+
+      <div class="empty-pills">
+        <button class="empty-pill" onclick="quickSearch('Roofing','Austin TX')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Roofing in Austin TX
+        </button>
+        <button class="empty-pill" onclick="quickSearch('Dental','Miami FL')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+          Dental in Miami FL
+        </button>
+        <button class="empty-pill" onclick="quickSearch('HVAC','Phoenix AZ')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83"/></svg>
+          HVAC in Phoenix AZ
+        </button>
+        <button class="empty-pill" onclick="quickSearch('Plumbing','Chicago IL')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>
+          Plumbing in Chicago IL
+        </button>
+        <button class="empty-pill" onclick="quickSearch('Gym','New York NY')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3"/></svg>
+          Gym in New York NY
+        </button>
+        <button class="empty-pill" onclick="quickSearch('Law Firm','Dallas TX')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Law Firm in Dallas TX
+        </button>
+      </div>
+
+      <p class="empty-hint">Results come from <span>Google Maps (SerpAPI)</span> or realistic mock data</p>
+
+      <!-- How it works -->
+      <div class="how-steps">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-title">Search</div>
+          <div class="step-desc">Enter a business type and city. We query Google Maps data for real local businesses in that area.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-title">Filter</div>
+          <div class="step-desc">Narrow results by minimum rating, website presence, and review count. Focus on quality prospects only.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-title">Import</div>
+          <div class="step-desc">Select businesses and click Import. They land in your pipeline ready for AI scoring and outreach.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Loading state ── -->
+    <div class="loading-state hidden" id="loadingState">
+      <div class="loading-spinner"></div>
+      <div class="loading-msgs" id="loadingMsg">Searching Google Maps…</div>
+      <div class="loading-sub">This usually takes 2–4 seconds</div>
+    </div>
+
+    <!-- ── Error state ── -->
+    <div class="error-state hidden" id="errorState">
+      <div class="error-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="error-title">Search failed</div>
+      <div class="error-desc" id="errorDesc">Could not fetch results. Check your connection and try again, or the SerpAPI key may need updating.</div>
+      <button class="btn-retry" onclick="handleSearch()">Try again</button>
+    </div>
+
+    <!-- ── Results card ── -->
+    <div class="results-card hidden" id="resultsCard">
+      <div class="results-header">
+        <div class="results-header-left">
+          <div class="results-count">
+            <span id="resultsCountLabel">0 businesses found</span>
+            <span class="source-badge" id="sourceBadge">Google Maps</span>
+            <span class="no-website-badge hidden" id="noWebsiteBadge" title="These leads have no website — prime outreach targets">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+              <span id="noWebsiteCount">0</span> without website
+            </span>
+          </div>
+          <div class="results-keyword" id="resultsKeyword"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn-export-nowebsite hidden" id="exportNoWebsiteBtn" onclick="exportNoWebsite()" title="Download CSV of all leads without a website">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export without website
+            <span class="btn-export-count" id="exportNoWebsiteCount">0</span>
+          </button>
+          <button class="btn-select-all" id="selectAllBtn" onclick="toggleSelectAll()">Select all</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="results-table" aria-label="Discovery results">
+          <thead>
+            <tr>
+              <th><input type="checkbox" class="row-check" id="masterCheck" onchange="masterCheckChange()" /></th>
+              <th>Business</th>
+              <th>Location</th>
+              <th>Rating</th>
+              <th>Website</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span id="tableFooterLeft">Select rows then click Import — duplicates are skipped automatically</span>
+        <span id="tableFooterRight"></span>
+      </div>
+    </div>
+
+  </div><!-- .content -->
+</div><!-- .main -->
+
+<!-- ═══════ FLOATING IMPORT BAR ══════════════════════════════════ -->
+<div class="import-bar" id="importBar" role="status" aria-live="polite">
+  <div class="import-bar-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+  </div>
+  <div class="import-bar-text">
+    <div class="import-bar-count" id="importBarCount">0 leads selected</div>
+    <div class="import-bar-sub">Ready to import into your pipeline</div>
+  </div>
+  <div class="import-bar-actions">
+    <button class="btn-import-cancel" onclick="clearSelection()">Clear selection</button>
+    <button class="btn-import-main" id="importMainBtn" onclick="handleImport()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+      Import to pipeline
+    </button>
+  </div>
+</div>
+
+<!-- ═══════ TOAST CONTAINER ══════════════════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════ -->
+<script>
+/* ─── State ──────────────────────────────────────────────────── */
+let allResults   = [];   // raw results from API/mock
+let filtered     = [];   // after filters
+let importedIds  = new Set(); // already imported
+let lastKeyword  = '';
+let lastLocation = '';
+let isAllSelected = false;
+
+const LOADING_MSGS = [
+  'Searching Google Maps…',
+  'Fetching business data…',
+  'Analyzing results…',
+  'Almost ready…',
+];
+
+/* ─── Utility: lead count from localStorage ─────────────────── */
+function getLeadCount() {
+  try {
+    const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+    return leads.length;
+  } catch { return 0; }
+}
+function updateSidebarLeadCount() {
+  const el = document.getElementById('sidebarLeadCount');
+  const n  = getLeadCount();
+  if (el) el.textContent = n > 0 ? n : '—';
+}
+
+/* ─── UI state helpers ──────────────────────────────────────── */
+function showState(state) {
+  ['emptyState','loadingState','errorState','resultsCard','filtersBar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (id === 'filtersBar') {
+      el.classList.toggle('hidden', state !== 'results');
+    } else {
+      el.classList.toggle('hidden', id !== state + 'State' && id !== state + 'Card');
+    }
+  });
+
+  // special aliases
+  if (state === 'empty') {
+    document.getElementById('emptyState').classList.remove('hidden');
+    document.getElementById('filtersBar').classList.add('hidden');
+  }
+  if (state === 'results') {
+    document.getElementById('resultsCard').classList.remove('hidden');
+    document.getElementById('filtersBar').classList.remove('hidden');
+  }
+  if (state === 'loading') {
+    document.getElementById('loadingState').classList.remove('hidden');
+  }
+  if (state === 'error') {
+    document.getElementById('errorState').classList.remove('hidden');
+  }
+}
+
+/* ─── Search ─────────────────────────────────────────────────── */
+function quickSearch(industry, location) {
+  document.getElementById('industryInput').value = industry;
+  document.getElementById('locationInput').value = location;
+  handleSearch();
+}
+
+function handleSearch() {
+  const industry = document.getElementById('industryInput').value.trim();
+  const location = document.getElementById('locationInput').value.trim();
+
+  if (!industry && !location) {
+    document.getElementById('industryInput').focus();
+    shakeInput('industryInput');
+    return;
+  }
+
+  lastKeyword  = industry || 'Business';
+  lastLocation = location || 'Nearby';
+  const keyword = [industry, location].filter(Boolean).join(' ');
+
+  setSearchLoading(true);
+  showState('loading');
+  clearSelection();
+  startLoadingMessages();
+
+  fetchResults(keyword)
+    .then(data => {
+      allResults = data.results || [];
+      renderResults(data.source);
+    })
+    .catch(err => {
+      console.warn('[LeadFlow Discovery] API unavailable, using mock data.', err.message);
+      allResults = generateMock(keyword, lastKeyword, lastLocation);
+      renderResults('mock');
+      // Show a subtle notice so the developer knows why
+      showApiNotice(err.message);
+    })
+    .finally(() => setSearchLoading(false));
+}
+
+/* ─── Real API call ──────────────────────────────────────────────
+   Auto-detects the correct backend route on first search, then
+   caches it in sessionStorage for instant subsequent calls.
+   SerpAPI google_maps fields: title, address, rating, reviews,
+   website, phone, place_id, type → normalised below.
+──────────────────────────────────────────────────────────────── */
+async function fetchResults(keyword) {
+  const limit     = parseInt(document.getElementById('resultLimit')?.value || '50');
+  const q         = encodeURIComponent(keyword);
+  const CACHE_KEY = 'lf_working_route';
+
+  const routes = [
+    '/api/discover',
+    '/api/search',
+    '/api/leads/discover',
+    '/api/discovery',
+    '/api/places',
+  ];
+
+  // If we already found a working route this session, try it first
+  const cached = sessionStorage.getItem(CACHE_KEY);
+  if (cached && !routes.includes(cached)) routes.unshift(cached);
+  else if (cached) routes.splice(routes.indexOf(cached), 1), routes.unshift(cached);
+
+  const errors = [];
+  for (const route of routes) {
+    const paramKey = route.includes('places') ? 'keyword' : 'q';
+    const url = `${route}?${paramKey}=${q}&limit=${limit}`;
+    try {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(12000),
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!res.ok) { errors.push(`${url} → HTTP ${res.status}`); continue; }
+
+      const data = await res.json();
+      const raw  =
+        data.local_results ?? // SerpAPI direct passthrough
+        data.results       ?? // wrapped { results: [] }
+        data.businesses    ??
+        data.places        ??
+        data.data          ??
+        null;
+
+      if (Array.isArray(raw) && raw.length > 0) {
+        sessionStorage.setItem(CACHE_KEY, route);
+        console.info(`[LeadFlow Discovery] Live via ${route} — ${raw.length} results`);
+        return { results: normalizeResults(raw), source: data.source ?? 'google' };
+      }
+      errors.push(`${url} → empty/unrecognised shape`);
+    } catch (e) {
+      errors.push(`${url} → ${e.message}`);
+    }
+  }
+
+  console.warn('[LeadFlow Discovery] All routes failed — mock fallback.\n' + errors.join('\n'));
+  throw new Error(errors.join('\n'));
+}
+
+/* ─── Normalise — SerpAPI google_maps + backend wrapper shapes ── */
+function normalizeResults(raw) {
+  return (Array.isArray(raw) ? raw : []).map((r, i) => ({
+    id:       r.place_id || r.id       || `r-${i}-${Date.now()}`,
+    name:     r.title    || r.name     || 'Unknown Business',
+    location: r.address  || r.location || r.formatted_address || '—',
+    rating:   parseFloat(r.rating)     || 0,
+    reviews:  parseInt(r.reviews ?? r.user_ratings_total ?? r.review_count ?? 0) || 0,
+    website:  r.website  || r.url      || null,
+    industry: r.type     || r.industry || r.category || lastKeyword,
+    phone:    r.phone    || r.formatted_phone_number  || null,
+  }));
+}
+
+/* ─── Mock data generator ────────────────────────────────────── */
+function generateMock(keyword, industry, location) {
+  const adj   = ['Pro','Premier','Elite','Metro','City','First','Best','Top','Eagle','Summit',
+                 'Apex','Coast','Crown','Delta','Frost','Gold','Harbor','Iron','Jade','Lake'];
+  const suf   = ['Services','Solutions','Group','Co.','Inc.','LLC','Pros','Experts','Team','Partners'];
+  const locs  = ['123 Main St','456 Oak Ave','789 Elm Blvd','321 Pine Rd','654 Cedar Ln',
+                 '11 Commerce Dr','88 River Rd','200 Park Blvd','500 Industrial Way','77 Central Ave'];
+  const limit = parseInt(document.getElementById('resultLimit')?.value || '10');
+  const count = Math.min(limit, limit === 10 ? 8 + Math.floor(Math.random() * 3) : limit);
+
+  return Array.from({ length: count }, (_, i) => ({
+    id:       `mock-${i}-${Date.now()}`,
+    name:     `${adj[i % adj.length]} ${industry || 'Business'} ${suf[i % suf.length]}`,
+    location: `${locs[i % locs.length]}, ${location || 'USA'}`,
+    rating:   +(2.8 + Math.random() * 2.2).toFixed(1),
+    reviews:  Math.floor(5 + Math.random() * 295),
+    website:  Math.random() > .38 ? `https://example-${i}.com` : null,
+    industry: industry || keyword,
+    phone:    `(${Math.floor(200+Math.random()*600)}) ${Math.floor(200+Math.random()*700)}-${Math.floor(1000+Math.random()*8999)}`,
+  }));
+}
+
+/* ─── Render results ─────────────────────────────────────────── */
+function renderResults(source) {
+  stopLoadingMessages();
+  clearFilters(false);
+  applyFilters(source);
+}
+
+function applyFilters(sourceOverride) {
+  const minRating  = parseFloat(document.getElementById('filterRating').value) || 0;
+  const websiteVal = document.getElementById('filterWebsite').value;
+  const minReviews = parseInt(document.getElementById('filterReviews').value) || 0;
+
+  filtered = allResults.filter(r => {
+    if (minRating  && r.rating  < minRating)  return false;
+    if (websiteVal === 'yes' && !r.website)   return false;
+    if (websiteVal === 'no'  && r.website)    return false;
+    if (minReviews && r.reviews < minReviews) return false;
+    return true;
+  });
+
+  renderTable(typeof sourceOverride === 'string' ? sourceOverride : null);
+
+  const meta = document.getElementById('resultsMeta');
+  if (meta) {
+    const noWeb    = filtered.filter(r => !r.website).length;
+    const hasWeb   = filtered.length - noWeb;
+    const countStr = filtered.length === allResults.length
+      ? `${allResults.length} results`
+      : `${filtered.length} of ${allResults.length} shown`;
+    const webStr   = filtered.length > 0
+      ? ` · <span style="color:var(--brand-hover);font-weight:600">${noWeb} no website</span> · ${hasWeb} with website`
+      : '';
+    meta.innerHTML = `<strong>${countStr.split(' ')[0]}</strong>${countStr.slice(countStr.indexOf(' '))}${webStr}`;
+  }
+}
+
+function renderTable(source) {
+  const tbody = document.getElementById('resultsBody');
+  const card  = document.getElementById('resultsCard');
+  const sourceBadge = document.getElementById('sourceBadge');
+
+  if (filtered.length === 0 && allResults.length === 0) {
+    showState('empty'); return;
+  }
+
+  showState('results');
+
+  // Source badge
+  if (source) {
+    if (source === 'mock') {
+      sourceBadge.textContent = 'Mock data';
+      sourceBadge.classList.add('mock');
+    } else {
+      sourceBadge.textContent = 'Google Maps';
+      sourceBadge.classList.remove('mock');
+    }
+  }
+
+  document.getElementById('resultsCountLabel').textContent =
+    `${filtered.length} business${filtered.length !== 1 ? 'es' : ''} found`;
+  document.getElementById('resultsKeyword').innerHTML =
+    `Showing <strong>${lastKeyword}</strong> near <strong>${lastLocation}</strong>`;
+
+  // No-website badge + Export button
+  const noWebCount = filtered.filter(b => !b.website).length;
+  const nwBadge    = document.getElementById('noWebsiteBadge');
+  const nwCount    = document.getElementById('noWebsiteCount');
+  const exportBtn  = document.getElementById('exportNoWebsiteBtn');
+  const exportCnt  = document.getElementById('exportNoWebsiteCount');
+
+  if (nwBadge && nwCount) {
+    if (noWebCount > 0) {
+      nwCount.textContent = noWebCount;
+      nwBadge.classList.remove('hidden');
+      nwBadge.title = `${noWebCount} business${noWebCount !== 1 ? 'es' : ''} without a website — prime cold outreach targets`;
+    } else {
+      nwBadge.classList.add('hidden');
+    }
+  }
+  if (exportBtn && exportCnt) {
+    if (noWebCount > 0) {
+      exportCnt.textContent = noWebCount;
+      exportBtn.classList.remove('hidden');
+    } else {
+      exportBtn.classList.add('hidden');
+    }
+  }
+
+  tbody.innerHTML = filtered.map(biz => {
+    const initials = biz.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    const imported = importedIds.has(biz.id);
+    const ratingStars = biz.rating > 0
+      ? `<div class="rating-cell">
+           <svg class="star-icon" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+           <span class="rating-val">${biz.rating.toFixed(1)}</span>
+           <span class="rating-count">(${biz.reviews.toLocaleString()})</span>
+         </div>`
+      : '<span style="color:var(--text-muted);font-size:12px">—</span>';
+
+    const websiteBadge = biz.website
+      ? `<span class="website-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Has website</span>`
+      : `<span class="website-no">No website</span>`;
+
+    const importBtn = imported
+      ? `<button class="btn-import-row done" disabled>✓ Imported</button>`
+      : `<button class="btn-import-row" onclick="importSingle('${biz.id}')">Import →</button>`;
+
+    return `<tr id="row-${biz.id}" data-id="${biz.id}" class="${imported?'selected':''}">
+      <td><input type="checkbox" class="row-check result-check" data-id="${biz.id}"
+          onchange="rowCheckChange(this)" ${imported?'checked disabled':''} /></td>
+      <td>
+        <div class="biz-cell">
+          <div class="biz-avatar">${initials}</div>
+          <div>
+            <div class="biz-name">${escHtml(biz.name)}</div>
+            <div class="biz-industry">${escHtml(biz.industry)}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:12px;color:var(--text-secondary)">${escHtml(biz.location)}</td>
+      <td>${ratingStars}</td>
+      <td>${websiteBadge}</td>
+      <td><div class="row-actions">${importBtn}</div></td>
+    </tr>`;
+  }).join('');
+
+  updateFooter();
+}
+
+/* ─── Selection ──────────────────────────────────────────────── */
+function rowCheckChange(cb) {
+  const id  = cb.dataset.id;
+  const row = document.getElementById(`row-${id}`);
+  if (cb.checked) row.classList.add('selected');
+  else            row.classList.remove('selected');
+  updateImportBar();
+  syncMasterCheck();
+}
+
+function masterCheckChange() {
+  const master = document.getElementById('masterCheck');
+  document.querySelectorAll('.result-check:not([disabled])').forEach(cb => {
+    cb.checked = master.checked;
+    const row  = document.getElementById(`row-${cb.dataset.id}`);
+    if (row) row.classList.toggle('selected', master.checked);
+  });
+  updateImportBar();
+}
+
+function toggleSelectAll() {
+  const checks = document.querySelectorAll('.result-check:not([disabled])');
+  const anyUnchecked = [...checks].some(c => !c.checked);
+  checks.forEach(cb => {
+    cb.checked = anyUnchecked;
+    const row  = document.getElementById(`row-${cb.dataset.id}`);
+    if (row) row.classList.toggle('selected', anyUnchecked);
+  });
+  document.getElementById('masterCheck').checked = anyUnchecked;
+  updateImportBar();
+  document.getElementById('selectAllBtn').textContent = anyUnchecked ? 'Deselect all' : 'Select all';
+}
+
+function syncMasterCheck() {
+  const all    = document.querySelectorAll('.result-check:not([disabled])');
+  const checked = document.querySelectorAll('.result-check:not([disabled]):checked');
+  document.getElementById('masterCheck').checked = all.length > 0 && all.length === checked.length;
+  document.getElementById('selectAllBtn').textContent =
+    checked.length > 0 && checked.length === all.length ? 'Deselect all' : 'Select all';
+}
+
+function getSelectedIds() {
+  return [...document.querySelectorAll('.result-check:not([disabled]):checked')].map(c => c.dataset.id);
+}
+
+function clearSelection() {
+  document.querySelectorAll('.result-check').forEach(cb => {
+    if (!importedIds.has(cb.dataset.id)) {
+      cb.checked = false;
+      const row = document.getElementById(`row-${cb.dataset.id}`);
+      if (row) row.classList.remove('selected');
+    }
+  });
+  const mc = document.getElementById('masterCheck');
+  if (mc) mc.checked = false;
+  updateImportBar();
+}
+
+/* ─── Import bar ─────────────────────────────────────────────── */
+function updateImportBar() {
+  const count = getSelectedIds().length;
+  const bar   = document.getElementById('importBar');
+  const label = document.getElementById('importBarCount');
+  if (count > 0) {
+    bar.classList.add('visible');
+    label.textContent = `${count} lead${count !== 1 ? 's' : ''} selected`;
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+/* ─── Import logic ──────────────────────────────────────────── */
+function handleImport() {
+  const ids   = getSelectedIds();
+  if (ids.length === 0) return;
+  const leads = ids.map(id => filtered.find(r => r.id === id)).filter(Boolean);
+  performImport(leads);
+}
+
+function importSingle(id) {
+  const biz = allResults.find(r => r.id === id);
+  if (!biz) return;
+  performImport([biz]);
+}
+
+function performImport(leads) {
+  if (leads.length === 0) return;
+
+  const btn = document.getElementById('importMainBtn');
+  if (btn) { btn.classList.add('loading'); btn.textContent = 'Importing…'; }
+
+  // Save to localStorage (mirrors existing app data model)
+  try {
+    const existing = JSON.parse(localStorage.getItem('leads') || '[]');
+    const existingNames = new Set(existing.map(l => (l.name||l.business_name||'').toLowerCase()));
+    let added = 0;
+    let skipped = 0;
+
+    leads.forEach(biz => {
+      if (existingNames.has(biz.name.toLowerCase())) { skipped++; return; }
+      existing.push({
+        id:            `lead-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+        business_name: biz.name,
+        name:          biz.name,
+        industry:      biz.industry,
+        location:      biz.location,
+        website:       biz.website || '',
+        phone:         biz.phone   || '',
+        rating:        biz.rating,
+        review_count:  biz.reviews,
+        status:        'new',
+        source:        'discovery',
+        created_at:    new Date().toISOString(),
+        notes:         `Discovered via LeadFlow Discovery · ${biz.reviews} reviews · ${biz.rating}★`,
+      });
+      importedIds.add(biz.id);
+      existingNames.add(biz.name.toLowerCase());
+      added++;
+    });
+
+    localStorage.setItem('leads', JSON.stringify(existing));
+    updateSidebarLeadCount();
+
+    // Also try the existing API endpoint
+    leads.forEach(biz => {
+      fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          business_name: biz.name,
+          industry: biz.industry,
+          location: biz.location,
+          website:  biz.website || '',
+          notes:    `Imported from Discovery. Rating: ${biz.rating}, Reviews: ${biz.reviews}`,
+        }),
+      }).catch(() => { /* silent fallback — localStorage already saved */ });
+    });
+
+    // Update UI
+    markImportedRows();
+    clearSelection();
+
+    // Toast
+    const msg = skipped > 0
+      ? `${added} lead${added!==1?'s':''} imported · ${skipped} duplicate${skipped!==1?'s':''} skipped`
+      : `${added} lead${added!==1?'s':''} added to your pipeline`;
+
+    showToast(msg, added > 0 ? {
+      label: 'View Pipeline →',
+      action: () => { window.location.href = './dashboard.html'; }
+    } : null);
+
+  } catch (err) {
+    showToast('Import failed — please try again', null, 'error');
+    console.error(err);
+  } finally {
+    if (btn) { btn.classList.remove('loading'); btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>Import to pipeline`; }
+  }
+}
+
+function markImportedRows() {
+  importedIds.forEach(id => {
+    const row = document.getElementById(`row-${id}`);
+    if (!row) return;
+    const cb  = row.querySelector('.result-check');
+    if (cb)  { cb.checked = true; cb.disabled = true; }
+    const btn = row.querySelector('.btn-import-row');
+    if (btn) { btn.textContent = '✓ Imported'; btn.classList.add('done'); btn.disabled = true; }
+  });
+}
+
+function updateFooter() {
+  const right = document.getElementById('tableFooterRight');
+  if (right) {
+    const imported = importedIds.size;
+    right.textContent = imported > 0 ? `${imported} already imported` : '';
+  }
+}
+
+/* ─── Export without website ─────────────────────────────────── */
+function exportNoWebsite() {
+  const noWebLeads = filtered.filter(b => !b.website);
+  if (noWebLeads.length === 0) return;
+
+  const headers = ['Business Name', 'Industry', 'Location', 'Rating', 'Reviews', 'Phone', 'Website'];
+  const rows = noWebLeads.map(b => [
+    csvEscape(b.name),
+    csvEscape(b.industry),
+    csvEscape(b.location),
+    b.rating > 0 ? b.rating.toFixed(1) : '',
+    b.reviews || '',
+    csvEscape(b.phone || ''),
+    '',   // website is intentionally blank — that's the point
+  ]);
+
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  a.href     = url;
+  a.download = `leadflow-no-website-${lastKeyword.toLowerCase().replace(/\s+/g,'-')}-${date}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast(
+    `${noWebLeads.length} leads exported to CSV`,
+    { label: 'Import all to pipeline →', action: () => importNoWebsite() }
+  );
+}
+
+function csvEscape(val) {
+  const s = String(val || '').replace(/"/g, '""');
+  return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+}
+
+/* ─── Import all without website directly to pipeline ───────── */
+function importNoWebsite() {
+  const noWebLeads = filtered.filter(b => !b.website && !importedIds.has(b.id));
+  if (noWebLeads.length === 0) {
+    showToast('All no-website leads already imported');
+    return;
+  }
+  performImport(noWebLeads);
+}
+
+
+/* ─── Filters ────────────────────────────────────────────────── */
+function updateReviewsLabel() {
+  const val = document.getElementById('filterReviews').value;
+  document.getElementById('reviewsLabel').textContent = val > 0 ? val + '+' : 'Any';
+}
+
+function clearFilters(reRender = true) {
+  document.getElementById('filterRating').value  = '';
+  document.getElementById('filterWebsite').value = '';
+  document.getElementById('filterReviews').value = 0;
+  updateReviewsLabel();
+  if (reRender && allResults.length > 0) applyFilters();
+}
+
+/* ─── Loading animation ──────────────────────────────────────── */
+let loadingInterval = null;
+let loadingMsgIdx   = 0;
+function startLoadingMessages() {
+  loadingMsgIdx = 0;
+  const el = document.getElementById('loadingMsg');
+  if (el) el.textContent = LOADING_MSGS[0];
+  loadingInterval = setInterval(() => {
+    loadingMsgIdx = (loadingMsgIdx + 1) % LOADING_MSGS.length;
+    if (el) el.textContent = LOADING_MSGS[loadingMsgIdx];
+  }, 900);
+}
+function stopLoadingMessages() {
+  clearInterval(loadingInterval);
+}
+
+/* ─── Search button loading state ───────────────────────────── */
+function setSearchLoading(on) {
+  const btn = document.getElementById('searchBtn');
+  if (!btn) return;
+  if (on) {
+    btn.classList.add('loading');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin-fast .7s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Searching…`;
+  } else {
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
+  }
+}
+
+/* ─── Toast ─────────────────────────────────────────────────── */
+function showToast(msg, action, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const id   = `toast-${Date.now()}`;
+  const icon = type === 'error'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  const actionHtml = action
+    ? `<button class="toast-action" onclick="(${action.action})()">${action.label}</button>`
+    : '';
+
+  const el = document.createElement('div');
+  el.id        = id;
+  el.className = 'toast';
+  el.innerHTML = `${icon}<span class="toast-msg">${escHtml(msg)}</span>${actionHtml}<button class="toast-close" onclick="dismissToast('${id}')" aria-label="Dismiss"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+
+  container.appendChild(el);
+  setTimeout(() => dismissToast(id), 5500);
+}
+
+function dismissToast(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('exiting');
+  setTimeout(() => el.remove(), 220);
+}
+
+/* ─── Input shake animation ─────────────────────────────────── */
+function shakeInput(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.transition = 'border-color .15s ease';
+  el.style.borderColor = '#dc2626';
+  el.animate(
+    [{ transform:'translateX(-4px)' },{ transform:'translateX(4px)' },{ transform:'translateX(-3px)' },{ transform:'translateX(3px)' },{ transform:'translateX(0)' }],
+    { duration: 300, easing: 'ease' }
+  );
+  setTimeout(() => { el.style.borderColor = ''; }, 1200);
+}
+
+/* ─── Mobile sidebar ────────────────────────────────────────── */
+document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+});
+
+/* ─── Keyboard shortcut ─────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter') &&
+      (document.activeElement.id === 'industryInput' ||
+       document.activeElement.id === 'locationInput')) {
+    handleSearch();
+  }
+  if (e.key === 'Escape') clearSelection();
+});
+
+/* ─── Helpers ───────────────────────────────────────────────── */
+function escHtml(str) {
+  return String(str||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ─── Init ──────────────────────────────────────────────────── */
+updateSidebarLeadCount();
+</script>
+</body>
+</html>
