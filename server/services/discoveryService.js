@@ -1,317 +1,154 @@
 /**
  * services/discoveryService.js
  *
- * Lead Discovery Engine — finds real businesses via SerpAPI (Google Maps)
- * and falls back to realistic mock data when SERPAPI_KEY is not set.
+ * Wraps SerpAPI Google Maps search + AI enrichment.
+ * NOW INCLUDES: per-user monthly search quota enforcement.
  *
- * SerpAPI Google Maps endpoint:
- *   https://serpapi.com/google-maps-api
+ * Quota limits (enforced when userId is supplied):
+ *   free   →  5 searches/month
+ *   pro    →  500 searches/month
+ *   agency →  unlimited
  *
- * Required .env (optional — falls back to mock):
- *   SERPAPI_KEY=your_serpapi_key_here
- *
- * Returns a normalized array of DiscoveredBusiness objects regardless
- * of which source is used.
+ * Pass userId to searchBusinesses() to enforce limits.
+ * Omit userId to skip quota (e.g. internal/admin calls).
  */
 
 "use strict";
 
-const SERPAPI_ENDPOINT = "https://serpapi.com/search.json";
+const { checkSearchQuota, incrementSearchCount } = require("./authService");
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  TYPES
+//  SerpAPI search
 // ─────────────────────────────────────────────────────────────────────────────
+
+const SERPAPI_BASE = "https://serpapi.com/search.json";
+
 /**
- * @typedef {object} DiscoveredBusiness
- * @property {string}      name          Business name
- * @property {string}      location      Full address / city
- * @property {string}      industry      Inferred from keyword / category
- * @property {number|null} rating        Google rating (1–5) or null
- * @property {number|null} review_count  Number of reviews or null
- * @property {string|null} website       Website URL or null
- * @property {string|null} phone         Phone number or null
- * @property {string|null} place_id      Google Place ID or null
- * @property {string}      source        "serpapi" | "mock"
+ * Search Google Maps for businesses via SerpAPI.
+ * @param {string} query     — e.g. "plumbers in Austin TX"
+ * @param {object} [opts]
+ * @param {string} [opts.userId]    — if provided, quota is checked
+ * @param {number} [opts.limit]     — max results to return (default 20)
+ * @returns {Promise<object[]>}
  */
+async function searchBusinesses(query, { userId, limit = 20 } = {}) {
+  // ── Quota check ──────────────────────────────────────────────────────────
+  if (userId) {
+    const quota = checkSearchQuota(userId);
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  SERPAPI — LIVE DATA
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function searchViaSerpApi(keyword, limit = 20) {
-  const key = process.env.SERPAPI_KEY;
-  if (!key) throw new Error("SERPAPI_KEY not set");
-
-  const params = new URLSearchParams({
-    engine  : "google_maps",
-    q       : keyword,
-    type    : "search",
-    api_key : key,
-    num     : String(Math.min(limit, 20)),
-  });
-
-  const res = await fetch(`${SERPAPI_ENDPOINT}?${params}`);
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`SerpAPI error [${res.status}]: ${body.slice(0, 200)}`);
+    if (!quota.allowed) {
+      const err = Object.assign(
+        new Error(
+          `Monthly search limit reached (${quota.used}/${quota.limit}). ` +
+          `Upgrade to a higher plan for more searches.`
+        ),
+        {
+          code     : "QUOTA_EXCEEDED",
+          used     : quota.used,
+          limit    : quota.limit,
+          plan     : quota.plan,
+          resets_at: quota.resets_at,
+        }
+      );
+      throw err;
+    }
   }
 
-  const data = await res.json();
+  // ── Actual search ────────────────────────────────────────────────────────
+  const apiKey = process.env.SERPAPI_KEY;
 
-  if (data.error) throw new Error(`SerpAPI: ${data.error}`);
+  let results;
 
-  const results = data.local_results || [];
-  return results.slice(0, limit).map(r => normalizeSerp(r, keyword));
+  if (!apiKey) {
+    // No API key — return mock data for development
+    console.warn("⚠️  SERPAPI_KEY not set. Returning mock discovery data.");
+    results = getMockResults(query, limit);
+  } else {
+    results = await fetchFromSerpApi(query, apiKey, limit);
+  }
+
+  // ── Increment counter AFTER successful search ────────────────────────────
+  if (userId) {
+    incrementSearchCount(userId);
+  }
+
+  return results;
 }
 
-function normalizeSerp(r, keyword) {
-  // Infer industry from the keyword or the business type
-  const industry = inferIndustry(keyword, r.type || "");
+async function fetchFromSerpApi(query, apiKey, limit) {
+  const params = new URLSearchParams({
+    engine  : "google_maps",
+    q       : query,
+    api_key : apiKey,
+    num     : String(Math.min(limit, 20)),
+    type    : "search",
+  });
 
+  const response = await fetch(`${SERPAPI_BASE}?${params}`);
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`SerpAPI error [${response.status}]: ${body}`);
+  }
+
+  const data = await response.json();
+  const places = data.local_results || data.places_results || [];
+
+  return places.slice(0, limit).map(normalizeResult);
+}
+
+function normalizeResult(place) {
   return {
-    name         : String(r.title  || "").trim(),
-    location     : String(r.address || r.place_info?.address || "").trim(),
-    industry,
-    rating       : r.rating       ? parseFloat(r.rating)       : null,
-    review_count : r.reviews      ? parseInt(r.reviews, 10)    : null,
-    website      : r.website      ? normalizeUrl(r.website)    : null,
-    phone        : r.phone        || null,
-    place_id     : r.place_id     || null,
-    source       : "serpapi",
+    place_id     : place.place_id     || null,
+    business_name: place.title        || "",
+    rating       : place.rating       || null,
+    reviews      : place.reviews      || null,
+    type         : place.type         || null,
+    types        : place.types        || [],
+    address      : place.address      || "",
+    phone        : place.phone        || null,
+    website      : place.website      || null,
+    hours        : place.hours        || null,
+    thumbnail    : place.thumbnail    || null,
+    gps_coordinates: place.gps_coordinates || null,
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  MOCK DATA — realistic businesses by keyword pattern
+//  Mock data (when SERPAPI_KEY is not set)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Each template can be expanded with the city from the keyword
-const MOCK_TEMPLATES = {
-  roofing: [
-    { name: "Summit Roofing & Restoration", rating: 4.8, review_count: 312, website: true,  phone: "(512) 334-7821" },
-    { name: "ProShield Roofing",             rating: 4.6, review_count: 187, website: true,  phone: "(512) 445-9032" },
-    { name: "Apex Roofing Solutions",        rating: 4.4, review_count: 98,  website: true,  phone: "(512) 778-2341" },
-    { name: "TrueNorth Roofing Co.",         rating: 4.7, review_count: 251, website: true,  phone: "(512) 661-5509" },
-    { name: "StormGuard Roofing",            rating: 4.3, review_count: 74,  website: false, phone: "(512) 889-1234" },
-    { name: "Heritage Roof Masters",         rating: 4.9, review_count: 429, website: true,  phone: "(512) 220-8877" },
-    { name: "Reliable Roofing & Gutters",    rating: 3.8, review_count: 43,  website: false, phone: "(512) 345-6789" },
-    { name: "Lone Star Roofing",             rating: 4.5, review_count: 163, website: true,  phone: "(512) 776-3300" },
-    { name: "Capital City Roofers",          rating: 4.1, review_count: 56,  website: false, phone: "(512) 901-2233" },
-    { name: "Presidio Roofing Group",        rating: 4.7, review_count: 389, website: true,  phone: "(512) 567-4410" },
-  ],
-  dental: [
-    { name: "Bright Smiles Family Dentistry", rating: 4.9, review_count: 614, website: true,  phone: "(713) 234-5566" },
-    { name: "ClearView Dental",               rating: 4.7, review_count: 298, website: true,  phone: "(713) 445-7782" },
-    { name: "Prestige Dental Care",           rating: 4.6, review_count: 201, website: true,  phone: "(713) 889-1123" },
-    { name: "Lakeside Dentistry",             rating: 4.4, review_count: 87,  website: false, phone: "(713) 334-9900" },
-    { name: "Metro Dental Group",             rating: 4.8, review_count: 502, website: true,  phone: "(713) 661-2233" },
-    { name: "Gentle Touch Dental",            rating: 3.9, review_count: 45,  website: false, phone: "(713) 778-5544" },
-    { name: "Advanced Smiles Dentistry",      rating: 4.7, review_count: 347, website: true,  phone: "(713) 220-1100" },
-    { name: "Family First Dental",            rating: 4.5, review_count: 133, website: true,  phone: "(713) 901-7788" },
-    { name: "Sunrise Dental Studio",          rating: 4.3, review_count: 68,  website: false, phone: "(713) 567-3344" },
-    { name: "Apex Oral Health",               rating: 4.8, review_count: 417, website: true,  phone: "(713) 334-6655" },
-  ],
-  hvac: [
-    { name: "Arctic Air HVAC Services",    rating: 4.8, review_count: 445, website: true,  phone: "(602) 334-1122" },
-    { name: "CoolBreeze HVAC",             rating: 4.6, review_count: 221, website: true,  phone: "(602) 556-8833" },
-    { name: "Premier Climate Control",     rating: 4.7, review_count: 388, website: true,  phone: "(602) 778-2244" },
-    { name: "Comfort Zone HVAC",           rating: 4.3, review_count: 76,  website: false, phone: "(602) 889-5566" },
-    { name: "Desert HVAC Pros",            rating: 4.9, review_count: 612, website: true,  phone: "(602) 220-9977" },
-    { name: "AllSeasons Heating & Cooling",rating: 4.4, review_count: 112, website: true,  phone: "(602) 445-6677" },
-    { name: "Efficient Air Solutions",     rating: 3.7, review_count: 31,  website: false, phone: "(602) 667-3388" },
-    { name: "ThermoTech HVAC",             rating: 4.6, review_count: 189, website: true,  phone: "(602) 901-1122" },
-    { name: "Oasis Climate Services",      rating: 4.5, review_count: 244, website: true,  phone: "(602) 334-4455" },
-    { name: "Reliable Heating & Air",      rating: 4.2, review_count: 67,  website: false, phone: "(602) 567-7788" },
-  ],
-  plumbing: [
-    { name: "FlowPro Plumbing",           rating: 4.8, review_count: 378, website: true,  phone: "(305) 334-2211" },
-    { name: "RapidResponse Plumbers",     rating: 4.6, review_count: 201, website: true,  phone: "(305) 556-4433" },
-    { name: "Precision Pipe & Drain",     rating: 4.7, review_count: 267, website: true,  phone: "(305) 778-6655" },
-    { name: "Master Plumbing Solutions",  rating: 4.5, review_count: 143, website: false, phone: "(305) 889-8877" },
-    { name: "AquaFix Plumbing",           rating: 4.9, review_count: 534, website: true,  phone: "(305) 220-0099" },
-    { name: "City Drain Specialists",     rating: 4.2, review_count: 58,  website: false, phone: "(305) 445-1122" },
-    { name: "24/7 Emergency Plumbers",    rating: 4.7, review_count: 312, website: true,  phone: "(305) 667-3344" },
-    { name: "ProFlow Plumbing & Gas",     rating: 4.4, review_count: 91,  website: true,  phone: "(305) 901-5566" },
-    { name: "Clearwater Plumbing Co.",    rating: 3.9, review_count: 42,  website: false, phone: "(305) 334-7788" },
-    { name: "Apex Pipe Solutions",        rating: 4.6, review_count: 178, website: true,  phone: "(305) 567-9900" },
-  ],
-  law: [
-    { name: "Morrison & Associates Law",      rating: 4.9, review_count: 312, website: true,  phone: "(214) 334-1234" },
-    { name: "Pinnacle Legal Group",           rating: 4.7, review_count: 178, website: true,  phone: "(214) 556-5678" },
-    { name: "Atlas Law Firm",                 rating: 4.8, review_count: 234, website: true,  phone: "(214) 778-9012" },
-    { name: "Liberty Defense Attorneys",      rating: 4.5, review_count: 98,  website: false, phone: "(214) 889-3456" },
-    { name: "Premier Personal Injury Law",    rating: 4.9, review_count: 567, website: true,  phone: "(214) 220-7890" },
-    { name: "Cornerstone Family Law",         rating: 4.6, review_count: 143, website: true,  phone: "(214) 445-2345" },
-    { name: "Sterling Business Attorneys",    rating: 4.4, review_count: 67,  website: false, phone: "(214) 667-6789" },
-    { name: "Nexus Litigation Partners",      rating: 4.7, review_count: 289, website: true,  phone: "(214) 901-0123" },
-    { name: "Avante Legal Solutions",         rating: 3.8, review_count: 34,  website: false, phone: "(214) 334-4567" },
-    { name: "Keystone Law Group",             rating: 4.8, review_count: 401, website: true,  phone: "(214) 567-8901" },
-  ],
-  restaurant: [
-    { name: "The Rustic Table",            rating: 4.7, review_count: 892, website: true,  phone: "(415) 334-1111" },
-    { name: "Ember & Oak Bistro",          rating: 4.8, review_count: 1243,website: true,  phone: "(415) 556-2222" },
-    { name: "Harbor View Dining",          rating: 4.5, review_count: 567, website: true,  phone: "(415) 778-3333" },
-    { name: "Casa Fuerte",                 rating: 4.6, review_count: 734, website: false, phone: "(415) 889-4444" },
-    { name: "Saffron Kitchen",             rating: 4.9, review_count: 1876,website: true,  phone: "(415) 220-5555" },
-    { name: "Pier 22 Seafood",             rating: 4.4, review_count: 445, website: true,  phone: "(415) 445-6666" },
-    { name: "Blue Door Cafe",              rating: 3.8, review_count: 189, website: false, phone: "(415) 667-7777" },
-    { name: "The Golden Fork",             rating: 4.7, review_count: 967, website: true,  phone: "(415) 901-8888" },
-    { name: "Nomad Street Food",           rating: 4.3, review_count: 312, website: false, phone: "(415) 334-9999" },
-    { name: "Altitude Rooftop Bar & Grill",rating: 4.8, review_count: 2134,website: true,  phone: "(415) 567-0000" },
-  ],
-  gym: [
-    { name: "IronWill Fitness",           rating: 4.8, review_count: 678, website: true,  phone: "(312) 334-1010" },
-    { name: "Momentum Athletic Club",     rating: 4.7, review_count: 445, website: true,  phone: "(312) 556-2020" },
-    { name: "CoreStrength Studio",        rating: 4.9, review_count: 891, website: true,  phone: "(312) 778-3030" },
-    { name: "Peak Performance Gym",       rating: 4.5, review_count: 234, website: false, phone: "(312) 889-4040" },
-    { name: "CrossFit Elevate",           rating: 4.6, review_count: 312, website: true,  phone: "(312) 220-5050" },
-    { name: "Vitality Wellness Center",   rating: 4.4, review_count: 178, website: true,  phone: "(312) 445-6060" },
-    { name: "Urban Boxing & Fitness",     rating: 4.7, review_count: 567, website: false, phone: "(312) 667-7070" },
-    { name: "The Training Zone",          rating: 3.9, review_count: 89,  website: false, phone: "(312) 901-8080" },
-    { name: "Elite Performance Lab",      rating: 4.8, review_count: 734, website: true,  phone: "(312) 334-9090" },
-    { name: "FitLife Health Club",        rating: 4.3, review_count: 156, website: true,  phone: "(312) 567-0101" },
-  ],
-  default: [
-    { name: "Pinnacle Business Services", rating: 4.7, review_count: 234, website: true,  phone: "(555) 334-1111" },
-    { name: "Apex Solutions Group",       rating: 4.5, review_count: 178, website: true,  phone: "(555) 556-2222" },
-    { name: "Summit Professional Services",rating:4.8, review_count: 345, website: true,  phone: "(555) 778-3333" },
-    { name: "Premier Local Business",     rating: 4.3, review_count: 89,  website: false, phone: "(555) 889-4444" },
-    { name: "Cornerstone Enterprises",    rating: 4.6, review_count: 267, website: true,  phone: "(555) 220-5555" },
-    { name: "Pacific Services Co.",       rating: 4.4, review_count: 134, website: false, phone: "(555) 445-6666" },
-    { name: "Atlas Professional Group",   rating: 4.9, review_count: 512, website: true,  phone: "(555) 667-7777" },
-    { name: "Keystone Business Solutions",rating: 4.2, review_count: 67,  website: false, phone: "(555) 901-8888" },
-    { name: "Liberty Local Services",     rating: 4.7, review_count: 389, website: true,  phone: "(555) 334-9999" },
-    { name: "Sterling Professional Co.",  rating: 4.5, review_count: 201, website: true,  phone: "(555) 567-0000" },
-  ],
-};
+function getMockResults(query, limit = 5) {
+  const industries = ["Plumbing", "Roofing", "HVAC", "Landscaping", "Auto Repair"];
+  const locations  = ["Austin, TX", "Denver, CO", "Miami, FL", "Chicago, IL", "Phoenix, AZ"];
 
-/**
- * Generate mock results that look like they came from a real search.
- * Picks a template set based on the keyword, then applies the city.
- */
-function searchViaMock(keyword, limit = 20) {
-  const kw        = keyword.toLowerCase();
-  const cityMatch = keyword.match(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*/g) || [];
-  const city      = cityMatch.length > 0 ? cityMatch.join(" ") : extractCity(keyword);
-  const industry  = inferIndustry(keyword, "");
-
-  // Pick best matching template
-  let templates = MOCK_TEMPLATES.default;
-  for (const [key, tpl] of Object.entries(MOCK_TEMPLATES)) {
-    if (key !== "default" && kw.includes(key)) {
-      templates = tpl;
-      break;
-    }
-  }
-
-  // Add slight randomness to ratings to feel real
-  return templates.slice(0, limit).map(t => ({
-    name         : t.name,
-    location     : city ? `${city}` : "United States",
-    industry,
-    rating       : t.rating ? Math.round((t.rating + (Math.random() * 0.2 - 0.1)) * 10) / 10 : null,
-    review_count : t.review_count,
-    website      : t.website
-      ? `https://www.${t.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`
-      : null,
-    phone        : t.phone,
-    place_id     : null,
-    source       : "mock",
+  return Array.from({ length: Math.min(limit, 5) }, (_, i) => ({
+    place_id     : `mock_${Date.now()}_${i}`,
+    business_name: `${industries[i % industries.length]} Pro ${i + 1}`,
+    rating       : (3.5 + Math.random() * 1.5).toFixed(1),
+    reviews      : Math.floor(Math.random() * 300) + 10,
+    type         : industries[i % industries.length],
+    types        : [industries[i % industries.length].toLowerCase()],
+    address      : `${100 + i * 10} Main St, ${locations[i % locations.length]}`,
+    phone        : `+1-555-${String(1000 + i).padStart(4, "0")}`,
+    website      : null,
+    hours        : null,
+    thumbnail    : null,
+    gps_coordinates: null,
+    _mock        : true,
   }));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  HELPERS
+//  Quota info (for dashboard display)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function extractCity(keyword) {
-  // Try to extract a city/state from the keyword
-  // e.g. "roofing Austin TX" → "Austin, TX"
-  const stateAbbr = keyword.match(/\b([A-Z]{2})\b/);
-  const words     = keyword.replace(/\b[A-Z]{2}\b/, "").trim().split(/\s+/);
-
-  // Remove common industry keywords to find proper nouns (likely city names)
-  const SKIP = new Set([
-    "roofing","roof","dental","dentist","hvac","plumbing","plumber","law","lawyer",
-    "attorney","restaurant","gym","fitness","landscaping","electrician","auto",
-    "repair","cleaning","painting","locksmith","accountant","accounting",
-    "chicago","houston","phoenix","philadelphia","services","company","near",
-    "best","top","local","in","and","the",
-  ]);
-  const cityWords = words.filter(w => w.length > 2 && !SKIP.has(w.toLowerCase()));
-
-  if (cityWords.length) {
-    return stateAbbr ? `${cityWords.join(" ")}, ${stateAbbr[1]}` : cityWords.join(" ");
-  }
-  return "";
+function getQuotaInfo(userId) {
+  if (!userId) return null;
+  return checkSearchQuota(userId);
 }
 
-function inferIndustry(keyword, type) {
-  const text = (keyword + " " + type).toLowerCase();
-  if (text.match(/roof/))                          return "Roofing";
-  if (text.match(/dental|dentist|orthodont/))      return "Healthcare / Dentistry";
-  if (text.match(/hvac|heating|cooling|air cond/)) return "HVAC / Climate Control";
-  if (text.match(/plumb/))                          return "Plumbing";
-  if (text.match(/law|attorney|legal|litigation/)) return "Legal Services";
-  if (text.match(/restaurant|cafe|bistro|food/))   return "Restaurant / Food & Beverage";
-  if (text.match(/gym|fitness|crossfit|yoga/))      return "Health & Fitness";
-  if (text.match(/landscap|lawn|garden/))           return "Landscaping";
-  if (text.match(/electric/))                       return "Electrical Services";
-  if (text.match(/auto|car|vehicle|mechanic/))      return "Automotive";
-  if (text.match(/clean/))                          return "Cleaning Services";
-  if (text.match(/paint/))                          return "Painting Services";
-  if (text.match(/account/))                        return "Accounting / Finance";
-  if (text.match(/real estate|realtor|realty/))     return "Real Estate";
-  if (text.match(/insur/))                          return "Insurance";
-  if (text.match(/salon|barber|hair|nail/))         return "Beauty & Personal Care";
-  if (text.match(/medic|clinic|hospital|health/))   return "Healthcare";
-  if (text.match(/mortgage|loan|lending/))          return "Mortgage / Lending";
-  return "Local Business";
-}
-
-function normalizeUrl(url) {
-  if (!url) return null;
-  if (url.startsWith("http")) return url;
-  return `https://${url}`;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  PUBLIC API
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Search for businesses by keyword.
- * Automatically uses SerpAPI if SERPAPI_KEY is set, otherwise uses mock data.
- *
- * @param {string} keyword    e.g. "roofing Austin TX"
- * @param {number} limit      max results (default 20)
- * @returns {Promise<DiscoveredBusiness[]>}
- */
-async function searchBusinesses(keyword, limit = 20) {
-  if (!keyword || keyword.trim().length < 2) {
-    throw new Error("keyword must be at least 2 characters.");
-  }
-
-  const useSerpApi = !!process.env.SERPAPI_KEY;
-
-  if (useSerpApi) {
-    try {
-      return await searchViaSerpApi(keyword.trim(), limit);
-    } catch (err) {
-      // Log and fall through to mock on API errors (except quota errors)
-      console.warn(`[discovery] SerpAPI failed (${err.message}), using mock data.`);
-      if (err.message.includes("credits") || err.message.includes("quota")) throw err;
-    }
-  }
-
-  return searchViaMock(keyword.trim(), limit);
-}
-
-/**
- * Return the current data source being used.
- */
-function getDataSource() {
-  return process.env.SERPAPI_KEY ? "serpapi" : "mock";
-}
-
-module.exports = { searchBusinesses, getDataSource, inferIndustry };
+module.exports = {
+  searchBusinesses,
+  getQuotaInfo,
+};

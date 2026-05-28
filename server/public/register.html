@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — LeadFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --border:   #1e1e2e;
+      --accent:   #7c6af7;
+      --accent2:  #4ecca3;
+      --text:     #e8e8f0;
+      --muted:    #6b6b80;
+      --error:    #ff4f4f;
+      --success:  #4ecca3;
+      --input-bg: #16161f;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(124,106,247,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 35% at 20% 80%, rgba(78,204,163,.08) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .page {
+      display: flex;
+      width: 100%;
+      max-width: 1100px;
+      min-height: 100vh;
+      align-items: center;
+      padding: 2rem;
+      gap: 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      animation: slideIn .6s ease both;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.6rem;
+      letter-spacing: -.02em;
+    }
+    .logo span { color: var(--accent); }
+
+    .brand-headline {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      line-height: 1.15;
+      letter-spacing: -.03em;
+    }
+    .brand-headline em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: .8rem;
+      margin-top: .5rem;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+
+    .feature-list li::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(78,204,163,.15);
+      border: 1px solid rgba(78,204,163,.3);
+      flex-shrink: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%234ecca3'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 11px;
+    }
+
+    .plan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: rgba(124,106,247,.1);
+      border: 1px solid rgba(124,106,247,.25);
+      border-radius: 8px;
+      padding: .5rem .9rem;
+      font-size: .82rem;
+      color: #a89ef8;
+      margin-top: .5rem;
+      width: fit-content;
+    }
+
+    /* Form card */
+    .form-panel {
+      width: 440px;
+      flex-shrink: 0;
+      animation: fadeUp .6s .1s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      position: relative;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      margin-bottom: .4rem;
+    }
+
+    .card-sub {
+      color: var(--muted);
+      font-size: .875rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-group { margin-bottom: 1.1rem; }
+
+    label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .45rem;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .85rem 1rem;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    select option { background: #1a1a28; }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,106,247,.12);
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    /* Password strength */
+    .strength-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: .5rem;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0;
+      border-radius: 2px;
+      transition: width .3s, background .3s;
+    }
+
+    .strength-text {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: .3rem;
+    }
+
+    .btn {
+      width: 100%;
+      padding: .95rem;
+      background: linear-gradient(135deg, var(--accent), #6357e0);
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s, box-shadow .2s;
+      margin-top: .5rem;
+    }
+
+    .btn:hover { opacity: .9; box-shadow: 0 0 24px rgba(124,106,247,.3); }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn.loading .btn-text { display: none; }
+    .btn.loading .spinner  { display: block; }
+
+    .terms-note {
+      font-size: .78rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 1rem;
+      line-height: 1.6;
+    }
+
+    .terms-note a { color: var(--accent); text-decoration: none; }
+    .terms-note a:hover { text-decoration: underline; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .footer-link {
+      text-align: center;
+      font-size: .875rem;
+      color: var(--muted);
+      margin-top: 1.5rem;
+    }
+    .footer-link a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .footer-link a:hover { text-decoration: underline; }
+
+    .alert {
+      padding: .8rem 1rem;
+      border-radius: 8px;
+      font-size: .875rem;
+      margin-bottom: 1.2rem;
+      display: none;
+    }
+    .alert.error   { background: rgba(255,79,79,.1);  border: 1px solid rgba(255,79,79,.3);  color: #ff8080; }
+    .alert.success { background: rgba(78,204,163,.1); border: 1px solid rgba(78,204,163,.3); color: var(--accent2); }
+    .alert.show    { display: block; }
+
+    @media (max-width: 800px) {
+      .brand-panel { display: none; }
+      .form-panel  { width: 100%; max-width: 440px; margin: 0 auto; }
+      .page        { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Left: branding -->
+  <div class="brand-panel">
+    <div class="logo">Lead<span>Flow</span></div>
+    <h1 class="brand-headline">
+      Start finding<br>high-value clients<br><em>today</em>
+    </h1>
+
+    <ul class="feature-list">
+      <li>Discover local businesses with Google Maps data</li>
+      <li>AI lead scoring in seconds — not hours</li>
+      <li>Personalised outreach generated automatically</li>
+      <li>Send emails directly from the dashboard</li>
+      <li>Full campaign tracking and history</li>
+    </ul>
+
+    <div class="plan-badge">
+      🎁 Free plan includes 5 searches/month — no credit card required
+    </div>
+  </div>
+
+  <!-- Right: form -->
+  <div class="form-panel">
+    <div class="card">
+      <h2 class="card-title">Create your account</h2>
+      <p class="card-sub">Free forever. Upgrade when you're ready.</p>
+
+      <div class="alert" id="alert"></div>
+
+      <form id="registerForm" novalidate>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" placeholder="you@agency.com" autocomplete="email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password" required>
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="strength-text" id="strengthText"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm">Confirm password</label>
+          <input type="password" id="confirm" placeholder="Repeat password" autocomplete="new-password" required>
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">
+          <span class="btn-text">Create Free Account</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+
+      <p class="terms-note">
+        By creating an account you agree to our
+        <a href="/terms.html">Terms of Service</a> and
+        <a href="/privacy.html">Privacy Policy</a>.
+      </p>
+
+      <div class="divider">already have an account?</div>
+
+      <div class="footer-link">
+        <a href="/login.html">Sign in instead</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Redirect if already logged in
+  if (localStorage.getItem('lf_token')) {
+    window.location.href = '/dashboard.html';
+  }
+
+  // Password strength
+  const passwordInput = document.getElementById('password');
+  const strengthFill  = document.getElementById('strengthFill');
+  const strengthText  = document.getElementById('strengthText');
+
+  passwordInput.addEventListener('input', () => {
+    const val = passwordInput.value;
+    let score = 0;
+    if (val.length >= 8)  score++;
+    if (val.length >= 12) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const levels = [
+      { w: '0%',   color: 'transparent',            label: '' },
+      { w: '25%',  color: '#ff4f4f',                label: 'Weak' },
+      { w: '50%',  color: '#ff9f4a',                label: 'Fair' },
+      { w: '75%',  color: '#f5c842',                label: 'Good' },
+      { w: '100%', color: 'var(--accent2)',          label: 'Strong' },
+    ];
+
+    const lvl = levels[Math.min(score, 4)];
+    strengthFill.style.width    = lvl.w;
+    strengthFill.style.background = lvl.color;
+    strengthText.textContent    = lvl.label ? `Password strength: ${lvl.label}` : '';
+    strengthText.style.color    = lvl.color;
+  });
+
+  // Form submit
+  const form      = document.getElementById('registerForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const alertEl   = document.getElementById('alert');
+
+  function showAlert(msg, type = 'error') {
+    alertEl.textContent = msg;
+    alertEl.className   = `alert ${type} show`;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertEl.className = 'alert';
+
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirm').value;
+
+    if (!email || !password) return showAlert('Email and password are required.');
+    if (password.length < 8)  return showAlert('Password must be at least 8 characters.');
+    if (password !== confirm)  return showAlert('Passwords do not match.');
+
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({ email, password, plan: 'free' }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Registration failed. Please try again.');
+      }
+
+      localStorage.setItem('lf_token', data.token);
+      localStorage.setItem('lf_user',  JSON.stringify(data.user));
+
+      showAlert('Account created! Redirecting to dashboard…', 'success');
+      setTimeout(() => { window.location.href = '/dashboard.html'; }, 800);
+
+    } catch (err) {
+      showAlert(err.message);
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

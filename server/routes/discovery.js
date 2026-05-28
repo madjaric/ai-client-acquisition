@@ -1,194 +1,121 @@
 /**
  * routes/discovery.js
  *
- * POST /api/discovery/search          Search for businesses by keyword
- * POST /api/discovery/import          Bulk-import selected businesses as leads
- * POST /api/discovery/import-one      Import a single business as a lead
- * GET  /api/discovery/source          Which data source is active
+ * POST /api/discovery/search   — search for businesses (quota enforced)
+ * POST /api/discovery/import   — import selected results as leads
+ * GET  /api/discovery/quota    — return current user's search quota
  */
 
 "use strict";
 
-const express          = require("express");
-const router           = express.Router();
-const discoveryService = require("../services/discoveryService");
-const leadsService     = require("../services/leadsService");
-const { validate, rules } = require("../middleware/validate");
+const express = require("express");
+const router  = express.Router();
 
-// ─────────────────────────────────────────────
-//  Validation schemas
-// ─────────────────────────────────────────────
+const { requireAuth }          = require("../middleware/requireAuth");
+const { searchBusinesses, getQuotaInfo } = require("../services/discoveryService");
+const { createLead }           = require("../services/leadsService");
 
-const searchSchema = {
-  keyword: [
-    rules.required("keyword is required."),
-    rules.minLength(2, "keyword must be at least 2 characters."),
-    rules.maxLength(200),
-    rules.safe(),
-  ],
-  limit: [{
-    test   : (v) => v === undefined || v === null || (Number(v) >= 1 && Number(v) <= 20),
-    message: "limit must be between 1 and 20.",
-  }],
-};
-
-const importOneSchema = {
-  business_name : [rules.required(), rules.maxLength(200), rules.safe()],
-  location      : [rules.required(), rules.maxLength(200), rules.safe()],
-  industry      : [rules.required(), rules.maxLength(100), rules.safe()],
-  website       : [rules.url(),      rules.maxLength(500)],
-  notes         : [rules.maxLength(2000)],
-};
-
-// ─────────────────────────────────────────────
-//  POST /api/discovery/search
-//  Searches for businesses and returns raw results (not saved).
-// ─────────────────────────────────────────────
-router.post("/search", validate(searchSchema), async (req, res) => {
-  const { keyword, limit = 20 } = req.body;
-
+// ── GET /quota ────────────────────────────────────────────────────────────────
+router.get("/quota", requireAuth, (req, res) => {
   try {
-    const results = await discoveryService.searchBusinesses(keyword, Number(limit));
-    const source  = discoveryService.getDataSource();
-
-    return res.json({
-      success  : true,
-      source,
-      keyword,
-      count    : results.length,
-      data     : results,
-    });
+    const quota = getQuotaInfo(req.user.id);
+    res.json({ success: true, quota });
   } catch (err) {
-    console.error("[discovery/search] Error:", err.message);
-    return res.status(502).json({
-      success : false,
-      message : err.message,
-    });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// ─────────────────────────────────────────────
-//  POST /api/discovery/import
-//  Bulk-import an array of businesses as leads.
-//  Input: { businesses: [ { business_name, location, industry, website?, notes? }, ... ] }
-// ─────────────────────────────────────────────
-router.post("/import", async (req, res) => {
-  const { businesses } = req.body;
+// ── POST /search ──────────────────────────────────────────────────────────────
+router.post("/search", requireAuth, async (req, res) => {
+  try {
+    const { query, limit } = req.body;
 
-  if (!Array.isArray(businesses) || businesses.length === 0) {
-    return res.status(400).json({
-      success : false,
-      message : "businesses must be a non-empty array.",
-    });
-  }
-
-  if (businesses.length > 20) {
-    return res.status(400).json({
-      success : false,
-      message : "Maximum 20 businesses can be imported at once.",
-    });
-  }
-
-  const results = {
-    imported  : [],
-    skipped   : [],   // duplicates
-    failed    : [],   // validation errors
-  };
-
-  for (const biz of businesses) {
-    const { business_name, location, industry, website, rating, phone, review_count } = biz;
-
-    // Minimal validation
-    if (!business_name || !location || !industry) {
-      results.failed.push({
-        business_name: business_name || "unknown",
-        reason: "Missing required fields (business_name, location, industry).",
+    if (!query || typeof query !== "string" || query.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "A search query of at least 2 characters is required.",
       });
-      continue;
     }
 
-    // Build notes from discovery metadata
-    const noteParts = [];
-    if (rating)       noteParts.push(`Rating: ${rating}/5`);
-    if (review_count) noteParts.push(`${review_count} reviews`);
-    if (phone)        noteParts.push(`Phone: ${phone}`);
-    noteParts.push("Imported via Lead Discovery Engine");
-    const notes = noteParts.join(" · ");
+    const results = await searchBusinesses(query.trim(), {
+      userId: req.user.id,
+      limit : Number(limit) || 20,
+    });
 
-    try {
-      const lead = leadsService.createLead({
-        business_name: business_name.trim(),
-        industry     : (industry || "Local Business").trim(),
-        location     : location.trim(),
-        website      : website   || null,
-        notes,
+    // Return updated quota so the frontend can update the counter
+    const quota = getQuotaInfo(req.user.id);
+
+    res.json({ success: true, results, count: results.length, quota });
+
+  } catch (err) {
+    if (err.code === "QUOTA_EXCEEDED") {
+      return res.status(429).json({
+        success  : false,
+        code     : "QUOTA_EXCEEDED",
+        message  : err.message,
+        used     : err.used,
+        limit    : err.limit,
+        plan     : err.plan,
+        resets_at: err.resets_at,
       });
-      results.imported.push({
-        id            : lead.id,
-        business_name : lead.business_name,
-        location      : lead.location,
+    }
+    console.error("Discovery search error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ── POST /import ──────────────────────────────────────────────────────────────
+router.post("/import", requireAuth, async (req, res) => {
+  try {
+    const { businesses } = req.body;
+
+    if (!Array.isArray(businesses) || businesses.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Provide an array of businesses to import.",
       });
-    } catch (err) {
-      if (err.code === "DUPLICATE_LEAD") {
-        results.skipped.push({
-          business_name,
-          reason: "Already exists in leads database.",
+    }
+
+    const MAX_IMPORT = 50;
+    const toImport   = businesses.slice(0, MAX_IMPORT);
+    const imported   = [];
+    const skipped    = [];
+
+    for (const biz of toImport) {
+      try {
+        // Map discovery result fields → lead fields
+        const lead = createLead({
+          business_name: biz.business_name || biz.title || "Unknown",
+          industry     : biz.type          || biz.industry || "Unknown",
+          location     : biz.address       || biz.location || "Unknown",
+          website      : biz.website       || null,
+          notes        : [
+            biz.phone   ? `Phone: ${biz.phone}`   : null,
+            biz.rating  ? `Rating: ${biz.rating}⭐ (${biz.reviews || 0} reviews)` : null,
+          ].filter(Boolean).join(" | ") || null,
         });
-      } else {
-        results.failed.push({ business_name, reason: err.message });
+        imported.push(lead);
+      } catch (err) {
+        // DUPLICATE_LEAD or other — skip and report
+        skipped.push({
+          business_name: biz.business_name || biz.title,
+          reason: err.code === "DUPLICATE_LEAD" ? "Already exists" : err.message,
+        });
       }
     }
-  }
 
-  const total = businesses.length;
-  return res.status(207).json({
-    success : true,
-    message : `Imported ${results.imported.length}/${total} businesses. ${results.skipped.length} duplicates skipped.`,
-    summary : {
-      total,
-      imported  : results.imported.length,
-      skipped   : results.skipped.length,
-      failed    : results.failed.length,
-    },
-    data: results,
-  });
-});
-
-// ─────────────────────────────────────────────
-//  POST /api/discovery/import-one
-//  Import a single business directly.
-// ─────────────────────────────────────────────
-router.post("/import-one", validate(importOneSchema), (req, res) => {
-  const { business_name, location, industry, website, notes } = req.body;
-
-  try {
-    const lead = leadsService.createLead({ business_name, location, industry, website, notes });
-    return res.status(201).json({
-      success : true,
-      message : `"${business_name}" imported as a lead.`,
-      data    : lead,
+    res.status(201).json({
+      success     : true,
+      imported    : imported.length,
+      skipped     : skipped.length,
+      leads       : imported,
+      skip_details: skipped,
     });
-  } catch (err) {
-    if (err.code === "DUPLICATE_LEAD") {
-      return res.status(409).json({ success: false, message: err.message });
-    }
-    return res.status(500).json({ success: false, message: err.message });
-  }
-});
 
-// ─────────────────────────────────────────────
-//  GET /api/discovery/source
-//  Returns which data source is currently configured.
-// ─────────────────────────────────────────────
-router.get("/source", (req, res) => {
-  const source = discoveryService.getDataSource();
-  return res.json({
-    success : true,
-    source,
-    message : source === "serpapi"
-      ? "Live data via SerpAPI (Google Maps)"
-      : "Mock data (set SERPAPI_KEY in .env for live results)",
-  });
+  } catch (err) {
+    console.error("Discovery import error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 module.exports = router;
