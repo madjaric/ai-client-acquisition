@@ -523,6 +523,11 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
       Leads
       <span class="sb-badge" id="sb-leads-count">—</span>
     </button>
+    <button class="sb-item" id="nav-discovery" onclick="navigate('discovery')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Discovery
+      <span class="sb-chip">New</span>
+    </button>
 
     <div class="sb-div"></div>
     <div class="sb-group-label">AI Tools</div>
@@ -537,11 +542,6 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
     <button class="sb-item" id="nav-email" onclick="navigate('email')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       Send Email
-    </button>
-    <button class="sb-item" id="nav-discovery" onclick="navigate('discovery')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Discovery
-      <span class="sb-chip">New</span>
     </button>
 
     <div class="sb-div"></div>
@@ -603,7 +603,7 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
       <div class="ob-text">
         <div class="ob-title">Welcome to LeadFlow AI — 3 steps to your first booked call</div>
         <div class="ob-steps">
-          <span class="ob-step" id="obs-1" onclick="window.location='/discovery.html'">
+          <span class="ob-step" id="obs-1" onclick="navigate('discovery')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="11" height="11"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             1. Discover leads
           </span>
@@ -678,10 +678,10 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
             <div class="action-row">
               <button class="btn btn-brand" id="btn-add-lead" onclick="addLead()">+ Add Lead</button>
               <button class="btn btn-outline btn-sm" onclick="clearForm()">Clear</button>
-              <a href="/discovery.html" class="btn btn-outline btn-sm" style="margin-left:auto">
+              <button class="btn btn-outline btn-sm" onclick="navigate('discovery')" style="margin-left:auto">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 Find leads →
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -707,7 +707,7 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
             </div>
             <div class="empty-title">No leads yet</div>
             <div class="empty-desc">Add your first lead manually, or use Discovery to import from Google Maps.</div>
-            <a href="/discovery.html" class="btn btn-brand btn-sm">Find leads with Discovery →</a>
+            <button class="btn btn-brand btn-sm" onclick="navigate('discovery')">Find leads with Discovery →</button>
           </div>
         </div>
       </div>
@@ -1421,7 +1421,7 @@ function renderLeads(list) {
       <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
       <div class="empty-title">No leads found</div>
       <div class="empty-desc">Add one using the form, or import from Discovery.</div>
-      <a href="/discovery.html" class="btn btn-brand btn-sm">Find leads →</a>
+      <button class="btn btn-brand btn-sm" onclick="navigate('discovery')">Find leads →</button>
     </div>`;
     return;
   }
