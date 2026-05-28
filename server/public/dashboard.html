@@ -538,11 +538,11 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       Send Email
     </button>
-    <a class="sb-item" href="/discovery.html">
+    <button class="sb-item" id="nav-discovery" onclick="navigate('discovery')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       Discovery
       <span class="sb-chip">New</span>
-    </a>
+    </button>
 
     <div class="sb-div"></div>
     <div class="sb-group-label">System</div>
@@ -1047,6 +1047,189 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
     </div>
   </div>
 
+
+  <!-- ════════════════════════════════════════
+       PANEL — DISCOVERY
+  ════════════════════════════════════════ -->
+  <div class="panel" id="panel-discovery">
+
+    <!-- Search hero -->
+    <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 28px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(34,197,94,.06) 0%,transparent 70%);pointer-events:none"></div>
+      <div style="font-family:var(--fd);font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:3px">Find your next clients</div>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:18px">Search Google Maps by business type and city — import directly to pipeline in one click.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 130px auto;gap:10px;align-items:end;margin-bottom:12px">
+        <div>
+          <div style="font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">Business type</div>
+          <div style="position:relative">
+            <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <input id="disc-industry" type="text" placeholder="roofing, dental, HVAC…" autocomplete="off" spellcheck="false"
+              style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px 9px 34px;font-family:var(--fb);font-size:14px;color:var(--text);outline:none;transition:border-color .15s"
+              onfocus="this.style.borderColor='rgba(34,197,94,.5)'" onblur="this.style.borderColor='var(--border)'" />
+          </div>
+        </div>
+        <div>
+          <div style="font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">City / Location</div>
+          <div style="position:relative">
+            <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input id="disc-location" type="text" placeholder="Austin TX, Miami FL…" autocomplete="off" spellcheck="false"
+              style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px 9px 34px;font-family:var(--fb);font-size:14px;color:var(--text);outline:none;transition:border-color .15s"
+              onfocus="this.style.borderColor='rgba(34,197,94,.5)'" onblur="this.style.borderColor='var(--border)'" />
+          </div>
+        </div>
+        <div>
+          <div style="font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">Results</div>
+          <select id="disc-limit"
+            style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 10px;font-family:var(--fm);font-size:12px;color:var(--text-2);outline:none;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.35)%22 stroke-width=%222.5%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 8px center;padding-right:26px">
+            <option value="10">10 results</option>
+            <option value="20" selected>20 results</option>
+            <option value="50">50 results</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn btn-brand" id="disc-btn-search" onclick="discSearch()" style="width:100%;justify-content:center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+          </button>
+        </div>
+      </div>
+
+      <!-- Pills + source badge -->
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-family:var(--fm);font-size:10px;letter-spacing:.06em;color:var(--text-3);text-transform:uppercase">Try:</span>
+        <button onclick="discQuickSearch('Roofing','Austin TX')" class="btn btn-outline btn-xs">🏠 Roofing · Austin TX</button>
+        <button onclick="discQuickSearch('Dental','Miami FL')"   class="btn btn-outline btn-xs">🦷 Dental · Miami FL</button>
+        <button onclick="discQuickSearch('HVAC','Phoenix AZ')"   class="btn btn-outline btn-xs">❄️ HVAC · Phoenix AZ</button>
+        <button onclick="discQuickSearch('Plumbing','Chicago IL')" class="btn btn-outline btn-xs">🔧 Plumbing · Chicago IL</button>
+        <button onclick="discQuickSearch('Gym','New York NY')"   class="btn btn-outline btn-xs">💪 Gym · New York NY</button>
+        <span id="disc-source-badge" style="margin-left:auto;font-family:var(--fm);font-size:10px;padding:3px 9px;border-radius:99px;border:1px solid var(--border);color:var(--text-3);display:inline-flex;align-items:center;gap:4px">
+          <span id="disc-source-dot" style="width:5px;height:5px;border-radius:50%;background:var(--text-3);flex-shrink:0"></span>
+          <span id="disc-source-label">Checking…</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Import summary -->
+    <div id="disc-import-summary" style="display:none;padding:12px 18px;border-radius:var(--radius);background:var(--brand-dim);border:1px solid var(--brand-mid);font-size:13px;color:var(--brand);font-weight:500;animation:fadeIn .2s ease"></div>
+
+    <!-- Empty state -->
+    <div id="disc-state-initial" class="card">
+      <div class="empty">
+        <div class="empty-icon" style="width:60px;height:60px;border-radius:16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" width="28" height="28"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="empty-title">Find your next 10 clients in 30 seconds</div>
+        <div class="empty-desc">Enter a business type and city above, or click one of the examples. Results import directly to your pipeline.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+          <button class="btn btn-outline btn-sm" onclick="discQuickSearch('Roofing','Austin TX')">Roofing in Austin TX</button>
+          <button class="btn btn-outline btn-sm" onclick="discQuickSearch('Dental','Miami FL')">Dental in Miami FL</button>
+          <button class="btn btn-outline btn-sm" onclick="discQuickSearch('HVAC','Phoenix AZ')">HVAC in Phoenix AZ</button>
+          <button class="btn btn-outline btn-sm" onclick="discQuickSearch('Plumbing','Chicago IL')">Plumbing in Chicago IL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="disc-state-loading" style="display:none">
+      <div class="card">
+        <div style="text-align:center;padding:56px 32px">
+          <div style="width:36px;height:36px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--brand);animation:spin .7s linear infinite;margin:0 auto 16px"></div>
+          <div style="font-family:var(--fd);font-size:15px;font-weight:700">Searching for <span id="disc-loading-kw">…</span></div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px" id="disc-loading-msg">Querying Google Maps…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div id="disc-state-error" style="display:none">
+      <div class="card">
+        <div class="empty">
+          <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="24" height="24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="empty-title">Search failed</div>
+          <div class="empty-desc" id="disc-error-msg">Something went wrong.</div>
+          <button class="btn btn-outline btn-sm" onclick="discSearch()">Try again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="disc-state-results" style="display:none">
+      <div class="card">
+
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="disc-results-title">0 businesses found</div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:2px" id="disc-results-sub"></div>
+          </div>
+          <!-- Import without website — direct to pipeline, no CSV -->
+          <button class="btn btn-amber btn-sm hidden" id="disc-btn-import-nowebsite" onclick="discImportNoWebsite()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+            Import without website (<span id="disc-nowebsite-count">0</span>)
+          </button>
+          <button class="btn btn-outline btn-sm" id="disc-btn-selectall" onclick="discToggleAll()">Select all</button>
+        </div>
+
+        <!-- Filters -->
+        <div style="padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-family:var(--fm);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)">Filter:</span>
+          <select id="disc-filter-rating" onchange="discApplyFilters()"
+            style="background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:5px 10px;font-family:var(--fb);font-size:12px;color:var(--text);outline:none;cursor:pointer">
+            <option value="0">Any rating</option>
+            <option value="3.5">3.5+ ★</option>
+            <option value="4.0">4.0+ ★</option>
+            <option value="4.5">4.5+ ★</option>
+          </select>
+          <select id="disc-filter-website" onchange="discApplyFilters()"
+            style="background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:5px 10px;font-family:var(--fb);font-size:12px;color:var(--text);outline:none;cursor:pointer">
+            <option value="any">Any website</option>
+            <option value="yes">Has website</option>
+            <option value="no">No website</option>
+          </select>
+          <span style="flex:1"></span>
+          <span style="font-family:var(--fm);font-size:11px;color:var(--text-3)" id="disc-filters-meta"></span>
+          <button class="btn btn-outline btn-xs" onclick="discClearFilters()">Clear</button>
+        </div>
+
+        <!-- Select row -->
+        <div id="disc-select-row" style="display:none;align-items:center;gap:12px;padding:10px 18px;background:var(--brand-dim);border-bottom:1px solid var(--brand-mid)">
+          <span style="font-size:13px;font-weight:600;color:var(--brand)" id="disc-select-count">0 selected</span>
+          <span style="font-size:12px;color:var(--text-2);flex:1">ready to import</span>
+          <button class="btn btn-brand btn-sm" id="disc-btn-import-sel" onclick="discImportSelected()" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+            Import Selected
+          </button>
+          <button class="btn btn-outline btn-xs" onclick="discClearSelection()">Clear</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="cb" id="disc-cb-all" onchange="discToggleAll(this.checked)" style="accent-color:var(--brand)" /></th>
+                <th>Business</th>
+                <th>Location</th>
+                <th>Rating</th>
+                <th>Reviews</th>
+                <th>Website</th>
+                <th>Industry</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="disc-tbody"></tbody>
+          </table>
+        </div>
+
+        <div style="padding:10px 18px;border-top:1px solid var(--border);font-family:var(--fm);font-size:11px;color:var(--text-3);display:flex;justify-content:space-between">
+          <span>Select rows to bulk import · Duplicates skipped automatically</span>
+          <span id="disc-footer-right"></span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- panel-discovery -->
+
+
   </div><!-- .content -->
 </div><!-- .main -->
 
@@ -1158,10 +1341,11 @@ async function copyText(id, btn) {
 
 /* ─── Navigation ────────────────────────────── */
 const PAGE_META = {
-  leads:    { title: 'Leads',              sub: 'Manage your prospect pipeline' },
-  scoring:  { title: 'AI Scoring',         sub: 'Estimate value and prioritize your pipeline' },
-  outreach: { title: 'Outreach Generator', sub: 'AI-written emails and DMs, personalised to each lead' },
-  email:    { title: 'Send Email',         sub: 'Send via Gmail SMTP with full delivery logging' },
+  leads:     { title: 'Leads',              sub: 'Manage your prospect pipeline' },
+  scoring:   { title: 'AI Scoring',         sub: 'Estimate value and prioritize your pipeline' },
+  outreach:  { title: 'Outreach Generator', sub: 'AI-written emails and DMs, personalised to each lead' },
+  email:     { title: 'Send Email',         sub: 'Send via Gmail SMTP with full delivery logging' },
+  discovery: { title: 'Lead Discovery',     sub: 'Find local businesses via Google Maps and import to pipeline' },
 };
 
 function navigate(page) {
@@ -1182,10 +1366,11 @@ function navigate(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   closeSidebar();
 
-  if (page === 'leads')    { loadLeads(); refreshSelects(); }
-  if (page === 'scoring')  { loadScoredLeads(); refreshSelects(); }
-  if (page === 'outreach') { loadOutreachHistory(); refreshSelects(); }
-  if (page === 'email')    { loadEmailStats(); loadEmailLogs(); loadEmailSelects(); }
+  if (page === 'leads')     { loadLeads(); refreshSelects(); }
+  if (page === 'scoring')   { loadScoredLeads(); refreshSelects(); }
+  if (page === 'outreach')  { loadOutreachHistory(); refreshSelects(); }
+  if (page === 'email')     { loadEmailStats(); loadEmailLogs(); loadEmailSelects(); }
+  if (page === 'discovery') { checkDiscoverySource(); }
 }
 
 /* ─── Mobile sidebar ─────────────────────────── */
@@ -1587,7 +1772,321 @@ function clearEmailForm() {
   if (sel1) sel1.value = ''; if (sel2) sel2.value = '';
 }
 
-/* ─── Init ───────────────────────────────────── */
+/* ─── Discovery ─────────────────────────────── */
+let discAllResults      = [];
+let discFiltered        = [];
+let discImportedIds     = new Set();
+const DISC_LOADING_MSGS = ["Querying Google Maps…","Fetching business data…","Analyzing results…","Almost ready…"];
+let discMsgInterval = null, discMsgIdx = 0;
+
+function discShowState(name) {
+  ['initial','loading','error','results'].forEach(s => {
+    const el = document.getElementById(`disc-state-${s}`);
+    if (el) el.style.display = (s === name) ? '' : 'none';
+  });
+}
+
+async function checkDiscoverySource() {
+  try {
+    const d     = await apiFetch('GET', '/api/discovery/source');
+    const dot   = document.getElementById('disc-source-dot');
+    const label = document.getElementById('disc-source-label');
+    if (d.source === 'serpapi') {
+      if (dot)   { dot.style.background = 'var(--brand)'; dot.style.boxShadow = '0 0 0 3px var(--brand-dim)'; }
+      if (label) label.textContent = 'SerpAPI live';
+    } else {
+      if (dot)   dot.style.background = 'var(--amber)';
+      if (label) label.textContent = 'Mock data';
+    }
+  } catch {}
+}
+
+function discQuickSearch(industry, location) {
+  document.getElementById('disc-industry').value = industry;
+  document.getElementById('disc-location').value  = location;
+  discSearch();
+}
+
+async function discSearch() {
+  const industry = (document.getElementById('disc-industry').value || '').trim();
+  const location = (document.getElementById('disc-location').value || '').trim();
+  const limit    = parseInt(document.getElementById('disc-limit').value || '20');
+
+  if (!industry && !location) {
+    document.getElementById('disc-industry').focus();
+    toast('Enter a business type or location.', 'error'); return;
+  }
+
+  const keyword = [industry, location].filter(Boolean).join(' ');
+  const btn = document.getElementById('disc-btn-search');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Searching…';
+
+  document.getElementById('disc-loading-kw').textContent = `"${keyword}"`;
+  discShowState('loading');
+  discImportedIds.clear();
+
+  discMsgIdx = 0;
+  document.getElementById('disc-loading-msg').textContent = DISC_LOADING_MSGS[0];
+  clearInterval(discMsgInterval);
+  discMsgInterval = setInterval(() => {
+    discMsgIdx = (discMsgIdx + 1) % DISC_LOADING_MSGS.length;
+    const el = document.getElementById('disc-loading-msg');
+    if (el) el.textContent = DISC_LOADING_MSGS[discMsgIdx];
+  }, 900);
+
+  const d = await apiFetch('POST', '/api/discovery/search', { keyword, limit });
+
+  clearInterval(discMsgInterval);
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
+
+  if (!d.success) {
+    const errEl = document.getElementById('disc-error-msg');
+    if (errEl) errEl.textContent = d.message || 'Search failed.';
+    discShowState('error'); return;
+  }
+
+  discAllResults = d.data || [];
+  document.getElementById('disc-results-title').textContent = `${discAllResults.length} business${discAllResults.length !== 1 ? 'es' : ''} found`;
+  document.getElementById('disc-results-sub').innerHTML = `<strong>${d.source === 'serpapi' ? 'Google Maps (SerpAPI)' : 'Mock data'}</strong> · query: "${esc(d.keyword || keyword)}"`;
+  document.getElementById('disc-import-summary').style.display = 'none';
+
+  discClearFilters(false);
+  discApplyFilters();
+  discShowState('results');
+}
+
+function discApplyFilters() {
+  const minRating  = parseFloat(document.getElementById('disc-filter-rating').value)  || 0;
+  const website    = document.getElementById('disc-filter-website').value;
+  const minReviews = 0;
+
+  discFiltered = discAllResults.filter(b => {
+    if (minRating > 0 && (b.rating === null || b.rating < minRating)) return false;
+    if (website === 'yes' && !b.website) return false;
+    if (website === 'no'  &&  b.website) return false;
+    return true;
+  });
+
+  // No-website button — import to pipeline directly
+  const noWebCount = discFiltered.filter(b => !b.website).length;
+  const nwBtn = document.getElementById('disc-btn-import-nowebsite');
+  const nwCnt = document.getElementById('disc-nowebsite-count');
+  if (nwBtn && nwCnt) {
+    nwCnt.textContent = noWebCount;
+    nwBtn.classList.toggle('hidden', noWebCount === 0);
+  }
+
+  // Filters meta
+  const meta = document.getElementById('disc-filters-meta');
+  if (meta && discFiltered.length > 0) {
+    const noWeb = discFiltered.filter(b => !b.website).length;
+    meta.innerHTML = `${discFiltered.length} results · <span style="color:var(--amber)">${noWeb} no website</span> · ${discFiltered.length - noWeb} with website`;
+  } else if (meta) meta.textContent = '';
+
+  discRenderTable(discFiltered);
+  discUpdateSelUI();
+}
+
+function discClearFilters(reRender = true) {
+  document.getElementById('disc-filter-rating').value  = '0';
+  document.getElementById('disc-filter-website').value = 'any';
+  discFiltered = [...discAllResults];
+  if (reRender && discAllResults.length) discApplyFilters();
+}
+
+function discStars(r) {
+  if (r === null || r === undefined) return '<span style="color:var(--text-3);font-size:12px">—</span>';
+  const full = Math.floor(r), half = (r % 1) >= .5 ? 1 : 0, empty = 5 - full - half;
+  let h = '';
+  for (let i=0;i<full;i++) h += '<span style="color:#f59e0b">★</span>';
+  if (half) h += '<span style="color:#f59e0b;opacity:.5">★</span>';
+  for (let i=0;i<empty;i++) h += '<span style="color:var(--text-3)">★</span>';
+  return `<span style="display:inline-flex;align-items:center;gap:1px">${h}<span style="font-family:var(--fm);font-size:10px;color:var(--text-2);margin-left:3px">${r.toFixed(1)}</span></span>`;
+}
+
+function discRenderTable(list) {
+  const tbody = document.getElementById('disc-tbody');
+  const cbAll = document.getElementById('disc-cb-all');
+  if (cbAll) cbAll.checked = false;
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty" style="padding:32px">
+      <div class="empty-title">No results match filters</div>
+      <div class="empty-desc">Try loosening the filter criteria.</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((b, i) => {
+    b._idx = i;
+    const imp = discImportedIds.has(i);
+    const site = b.website
+      ? `<a href="${esc(b.website)}" target="_blank" rel="noopener" style="color:var(--blue);font-size:12px;text-decoration:none">↗ ${esc(b.website.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'').slice(0,28))}</a>`
+      : `<span style="font-family:var(--fm);font-size:10px;font-weight:600;color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-mid);padding:2px 7px;border-radius:3px">No website</span>`;
+    const srcTag = b.source === 'serpapi'
+      ? `<span style="font-family:var(--fm);font-size:9px;padding:1px 5px;border-radius:3px;background:var(--brand-dim);color:var(--brand)">live</span>`
+      : `<span style="font-family:var(--fm);font-size:9px;padding:1px 5px;border-radius:3px;background:var(--bg-3);color:var(--text-3)">mock</span>`;
+
+    return `<tr id="disc-row-${i}" class="${imp ? 'imported' : ''}">
+      <td><input type="checkbox" class="cb disc-row-cb" data-idx="${i}" onchange="discRowCheck()" style="accent-color:var(--brand)" ${imp ? 'disabled checked' : ''} /></td>
+      <td><div style="font-weight:600;font-size:13px">${esc(b.name)}</div>${b.phone ? `<div style="font-size:11px;color:var(--text-3);font-family:var(--fm)">${esc(b.phone)}</div>` : ''}</td>
+      <td style="color:var(--text-2)">${esc(b.location)}</td>
+      <td>${discStars(b.rating)}</td>
+      <td style="font-family:var(--fm);font-size:11px;color:var(--text-3)">${b.review_count !== null ? b.review_count.toLocaleString() : '—'}</td>
+      <td>${site}</td>
+      <td><span style="font-size:12px;color:var(--text-2)">${esc(b.industry)}</span> ${srcTag}</td>
+      <td>${imp
+        ? `<span style="font-family:var(--fm);font-size:10px;color:var(--brand);background:var(--brand-dim);border:1px solid var(--brand-mid);padding:2px 7px;border-radius:3px">✓ Imported</span>`
+        : `<button class="btn btn-outline btn-xs" onclick="discImportOne(${i})" id="disc-btn-row-${i}">↓ Import</button>`
+      }</td>
+    </tr>`;
+  }).join('');
+
+  discUpdateFooter();
+}
+
+function discRowCheck() { discUpdateSelUI(); }
+
+function discToggleAll(checked) {
+  const cbs = document.querySelectorAll('.disc-row-cb:not(:disabled)');
+  if (typeof checked === 'undefined') {
+    const anyUnchecked = [...cbs].some(c => !c.checked);
+    cbs.forEach(cb => cb.checked = anyUnchecked);
+    const cbAll = document.getElementById('disc-cb-all');
+    if (cbAll) cbAll.checked = anyUnchecked;
+    document.getElementById('disc-btn-selectall').textContent = anyUnchecked ? 'Deselect all' : 'Select all';
+  } else {
+    cbs.forEach(cb => cb.checked = checked);
+  }
+  discUpdateSelUI();
+}
+
+function discGetSelected() {
+  return Array.from(document.querySelectorAll('.disc-row-cb:checked')).map(c => parseInt(c.dataset.idx, 10));
+}
+
+function discClearSelection() {
+  document.querySelectorAll('.disc-row-cb').forEach(cb => { if (!discImportedIds.has(parseInt(cb.dataset.idx))) cb.checked = false; });
+  const cbAll = document.getElementById('disc-cb-all');
+  if (cbAll) cbAll.checked = false;
+  discUpdateSelUI();
+}
+
+function discUpdateSelUI() {
+  const n      = discGetSelected().length;
+  const selRow = document.getElementById('disc-select-row');
+  const selBtn = document.getElementById('disc-btn-import-sel');
+  const cntEl  = document.getElementById('disc-select-count');
+  if (selRow) selRow.style.display = n > 0 ? 'flex' : 'none';
+  if (selBtn) selBtn.disabled = n === 0;
+  if (cntEl)  cntEl.textContent = `${n} selected`;
+}
+
+async function discImportSelected() {
+  const indices = discGetSelected();
+  if (!indices.length) { toast('Select at least one business.', 'error'); return; }
+  const businesses = indices.map(i => discFiltered[i]).filter(Boolean);
+  const btn = document.getElementById('disc-btn-import-sel');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Importing…'; }
+
+  const d = await apiFetch('POST', '/api/discovery/import', { businesses });
+
+  if (btn) { btn.disabled = false; btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg> Import Selected`; }
+
+  if (!d.success && !d.summary) { toast(d.message || 'Import failed.', 'error'); return; }
+
+  const s = d.summary || {};
+  indices.forEach(i => discImportedIds.add(i));
+  discRenderTable(discFiltered);
+  discClearSelection();
+  discShowImportSummary(s);
+  loadLeads(); // refresh lead count in sidebar
+
+  if ((s.imported || 0) > 0) toast(`${s.imported} lead${s.imported > 1 ? 's' : ''} imported.`, 'success');
+  if ((s.skipped  || 0) > 0) toast(`${s.skipped} duplicate${s.skipped > 1 ? 's' : ''} skipped.`, 'info');
+}
+
+async function discImportOne(idx) {
+  const b   = discFiltered[idx];
+  if (!b) return;
+  const btn = document.getElementById(`disc-btn-row-${idx}`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner dark"></span>'; }
+
+  const d = await apiFetch('POST', '/api/discovery/import-one', {
+    business_name: b.name, location: b.location, industry: b.industry,
+    website: b.website || undefined,
+    notes: [b.rating && `Rating: ${b.rating}/5`, b.review_count && `${b.review_count} reviews`, b.phone && `Phone: ${b.phone}`, 'Imported via Discovery'].filter(Boolean).join(' · '),
+  });
+
+  if (d.success) {
+    discImportedIds.add(idx);
+    const row = document.getElementById(`disc-row-${idx}`);
+    if (row) {
+      const lastTd = row.querySelector('td:last-child');
+      if (lastTd) lastTd.innerHTML = `<span style="font-family:var(--fm);font-size:10px;color:var(--brand);background:var(--brand-dim);border:1px solid var(--brand-mid);padding:2px 7px;border-radius:3px">✓ Imported</span>`;
+    }
+    toast(`"${esc(b.name)}" added to pipeline.`, 'success');
+    loadLeads();
+    discUpdateFooter();
+  } else if (d.message?.includes('already exists')) {
+    toast(`"${esc(b.name)}" already in leads.`, 'info');
+    if (btn) { btn.disabled = true; btn.textContent = 'Duplicate'; }
+  } else {
+    toast(d.message || 'Import failed.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '↓ Import'; }
+  }
+}
+
+// Import ALL no-website leads directly to pipeline (no CSV)
+async function discImportNoWebsite() {
+  const noWebLeads = discFiltered.filter((b, i) => !b.website && !discImportedIds.has(i));
+  if (!noWebLeads.length) { toast('All no-website leads already imported.', 'info'); return; }
+
+  const btn = document.getElementById('disc-btn-import-nowebsite');
+  if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner dark"></span> Importing ${noWebLeads.length}…`; }
+
+  const d = await apiFetch('POST', '/api/discovery/import', { businesses: noWebLeads });
+
+  if (btn) {
+    btn.disabled = false;
+    const nwCount = document.getElementById('disc-nowebsite-count');
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg> Import without website (<span id="disc-nowebsite-count">${nwCount?.textContent||''}</span>)`;
+  }
+
+  if (!d.success && !d.summary) { toast(d.message || 'Import failed.', 'error'); return; }
+
+  const s = d.summary || {};
+  // Mark imported
+  discFiltered.forEach((b, i) => { if (!b.website) discImportedIds.add(i); });
+  discRenderTable(discFiltered);
+  discShowImportSummary(s);
+  loadLeads();
+
+  if ((s.imported || 0) > 0) toast(`${s.imported} no-website lead${s.imported > 1 ? 's' : ''} imported to pipeline.`, 'success');
+  if ((s.skipped  || 0) > 0) toast(`${s.skipped} duplicate${s.skipped > 1 ? 's' : ''} skipped.`, 'info');
+}
+
+function discShowImportSummary(s) {
+  const el  = document.getElementById('disc-import-summary');
+  const imp = s.imported || 0, skp = s.skipped || 0, fail = s.failed || 0;
+  el.innerHTML = `<strong>Import complete:</strong> ${imp} imported, ${skp} duplicate${skp !== 1 ? 's' : ''} skipped${fail > 0 ? `, ${fail} failed` : ''}.`;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function discUpdateFooter() {
+  const el = document.getElementById('disc-footer-right');
+  if (el && discImportedIds.size > 0) el.textContent = `${discImportedIds.size} imported this session`;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const id = document.activeElement?.id;
+    if (id === 'disc-industry' || id === 'disc-location') discSearch();
+  }
+});
 initOnboarding();
 checkConnection();
 setInterval(checkConnection, 30000);
