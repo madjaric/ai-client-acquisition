@@ -1,520 +1,740 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lead Discovery — LeadFlow</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lead Discovery — LeadFlow AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <style>
-    /* ══════════════════════════════════════════
-       Design: Same warm editorial system as dashboard.html
-    ══════════════════════════════════════════ */
-    :root {
-      --bg:         #f5f3ef;
-      --surface:    #ffffff;
-      --surface2:   #f0ede8;
-      --border:     #e2ddd7;
-      --border2:    #cdc7bf;
-      --ink:        #1a1714;
-      --ink2:       #4a4540;
-      --ink3:       #8a837b;
-      --green:      #1c7c4a;
-      --green-bg:   #edf7f2;
-      --red:        #c0392b;
-      --red-bg:     #fdf0ee;
-      --amber:      #92500c;
-      --amber-bg:   #fdf4e7;
-      --blue:       #1a4f8a;
-      --blue-bg:    #eef4fd;
-      --highlight:  #f0c84a;
-      --radius:     6px;
-      --radius-lg:  12px;
-      --shadow:     0 1px 3px rgba(26,23,20,.08), 0 4px 16px rgba(26,23,20,.06);
-      --shadow-lg:  0 8px 32px rgba(26,23,20,.12), 0 2px 8px rgba(26,23,20,.08);
-      --font-d: 'Syne', sans-serif;
-      --font-b: 'Instrument Sans', sans-serif;
-      --font-m: 'JetBrains Mono', monospace;
-    }
+<style>
+/* ══════════════════════════════════════
+   DESIGN SYSTEM — matches dashboard.html exactly
+   Warm off-white + ink editorial aesthetic
+══════════════════════════════════════ */
+:root {
+  --bg:         #f5f3ef;
+  --surface:    #ffffff;
+  --surface2:   #f0ede8;
+  --border:     #e2ddd7;
+  --border2:    #cdc7bf;
+  --ink:        #1a1714;
+  --ink2:       #4a4540;
+  --ink3:       #8a837b;
+  --accent:     #1a1714;
+  --green:      #1c7c4a;
+  --green-bg:   #edf7f2;
+  --green-bd:   rgba(28,124,74,.2);
+  --red:        #c0392b;
+  --red-bg:     #fdf0ee;
+  --amber:      #92500c;
+  --amber-bg:   #fdf4e7;
+  --amber-bd:   rgba(146,80,12,.2);
+  --blue:       #1a4f8a;
+  --blue-bg:    #eef4fd;
+  --highlight:  #f0c84a;
+  --radius:     6px;
+  --radius-lg:  12px;
+  --shadow:     0 1px 3px rgba(26,23,20,.08), 0 4px 16px rgba(26,23,20,.06);
+  --shadow-lg:  0 8px 32px rgba(26,23,20,.12), 0 2px 8px rgba(26,23,20,.08);
+  --font-d: 'Syne', sans-serif;
+  --font-b: 'Instrument Sans', sans-serif;
+  --font-m: 'JetBrains Mono', monospace;
+}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; }
 
-    body {
-      font-family: var(--font-b);
-      background: var(--bg);
-      color: var(--ink);
-      font-size: 14px;
-      line-height: 1.6;
-      min-height: 100vh;
-    }
+body {
+  font-family: var(--font-b);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
 
-    /* ── TOPBAR ── */
-    .topbar {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--ink);
-      padding: 0 40px; height: 52px;
-      display: flex; align-items: center; justify-content: space-between; gap: 24px;
-    }
-    .topbar-logo {
-      font-family: var(--font-d); font-size: 17px; font-weight: 800;
-      color: #fff; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px;
-      text-decoration: none;
-    }
-    .topbar-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--highlight); }
-    .topbar-nav { display: flex; gap: 4px; }
-    .topbar-nav a {
-      color: rgba(255,255,255,.5); text-decoration: none;
-      font-size: 13px; font-weight: 500; padding: 6px 14px;
-      border-radius: var(--radius); transition: all .15s; cursor: pointer;
-    }
-    .topbar-nav a:hover  { color: #fff; background: rgba(255,255,255,.08); }
-    .topbar-nav a.active { color: #fff; background: rgba(255,255,255,.14); }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .topbar-status {
-      display: flex; align-items: center; gap: 7px;
-      font-family: var(--font-m); font-size: 11px; color: rgba(255,255,255,.4);
-    }
-    .source-badge {
-      display: flex; align-items: center; gap: 5px;
-      font-family: var(--font-m); font-size: 10px; letter-spacing: .05em;
-      padding: 3px 9px; border-radius: 20px;
-      border: 1px solid rgba(255,255,255,.15);
-      color: rgba(255,255,255,.5);
-    }
-    .source-badge.live { border-color: rgba(74,222,128,.4); color: #4ade80; }
-    .source-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+/* ─── TOPBAR ─────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--ink);
+  padding: 0 40px; height: 52px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+}
+.topbar-logo {
+  font-family: var(--font-d); font-size: 17px; font-weight: 800;
+  color: #fff; letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 8px; text-decoration: none;
+}
+.topbar-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--highlight); flex-shrink: 0; }
+.topbar-nav { display: flex; gap: 4px; }
+.topbar-nav a {
+  color: rgba(255,255,255,.5); text-decoration: none;
+  font-size: 13px; font-weight: 500; padding: 6px 14px;
+  border-radius: var(--radius); transition: all .15s;
+}
+.topbar-nav a:hover  { color: #fff; background: rgba(255,255,255,.08); }
+.topbar-nav a.active { color: #fff; background: rgba(255,255,255,.14); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-status {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-m); font-size: 11px; color: rgba(255,255,255,.4);
+}
+.source-badge {
+  font-family: var(--font-m); font-size: 10px; letter-spacing: .05em;
+  padding: 3px 9px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.5);
+  display: flex; align-items: center; gap: 5px;
+}
+.source-badge.live { border-color: rgba(74,222,128,.4); color: #4ade80; }
+.source-badge .dot-sm { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 
-    /* ── LAYOUT ── */
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 36px 32px 80px; }
+/* ─── WRAP ───────────────────────────────── */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 36px 32px 120px; }
 
-    /* ── PAGE HEADER ── */
-    .page-header {
-      margin-bottom: 32px; padding-bottom: 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
-    }
-    .page-header h1 {
-      font-family: var(--font-d); font-size: 28px; font-weight: 800;
-      letter-spacing: -0.03em; line-height: 1;
-    }
-    .page-header p { color: var(--ink3); font-size: 13px; margin-top: 5px; }
+/* ─── PAGE HEADER ────────────────────────── */
+.page-header {
+  margin-bottom: 32px; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+}
+.page-header h1 {
+  font-family: var(--font-d); font-size: 28px; font-weight: 800;
+  letter-spacing: -0.03em; line-height: 1;
+}
+.page-header p { color: var(--ink3); font-size: 13px; margin-top: 5px; }
 
-    /* ── CARD ── */
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden;
-    }
-    .card-header {
-      padding: 18px 24px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    }
-    .card-header h2 {
-      font-family: var(--font-d); font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
-    }
-    .card-body { padding: 24px; }
+/* ─── CARD ───────────────────────────────── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden;
+}
+.card-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
+}
+.card-header h2 {
+  font-family: var(--font-d); font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+}
+.card-body { padding: 24px; }
 
-    /* ── SEARCH HERO ── */
-    .search-hero {
-      background: var(--ink);
-      border-radius: var(--radius-lg);
-      padding: 36px 40px;
-      margin-bottom: 28px;
-      position: relative;
-      overflow: hidden;
-    }
-    .search-hero::before {
-      content: '';
-      position: absolute; top: -60px; right: -60px;
-      width: 300px; height: 300px;
-      background: radial-gradient(circle, rgba(240,200,74,.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .search-hero h2 {
-      font-family: var(--font-d); font-size: 22px; font-weight: 800;
-      color: #fff; letter-spacing: -0.02em; margin-bottom: 6px;
-    }
-    .search-hero p { color: rgba(255,255,255,.5); font-size: 13px; margin-bottom: 20px; }
-    .search-row {
-      display: flex; gap: 10px; align-items: center;
-    }
-    .search-input-wrap {
-      flex: 1; position: relative;
-    }
-    .search-input-wrap .search-icon {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      font-size: 16px; pointer-events: none; color: rgba(255,255,255,.35);
-    }
-    .search-input {
-      width: 100%; background: rgba(255,255,255,.08);
-      border: 1.5px solid rgba(255,255,255,.15);
-      border-radius: var(--radius); padding: 11px 14px 11px 40px;
-      font-family: var(--font-b); font-size: 15px; color: #fff;
-      outline: none; transition: border-color .15s;
-    }
-    .search-input::placeholder { color: rgba(255,255,255,.3); }
-    .search-input:focus { border-color: var(--highlight); }
-    .btn-search {
-      background: var(--highlight); color: var(--ink); border: none;
-      padding: 11px 28px; border-radius: var(--radius);
-      font-family: var(--font-d); font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: all .15s; white-space: nowrap; letter-spacing: -0.01em;
-    }
-    .btn-search:hover { background: #f5d060; transform: translateY(-1px); }
-    .btn-search:active { transform: translateY(0); }
-    .btn-search:disabled { opacity: .5; pointer-events: none; transform: none; }
+/* ─── SEARCH HERO ────────────────────────── */
+.search-hero {
+  background: var(--ink);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  margin-bottom: 24px;
+  position: relative; overflow: hidden;
+}
+.search-hero::before {
+  content: ''; position: absolute; top: -60px; right: -60px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(240,200,74,.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.search-hero h2 {
+  font-family: var(--font-d); font-size: 21px; font-weight: 800;
+  color: #fff; letter-spacing: -0.02em; margin-bottom: 4px;
+}
+.search-hero p { color: rgba(255,255,255,.45); font-size: 13px; margin-bottom: 20px; }
 
-    /* ── KEYWORD CHIPS ── */
-    .keyword-chips {
-      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px;
-    }
-    .chip {
-      padding: 4px 12px; border-radius: 20px;
-      border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.55);
-      font-size: 12px; cursor: pointer; transition: all .15s; font-family: var(--font-b);
-    }
-    .chip:hover { border-color: var(--highlight); color: var(--highlight); }
+/* Split search row */
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 130px auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+@media (max-width: 760px) {
+  .search-row { grid-template-columns: 1fr 1fr; }
+  .search-btn-wrap { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
+  .search-row { grid-template-columns: 1fr; }
+}
 
-    /* ── FILTERS BAR ── */
-    .filters-bar {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 0; flex-wrap: wrap;
-    }
-    .filter-label {
-      font-family: var(--font-m); font-size: 10px; letter-spacing: .1em;
-      color: var(--ink3); text-transform: uppercase; white-space: nowrap;
-    }
-    .filter-select, .filter-input {
-      background: var(--surface); border: 1.5px solid var(--border);
-      border-radius: var(--radius); padding: 7px 11px;
-      font-family: var(--font-b); font-size: 13px; color: var(--ink);
-      outline: none; cursor: pointer;
-    }
-    .filter-select:focus, .filter-input:focus { border-color: var(--ink); }
-    .filter-input { width: 80px; }
-    .filter-divider { width: 1px; height: 20px; background: var(--border2); }
+.search-field { display: flex; flex-direction: column; gap: 5px; }
+.search-field-label {
+  font-family: var(--font-m); font-size: 9px; font-weight: 500;
+  letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4);
+}
+.search-input-wrap { position: relative; }
+.search-input-wrap .search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: rgba(255,255,255,.3);
+  display: flex; align-items: center;
+}
+.search-input {
+  width: 100%; background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.14);
+  border-radius: var(--radius); padding: 10px 12px 10px 36px;
+  font-family: var(--font-b); font-size: 14px; color: #fff;
+  outline: none; transition: border-color .15s;
+}
+.search-input::placeholder { color: rgba(255,255,255,.28); }
+.search-input:focus { border-color: var(--highlight); }
 
-    /* ── SELECT-ALL ROW ── */
-    .select-row {
-      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-      background: var(--blue-bg); border-bottom: 1px solid rgba(26,79,138,.12);
-    }
-    .select-count { font-size: 13px; font-weight: 600; color: var(--blue); }
-    .select-hint  { font-size: 12px; color: var(--ink3); margin-right: auto; }
+.limit-select {
+  width: 100%; background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.14);
+  border-radius: var(--radius); padding: 10px 10px;
+  font-family: var(--font-m); font-size: 12px; color: rgba(255,255,255,.7);
+  outline: none; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  padding-right: 26px; transition: border-color .15s;
+}
+.limit-select:focus { border-color: var(--highlight); }
 
-    /* ── TABLE ── */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    thead th {
-      font-family: var(--font-m); font-size: 10px; letter-spacing: .1em;
-      color: var(--ink3); text-transform: uppercase; text-align: left;
-      padding: 11px 16px; background: var(--surface2);
-      border-bottom: 1px solid var(--border); white-space: nowrap;
-    }
-    thead th:first-child { width: 40px; text-align: center; }
-    tbody td {
-      padding: 12px 16px; border-bottom: 1px solid var(--border);
-      font-size: 13px; vertical-align: middle;
-    }
-    tbody td:first-child { text-align: center; }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: #faf9f7; }
-    tbody tr.selected td { background: #eef4fd; }
-    tbody tr.imported td { opacity: .45; }
-    tbody tr.imported .imported-tag {
-      display: inline-flex; align-items: center; gap: 3px;
-      font-family: var(--font-m); font-size: 10px;
-      color: var(--green); background: var(--green-bg);
-      padding: 2px 7px; border-radius: 10px; border: 1px solid rgba(28,124,74,.2);
-    }
+.search-btn-wrap { display: flex; align-items: flex-end; }
+.btn-search {
+  width: 100%; background: var(--highlight); color: var(--ink); border: none;
+  padding: 11px 24px; border-radius: var(--radius);
+  font-family: var(--font-d); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .15s; white-space: nowrap; letter-spacing: -0.01em;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.btn-search:hover { background: #f5d060; transform: translateY(-1px); }
+.btn-search:active { transform: translateY(0); }
+.btn-search:disabled { opacity: .5; pointer-events: none; transform: none; }
 
-    /* ── CHECKBOX ── */
-    .cb {
-      width: 16px; height: 16px; cursor: pointer; accent-color: var(--ink);
-    }
+/* Quick-start pills */
+.pills-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill-label {
+  font-family: var(--font-m); font-size: 10px; letter-spacing: .06em;
+  color: rgba(255,255,255,.3); text-transform: uppercase; align-self: center;
+  white-space: nowrap;
+}
+.pill {
+  padding: 4px 12px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.5);
+  font-size: 12px; cursor: pointer; transition: all .15s; font-family: var(--font-b);
+  background: transparent;
+}
+.pill:hover { border-color: var(--highlight); color: var(--highlight); background: rgba(240,200,74,.06); }
 
-    /* ── STARS ── */
-    .stars { display: inline-flex; align-items: center; gap: 3px; }
-    .star-fill { color: #f59e0b; font-size: 12px; }
-    .star-empty { color: var(--border2); font-size: 12px; }
-    .star-num {
-      font-family: var(--font-m); font-size: 11px; font-weight: 500;
-      color: var(--ink2); margin-left: 2px;
-    }
-    .star-count { font-size: 11px; color: var(--ink3); }
+/* ─── FILTERS BAR ────────────────────────── */
+.filters-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 0 10px; flex-wrap: wrap;
+}
+.filter-label {
+  font-family: var(--font-m); font-size: 10px; letter-spacing: .1em;
+  color: var(--ink3); text-transform: uppercase; white-space: nowrap;
+}
+.filter-select, .filter-input {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 7px 11px;
+  font-family: var(--font-b); font-size: 13px; color: var(--ink);
+  outline: none; cursor: pointer;
+}
+.filter-select:focus, .filter-input:focus { border-color: var(--ink); }
+.filter-input { width: 80px; }
+.filter-divider { width: 1px; height: 20px; background: var(--border2); }
+.filters-spacer { flex: 1; }
+.filters-meta {
+  font-family: var(--font-m); font-size: 11px; color: var(--ink3);
+}
+.filters-meta .no-web-count {
+  color: var(--amber); font-weight: 600;
+}
+.btn-clear-filters {
+  font-size: 12px; color: var(--ink3); background: none; border: none;
+  padding: 4px 8px; border-radius: var(--radius); cursor: pointer;
+  transition: color .15s, background .15s; font-family: var(--font-b);
+}
+.btn-clear-filters:hover { color: var(--ink); background: var(--surface2); }
 
-    /* ── SITE LINK ── */
-    .site-link {
-      color: var(--blue); font-size: 12px; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 3px;
-    }
-    .site-link:hover { text-decoration: underline; }
-    .no-site { color: var(--ink3); font-size: 12px; font-style: italic; }
+/* ─── NO-WEBSITE BADGE ───────────────────── */
+.no-web-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-m); font-size: 10px; font-weight: 500; letter-spacing: .03em;
+  color: var(--amber); background: var(--amber-bg);
+  border: 1px solid var(--amber-bd);
+  padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+}
+.no-web-badge.hidden { display: none; }
 
-    /* ── SOURCE BADGE ── */
-    .source-tag {
-      font-family: var(--font-m); font-size: 9px; letter-spacing: .06em;
-      text-transform: uppercase; padding: 2px 6px; border-radius: 3px;
-      background: var(--surface2); color: var(--ink3);
-    }
-    .source-tag.live { background: var(--green-bg); color: var(--green); }
+/* ─── STATS STRIP ────────────────────────── */
+.stats-strip {
+  display: flex; gap: 24px; padding: 13px 20px;
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+  font-family: var(--font-m); font-size: 11px; flex-wrap: wrap;
+  align-items: center;
+}
+.strip-item { display: flex; align-items: center; gap: 6px; color: var(--ink3); }
+.strip-item strong { color: var(--ink); }
+.strip-spacer { flex: 1; }
 
-    /* ── IMPORT BUTTON ── */
-    .btn-import {
-      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-      padding: 9px 20px; border-radius: var(--radius);
-      font-family: var(--font-b); font-size: 13px; font-weight: 600;
-      cursor: pointer; border: 1.5px solid transparent; transition: all .15s;
-      background: var(--ink); color: #fff; border-color: var(--ink);
-    }
-    .btn-import:hover { background: #2d2a27; }
-    .btn-import:disabled { opacity: .4; pointer-events: none; }
-    .btn-import-single {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 5px 11px; border-radius: var(--radius);
-      font-size: 12px; font-weight: 600; cursor: pointer;
-      border: 1.5px solid var(--border2); background: var(--surface);
-      color: var(--ink2); transition: all .15s; font-family: var(--font-b);
-      white-space: nowrap;
-    }
-    .btn-import-single:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); }
-    .btn-import-single:disabled { opacity: .4; pointer-events: none; }
-    .btn-outline {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 9px 18px; border-radius: var(--radius);
-      font-family: var(--font-b); font-size: 13px; font-weight: 600;
-      cursor: pointer; border: 1.5px solid var(--border2);
-      background: transparent; color: var(--ink2); transition: all .15s;
-    }
-    .btn-outline:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); }
+/* Export no-website button */
+.btn-export-nw {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-m); font-size: 10px; font-weight: 500; letter-spacing: .04em;
+  color: var(--amber); background: var(--amber-bg);
+  border: 1px solid var(--amber-bd);
+  padding: 4px 12px; border-radius: 4px; cursor: pointer;
+  transition: background .15s; white-space: nowrap;
+}
+.btn-export-nw:hover { background: #fdefd8; }
+.btn-export-nw.hidden { display: none; }
 
-    /* ── SPINNER ── */
-    .spinner {
-      display: inline-block; width: 15px; height: 15px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: #fff; border-radius: 50%;
-      animation: spin .65s linear infinite; flex-shrink: 0;
-    }
-    .spinner.dark {
-      border-color: rgba(26,23,20,.15); border-top-color: var(--ink);
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* ─── SELECT-ALL ROW ─────────────────────── */
+.select-row {
+  display: none;
+  align-items: center; gap: 12px; padding: 11px 16px;
+  background: var(--blue-bg); border-bottom: 1px solid rgba(26,79,138,.12);
+}
+.select-row.visible { display: flex; }
+.select-count { font-size: 13px; font-weight: 600; color: var(--blue); }
+.select-hint  { font-size: 12px; color: var(--ink3); margin-right: auto; }
 
-    /* ── EMPTY / STATES ── */
-    .state-box {
-      text-align: center; padding: 60px 32px; color: var(--ink3);
-    }
-    .state-icon { font-size: 40px; display: block; opacity: .3; margin-bottom: 14px; }
-    .state-title { font-family: var(--font-d); font-size: 16px; font-weight: 700; color: var(--ink2); margin-bottom: 6px; }
-    .state-sub   { font-size: 13px; }
+/* ─── TABLE ──────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  font-family: var(--font-m); font-size: 10px; letter-spacing: .1em;
+  color: var(--ink3); text-transform: uppercase; text-align: left;
+  padding: 11px 16px; background: var(--surface2);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+thead th:first-child { width: 40px; text-align: center; }
+tbody td {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 13px; vertical-align: middle;
+}
+tbody td:first-child { text-align: center; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #faf9f7; }
+tbody tr.imported td { opacity: .45; }
+.imported-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--font-m); font-size: 10px;
+  color: var(--green); background: var(--green-bg);
+  padding: 2px 7px; border-radius: 10px; border: 1px solid var(--green-bd);
+}
 
-    /* ── TOAST ── */
-    #toasts {
-      position: fixed; bottom: 28px; right: 28px;
-      display: flex; flex-direction: column; gap: 8px; z-index: 9000;
-    }
-    .toast {
-      background: var(--ink); color: #fff; padding: 12px 18px; border-radius: var(--radius);
-      font-size: 13px; font-weight: 500; min-width: 260px; max-width: 400px;
-      display: flex; align-items: flex-start; gap: 10px;
-      box-shadow: var(--shadow-lg); animation: toastIn .2s ease;
-      border-left: 3px solid var(--highlight);
-    }
-    .toast.error   { border-left-color: #f87171; }
-    .toast.success { border-left-color: #4ade80; }
-    .toast-msg  { flex: 1; line-height: 1.4; }
-    .toast-x    { color: rgba(255,255,255,.45); cursor: pointer; font-size: 18px; line-height: 1; }
-    .toast-x:hover { color: #fff; }
-    @keyframes toastIn { from { opacity:0; transform: translateX(12px); } to { opacity:1; transform:translateX(0); } }
+/* ─── CHECKBOX ───────────────────────────── */
+.cb { width: 16px; height: 16px; cursor: pointer; accent-color: var(--ink); }
 
-    /* ── IMPORT SUMMARY ── */
-    .import-summary {
-      display: none; padding: 14px 20px;
-      border-radius: var(--radius); margin-bottom: 16px;
-      background: var(--green-bg); border: 1px solid rgba(28,124,74,.2);
-      font-size: 13px; color: var(--green); font-weight: 500;
-      animation: toastIn .2s ease;
-    }
-    .import-summary.visible { display: block; }
-    .import-summary strong { font-weight: 700; }
+/* ─── STARS ──────────────────────────────── */
+.stars { display: inline-flex; align-items: center; gap: 2px; }
+.star-fill  { color: #f59e0b; font-size: 12px; }
+.star-empty { color: var(--border2); font-size: 12px; }
+.star-num { font-family: var(--font-m); font-size: 11px; color: var(--ink2); margin-left: 2px; }
 
-    /* ── STATS STRIP ── */
-    .stats-strip {
-      display: flex; gap: 24px; padding: 14px 20px;
-      background: var(--surface2); border-bottom: 1px solid var(--border);
-      font-family: var(--font-m); font-size: 11px; flex-wrap: wrap;
-    }
-    .strip-item { display: flex; align-items: center; gap: 6px; color: var(--ink3); }
-    .strip-item strong { color: var(--ink); }
+/* ─── SITE LINK ──────────────────────────── */
+.site-link { color: var(--blue); font-size: 12px; text-decoration: none; }
+.site-link:hover { text-decoration: underline; }
+.no-site {
+  color: var(--ink3); font-size: 11px; font-style: italic;
+  background: var(--amber-bg); border: 1px solid var(--amber-bd);
+  padding: 2px 7px; border-radius: 3px; font-style: normal;
+  font-family: var(--font-m); letter-spacing: .02em;
+}
 
-    /* ── INFO BADGE ── */
-    .info-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 6px 12px; border-radius: 20px;
-      font-family: var(--font-m); font-size: 11px;
-      background: var(--amber-bg); color: var(--amber);
-      border: 1px solid rgba(146,80,12,.15);
-    }
+/* ─── SOURCE TAG ─────────────────────────── */
+.source-tag {
+  font-family: var(--font-m); font-size: 9px; letter-spacing: .06em;
+  text-transform: uppercase; padding: 2px 6px; border-radius: 3px;
+  background: var(--surface2); color: var(--ink3);
+}
+.source-tag.live { background: var(--green-bg); color: var(--green); }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .topbar { padding: 0 16px; }
-      .wrap   { padding: 24px 16px 60px; }
-      .search-row { flex-direction: column; }
-      .btn-search { width: 100%; }
-      .page-header { flex-direction: column; align-items: flex-start; }
-    }
-  </style>
+/* ─── BUTTONS ────────────────────────────── */
+.btn-import {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 20px; border-radius: var(--radius);
+  font-family: var(--font-b); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid transparent; transition: all .15s;
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
+.btn-import:hover { background: #2d2a27; }
+.btn-import:disabled { opacity: .4; pointer-events: none; }
+.btn-import-single {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid var(--border2); background: var(--surface);
+  color: var(--ink2); transition: all .15s; font-family: var(--font-b); white-space: nowrap;
+}
+.btn-import-single:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); }
+.btn-import-single:disabled { opacity: .4; pointer-events: none; }
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: var(--radius);
+  font-family: var(--font-b); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid var(--border2);
+  background: transparent; color: var(--ink2); transition: all .15s;
+}
+.btn-outline:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); }
+
+/* ─── SPINNER ────────────────────────────── */
+.spinner {
+  display: inline-block; width: 15px; height: 15px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin .65s linear infinite; flex-shrink: 0;
+}
+.spinner.dark { border-color: rgba(26,23,20,.15); border-top-color: var(--ink); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── STATES ─────────────────────────────── */
+.state-box {
+  text-align: center; padding: 60px 32px; color: var(--ink3);
+}
+.state-icon { font-size: 36px; display: block; opacity: .25; margin-bottom: 14px; }
+.state-title { font-family: var(--font-d); font-size: 17px; font-weight: 700; color: var(--ink2); margin-bottom: 6px; }
+.state-sub { font-size: 13px; line-height: 1.6; }
+
+/* Empty state pills */
+.empty-pills {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px;
+}
+.empty-pill {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1.5px solid var(--border2); color: var(--ink2);
+  font-size: 13px; cursor: pointer; transition: all .15s; font-family: var(--font-b);
+  background: var(--surface);
+}
+.empty-pill:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); transform: translateY(-1px); }
+
+/* How-it-works steps */
+.how-steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-top: 32px; padding-top: 28px;
+  border-top: 1px solid var(--border);
+  text-align: left;
+}
+@media (max-width: 600px) { .how-steps { grid-template-columns: 1fr; } }
+.how-step {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 18px;
+}
+.how-num {
+  font-family: var(--font-m); font-size: 10px; font-weight: 500;
+  letter-spacing: .08em; color: var(--green);
+  background: var(--green-bg); border: 1px solid var(--green-bd);
+  padding: 2px 8px; border-radius: 3px; display: inline-block; margin-bottom: 10px;
+}
+.how-title { font-family: var(--font-d); font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.how-desc { font-size: 12px; color: var(--ink3); line-height: 1.55; }
+
+/* Loading state */
+#state-loading { text-align: center; padding: 60px 32px; }
+.loading-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2.5px solid var(--border); border-top-color: var(--ink);
+  animation: spin .7s linear infinite; margin: 0 auto 16px;
+}
+.loading-keyword { font-family: var(--font-d); font-size: 16px; font-weight: 700; }
+.loading-sub { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+
+/* Loading message cycle */
+.loading-msg-cycle { font-size: 13px; color: var(--ink3); margin-top: 8px; min-height: 20px; }
+
+/* ─── TOAST ──────────────────────────────── */
+#toasts {
+  position: fixed; bottom: 28px; right: 28px;
+  display: flex; flex-direction: column; gap: 8px; z-index: 9000; pointer-events: none;
+}
+.toast {
+  background: var(--ink); color: #fff; padding: 12px 18px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 500; min-width: 260px; max-width: 400px;
+  display: flex; align-items: flex-start; gap: 10px;
+  box-shadow: var(--shadow-lg); animation: toastIn .2s ease;
+  border-left: 3px solid var(--highlight); pointer-events: all;
+}
+.toast.error   { border-left-color: #f87171; }
+.toast.success { border-left-color: #4ade80; }
+.toast-msg  { flex: 1; line-height: 1.4; }
+.toast-act  { color: #4ade80; font-weight: 600; cursor: pointer; white-space: nowrap; background: none; border: none; font-family: var(--font-b); font-size: 13px; }
+.toast-x    { color: rgba(255,255,255,.45); cursor: pointer; font-size: 18px; line-height: 1; }
+.toast-x:hover { color: #fff; }
+@keyframes toastIn { from { opacity:0; transform: translateX(12px); } to { opacity:1; transform:translateX(0); } }
+
+/* ─── IMPORT SUMMARY ─────────────────────── */
+.import-summary {
+  display: none; padding: 14px 20px;
+  border-radius: var(--radius); margin-bottom: 16px;
+  background: var(--green-bg); border: 1px solid var(--green-bd);
+  font-size: 13px; color: var(--green); font-weight: 500;
+  animation: toastIn .2s ease;
+}
+.import-summary.visible { display: block; }
+.import-summary strong { font-weight: 700; }
+
+/* ─── FLOATING IMPORT BAR ────────────────── */
+.import-bar {
+  position: fixed;
+  bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  opacity: 0;
+  transition: transform .28s cubic-bezier(.34,1.56,.64,1), opacity .2s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  min-width: 420px;
+}
+.import-bar.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+.ib-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ib-text { flex: 1; }
+.ib-count { font-family: var(--font-d); font-size: 14px; font-weight: 700; line-height: 1.2; }
+.ib-sub { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 1px; }
+.ib-actions { display: flex; align-items: center; gap: 8px; }
+.btn-ib-cancel {
+  font-size: 12px; color: rgba(255,255,255,.5); background: none; border: none;
+  padding: 6px 10px; border-radius: var(--radius); cursor: pointer;
+  font-family: var(--font-b); transition: color .15s, background .15s;
+}
+.btn-ib-cancel:hover { color: rgba(255,255,255,.8); background: rgba(255,255,255,.07); }
+.btn-ib-import {
+  background: var(--highlight); color: var(--ink); border: none;
+  padding: 8px 20px; border-radius: var(--radius);
+  font-family: var(--font-d); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background .15s, transform .1s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-ib-import:hover { background: #f5d060; }
+.btn-ib-import:active { transform: scale(.98); }
+.btn-ib-import:disabled { opacity: .5; pointer-events: none; }
+</style>
 </head>
+
 <body>
 
-<!-- Hidden connection status element (updated by checkConnection()) -->
-<div id="status" style="display:none" aria-hidden="true"></div>
-
-<!-- ══════════════════════ TOPBAR ══════════════════════ -->
+<!-- ════ TOPBAR ════════════════════════════════════════════════════ -->
 <header class="topbar">
-  <a href="/dashboard.html" class="topbar-logo">
-    <span class="dot"></span>LeadFlow
+  <a class="topbar-logo" href="/dashboard.html">
+    <span class="dot"></span>LeadFlow AI
   </a>
   <nav class="topbar-nav">
+    <a href="/dashboard.html">Dashboard</a>
     <a href="/dashboard.html">Leads</a>
-    <a href="/dashboard.html">AI Scoring</a>
+    <a href="/dashboard.html">Scoring</a>
     <a href="/dashboard.html">Outreach</a>
     <a href="/discovery.html" class="active">Discovery</a>
   </nav>
   <div class="topbar-right">
+    <div class="topbar-status" id="status">● Connecting…</div>
     <div class="source-badge" id="source-badge">
-      <span class="dot"></span>
-      <span id="source-label">checking...</span>
+      <span class="dot-sm"></span>
+      <span id="source-label">Checking…</span>
     </div>
   </div>
 </header>
 
-<!-- ══════════════════════ MAIN ══════════════════════ -->
+<!-- ════ MAIN ══════════════════════════════════════════════════════ -->
 <div class="wrap">
 
-  <!-- Page header -->
   <div class="page-header">
     <div>
       <h1>Lead Discovery</h1>
-      <p>Find local businesses by keyword and import them directly into your pipeline</p>
+      <p>Find local businesses via Google Maps, filter by quality, and import directly to your pipeline.</p>
     </div>
-    <a href="/dashboard.html" class="btn-outline" style="font-size:12px;padding:7px 14px">← Back to Dashboard</a>
+    <a href="/dashboard.html" class="btn-outline" style="font-size:13px;padding:8px 16px;">
+      ← Back to Dashboard
+    </a>
   </div>
 
-  <!-- Import summary banner -->
+  <!-- ── SEARCH HERO ── -->
+  <div class="search-hero">
+    <h2>Find your next clients</h2>
+    <p>Search Google Maps data by business type and city — import directly into your pipeline in one click.</p>
+
+    <div class="search-row">
+      <div class="search-field">
+        <div class="search-field-label">Business type</div>
+        <div class="search-input-wrap">
+          <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </span>
+          <input class="search-input" id="industry-input" type="text"
+            placeholder="roofing, dental, HVAC…"
+            autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+
+      <div class="search-field">
+        <div class="search-field-label">City / Location</div>
+        <div class="search-input-wrap">
+          <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+          <input class="search-input" id="location-input" type="text"
+            placeholder="Austin TX, Miami FL…"
+            autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+
+      <div class="search-field">
+        <div class="search-field-label">Results</div>
+        <select class="limit-select" id="result-limit">
+          <option value="10">10 results</option>
+          <option value="20" selected>20 results</option>
+          <option value="50">50 results</option>
+        </select>
+      </div>
+
+      <div class="search-btn-wrap">
+        <button class="btn-search" id="btn-search" onclick="doSearch()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search
+        </button>
+      </div>
+    </div>
+
+    <div class="pills-row">
+      <span class="pill-label">Try:</span>
+      <button class="pill" onclick="quickSearch('Roofing','Austin TX')">🏠 Roofing · Austin TX</button>
+      <button class="pill" onclick="quickSearch('Dental','Miami FL')">🦷 Dental · Miami FL</button>
+      <button class="pill" onclick="quickSearch('HVAC','Phoenix AZ')">❄️ HVAC · Phoenix AZ</button>
+      <button class="pill" onclick="quickSearch('Plumbing','Chicago IL')">🔧 Plumbing · Chicago IL</button>
+      <button class="pill" onclick="quickSearch('Law Firm','Dallas TX')">⚖️ Law Firm · Dallas TX</button>
+      <button class="pill" onclick="quickSearch('Gym','New York NY')">💪 Gym · New York NY</button>
+    </div>
+  </div>
+
+  <!-- ── IMPORT SUMMARY ── -->
   <div class="import-summary" id="import-summary"></div>
 
-  <!-- ══ SEARCH HERO ══ -->
-  <div class="search-hero">
-    <h2>Find Businesses</h2>
-    <p>Enter a keyword + city to discover local businesses. Try "roofing Austin TX" or "dental Miami FL".</p>
-    <div class="search-row">
-      <div class="search-input-wrap">
-        <span class="search-icon">⊕</span>
-        <input
-          id="search-input"
-          class="search-input"
-          type="text"
-          placeholder='e.g. "roofing Austin TX" or "dentist Chicago IL"'
-          onkeydown="if(event.key==='Enter') doSearch()"
-          autocomplete="off"
-        />
+  <!-- ══════════════ STATES ══════════════════════════ -->
+
+  <!-- Initial empty state -->
+  <div id="state-initial" class="card">
+    <div class="state-box">
+      <span class="state-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".35"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </span>
+      <div class="state-title">Find your next 10 clients in 30 seconds</div>
+      <p class="state-sub">Enter a business type and city above, or click one of the quick-start examples below.<br>We search Google Maps, score results, and let you import directly to your pipeline.</p>
+      <div class="empty-pills">
+        <button class="empty-pill" onclick="quickSearch('Roofing','Austin TX')">Roofing in Austin TX</button>
+        <button class="empty-pill" onclick="quickSearch('Dental','Miami FL')">Dental in Miami FL</button>
+        <button class="empty-pill" onclick="quickSearch('HVAC','Phoenix AZ')">HVAC in Phoenix AZ</button>
+        <button class="empty-pill" onclick="quickSearch('Plumbing','Chicago IL')">Plumbing in Chicago IL</button>
+        <button class="empty-pill" onclick="quickSearch('Gym','New York NY')">Gym in New York NY</button>
       </div>
-      <button class="btn-search" id="btn-search" onclick="doSearch()">
-        Search
-      </button>
-    </div>
-    <div class="keyword-chips" id="chips">
-      <span class="chip" onclick="fillSearch('roofing Austin TX')">roofing Austin TX</span>
-      <span class="chip" onclick="fillSearch('dental Miami FL')">dental Miami FL</span>
-      <span class="chip" onclick="fillSearch('HVAC Phoenix AZ')">HVAC Phoenix AZ</span>
-      <span class="chip" onclick="fillSearch('plumbing Chicago IL')">plumbing Chicago IL</span>
-      <span class="chip" onclick="fillSearch('law firm Dallas TX')">law firm Dallas TX</span>
-      <span class="chip" onclick="fillSearch('restaurant San Francisco CA')">restaurant San Francisco</span>
-      <span class="chip" onclick="fillSearch('gym New York NY')">gym New York NY</span>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-num">STEP 01</div>
+          <div class="how-title">Search</div>
+          <div class="how-desc">Enter a business type and city. We query Google Maps data for real local businesses in that area.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">STEP 02</div>
+          <div class="how-title">Filter</div>
+          <div class="how-desc">Narrow by minimum rating, website presence, and review count. Focus only on quality prospects.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">STEP 03</div>
+          <div class="how-title">Import</div>
+          <div class="how-desc">Select businesses and click Import. They land in your pipeline ready for AI scoring and outreach.</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ══ RESULTS CARD ══ -->
-  <div class="card" id="results-card">
-
-    <!-- Initial empty state -->
-    <div id="state-initial" class="state-box">
-      <span class="state-icon">⊕</span>
-      <div class="state-title">Enter a keyword to discover leads</div>
-      <p class="state-sub">Search for any business type + city.<br>Results come from Google Maps (SerpAPI) or realistic mock data.</p>
+  <!-- Loading state -->
+  <div id="state-loading" style="display:none">
+    <div class="card card-body" style="padding:60px 32px;text-align:center">
+      <div class="loading-spinner"></div>
+      <div class="loading-keyword">Searching for <span id="loading-keyword">…</span></div>
+      <div class="loading-sub">This usually takes 2–4 seconds</div>
+      <div class="loading-msg-cycle" id="loading-msg">Querying Google Maps…</div>
     </div>
+  </div>
 
-    <!-- Loading state (hidden) -->
-    <div id="state-loading" class="state-box" style="display:none">
-      <span style="font-size:32px;display:block;margin-bottom:16px">
-        <span class="spinner dark" style="width:28px;height:28px;border-width:3px"></span>
-      </span>
-      <div class="state-title">Searching...</div>
-      <p class="state-sub" id="loading-keyword"></p>
+  <!-- Error state -->
+  <div id="state-error" style="display:none">
+    <div class="card">
+      <div class="state-box">
+        <span class="state-icon">⚠</span>
+        <div class="state-title">Search failed</div>
+        <p class="state-sub" id="error-msg">Something went wrong. Please try again.</p>
+        <button class="btn-outline" style="margin-top:16px" onclick="doSearch()">Try again</button>
+      </div>
     </div>
+  </div>
 
-    <!-- Error state (hidden) -->
-    <div id="state-error" class="state-box" style="display:none">
-      <span class="state-icon">⚠</span>
-      <div class="state-title">Search failed</div>
-      <p class="state-sub" id="error-msg"></p>
-    </div>
+  <!-- Results state -->
+  <div id="state-results" style="display:none">
+    <div class="card">
 
-    <!-- Results (hidden until search) -->
-    <div id="state-results" style="display:none">
-
-      <!-- Stats strip -->
-      <div class="stats-strip" id="stats-strip">
-        <div class="strip-item"><strong id="strip-count">0</strong> results</div>
-        <div class="strip-item">Source: <strong id="strip-source">—</strong></div>
-        <div class="strip-item">Keyword: <strong id="strip-keyword">—</strong></div>
+      <!-- Stats strip + filters -->
+      <div class="stats-strip">
+        <div class="strip-item">
+          <strong id="strip-count">0</strong> businesses found
+        </div>
         <div class="strip-item" id="strip-filtered-wrap" style="display:none">
-          Showing: <strong id="strip-filtered">—</strong> after filters
+          (<strong id="strip-filtered">0</strong> shown after filters)
         </div>
-      </div>
-
-      <!-- Filters -->
-      <div style="padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2)">
-        <div class="filters-bar" style="padding:0">
-          <span class="filter-label">Filters:</span>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--ink2)">Min Rating</span>
-            <select class="filter-select" id="filter-rating" onchange="applyFilters()">
-              <option value="0">Any</option>
-              <option value="3">3.0+</option>
-              <option value="3.5">3.5+</option>
-              <option value="4">4.0+</option>
-              <option value="4.5">4.5+</option>
-            </select>
-          </div>
-          <div class="filter-divider"></div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--ink2)">Website</span>
-            <select class="filter-select" id="filter-website" onchange="applyFilters()">
-              <option value="any">Any</option>
-              <option value="yes">Has website</option>
-              <option value="no">No website</option>
-            </select>
-          </div>
-          <div class="filter-divider"></div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--ink2)">Min Reviews</span>
-            <input class="filter-input" id="filter-reviews" type="number" min="0" placeholder="0" oninput="applyFilters()" />
-          </div>
-          <div class="filter-divider"></div>
-          <button class="btn-outline" style="padding:6px 12px;font-size:12px" onclick="clearFilters()">Clear filters</button>
+        <div class="strip-item">
+          Source: <strong id="strip-source">—</strong>
         </div>
-      </div>
-
-      <!-- Selection action bar (shown when items selected) -->
-      <div class="select-row" id="select-row" style="display:none">
-        <span class="select-count" id="select-count">0 selected</span>
-        <span class="select-hint">— ready to import</span>
-        <button class="btn-import" id="btn-import-selected" onclick="importSelected()">
-          ↓ Import Selected to Leads
+        <div class="strip-item">
+          Query: <strong id="strip-keyword">—</strong>
+        </div>
+        <div class="strip-spacer"></div>
+        <span class="no-web-badge hidden" id="no-web-badge" title="Businesses without a website — best outreach targets">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+          <span id="no-web-count">0</span> without website
+        </span>
+        <button class="btn-export-nw hidden" id="btn-export-nw" onclick="exportNoWebsite()">
+          ↓ Export without website (<span id="export-nw-count">0</span>)
         </button>
+      </div>
+
+      <!-- Filters bar -->
+      <div class="card-body" style="padding-bottom:0;padding-top:10px">
+        <div class="filters-bar">
+          <span class="filter-label">Filter:</span>
+
+          <select class="filter-select" id="filter-rating" onchange="applyFilters()">
+            <option value="0">Any rating</option>
+            <option value="3.5">3.5+ ★</option>
+            <option value="4.0">4.0+ ★</option>
+            <option value="4.5">4.5+ ★</option>
+          </select>
+
+          <select class="filter-select" id="filter-website" onchange="applyFilters()">
+            <option value="any">Any website</option>
+            <option value="yes">Has website</option>
+            <option value="no">No website</option>
+          </select>
+
+          <span class="filter-label">Min reviews:</span>
+          <input class="filter-input" id="filter-reviews" type="number"
+            placeholder="e.g. 50" min="0" oninput="applyFilters()" />
+
+          <div class="filter-divider"></div>
+          <span class="filters-meta" id="filters-meta"></span>
+          <div class="filters-spacer"></div>
+          <button class="btn-clear-filters" onclick="clearFilters()">Clear filters</button>
+        </div>
+      </div>
+
+      <!-- Select-all action row -->
+      <div class="select-row" id="select-row">
+        <span class="select-count" id="select-count">0 selected</span>
+        <span class="select-hint">ready to import</span>
+        <button class="btn-import" id="btn-import-selected" onclick="importSelected()" disabled>
+          ↓ Import Selected
+        </button>
+        <button class="btn-outline" onclick="clearSelection()">Clear</button>
       </div>
 
       <!-- Table -->
@@ -523,7 +743,8 @@
           <thead>
             <tr>
               <th>
-                <input type="checkbox" class="cb" id="cb-all" onchange="toggleAll(this.checked)" title="Select all" />
+                <input type="checkbox" class="cb" id="cb-all"
+                  onchange="toggleAll(this.checked)" />
               </th>
               <th>Business</th>
               <th>Location</th>
@@ -534,135 +755,104 @@
               <th></th>
             </tr>
           </thead>
-          <tbody id="results-tbody"></tbody>
+          <tbody id="results-tbody">
+          </tbody>
         </table>
       </div>
 
-      <!-- Bottom import bar -->
-      <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-        <p style="font-size:12px;color:var(--ink3)">
-          Select rows then click <strong>Import Selected</strong>, or use the row button to import individually.
-          Duplicates are automatically skipped.
-        </p>
-        <button class="btn-import" id="btn-import-bottom" onclick="importSelected()" disabled>
-          ↓ Import Selected
-        </button>
+      <!-- Table footer -->
+      <div style="padding:12px 20px;border-top:1px solid var(--border);font-family:var(--font-m);font-size:11px;color:var(--ink3);display:flex;align-items:center;justify-content:space-between">
+        <span>Select rows to bulk import · Duplicates are skipped automatically</span>
+        <span id="table-footer-right"></span>
       </div>
 
-    </div>
-  </div>
-
-  <!-- ══ HOW IT WORKS ══ -->
-  <div style="margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
-    <div class="card">
-      <div class="card-body" style="display:flex;gap:14px;align-items:flex-start">
-        <div style="font-size:22px;line-height:1;margin-top:2px">⊕</div>
-        <div>
-          <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:4px">1. Search</div>
-          <p style="font-size:12px;color:var(--ink3);line-height:1.5">Enter a business type and city. Uses Google Maps data (SerpAPI) or realistic mock data.</p>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-body" style="display:flex;gap:14px;align-items:flex-start">
-        <div style="font-size:22px;line-height:1;margin-top:2px">◈</div>
-        <div>
-          <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:4px">2. Filter</div>
-          <p style="font-size:12px;color:var(--ink3);line-height:1.5">Filter by minimum rating, website presence, and review count. Focus on quality prospects.</p>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-body" style="display:flex;gap:14px;align-items:flex-start">
-        <div style="font-size:22px;line-height:1;margin-top:2px">↓</div>
-        <div>
-          <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:4px">3. Import</div>
-          <p style="font-size:12px;color:var(--ink3);line-height:1.5">Select any businesses and click Import. They're added to your leads pipeline, ready to score.</p>
-        </div>
-      </div>
     </div>
   </div>
 
 </div>
 
-<!-- ══ TOASTS ══ -->
+<!-- ════ FLOATING IMPORT BAR ══════════════════════════════════════ -->
+<div class="import-bar" id="import-bar">
+  <div class="ib-icon">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+  </div>
+  <div class="ib-text">
+    <div class="ib-count" id="ib-count">0 leads selected</div>
+    <div class="ib-sub">Ready to import into your pipeline</div>
+  </div>
+  <div class="ib-actions">
+    <button class="btn-ib-cancel" onclick="clearSelection()">Clear</button>
+    <button class="btn-ib-import" id="btn-ib-import" onclick="importSelected()">
+      ↓ Import to pipeline
+    </button>
+  </div>
+</div>
+
+<!-- ════ TOASTS ════════════════════════════════════════════════════ -->
 <div id="toasts"></div>
 
-
-<!-- ════════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════════ -->
+<!-- ════ JAVASCRIPT ════════════════════════════════════════════════ -->
 <script>
 "use strict";
 
-const API_BASE = '';  // relative — works when served from Express at localhost:3000
-const API      = API_BASE; // alias for compatibility
+const API_BASE = "";   // same origin
 
-// ─────────────────────────────────────────────
-//  CONNECTION STATUS
-// ─────────────────────────────────────────────
-async function checkConnection() {
-  try {
-    const res = await fetch('/api/health');
-    if (!res.ok) throw new Error();
-    const d  = await res.json();
-    const el = document.getElementById('status');
-    if (el) el.innerText = d.status === 'healthy' ? '🟢 Connected' : '🟡 Degraded';
-  } catch {
-    const el = document.getElementById('status');
-    if (el) el.innerText = '🔴 Offline';
-  }
-}
+// ─── State ───────────────────────────────────────────────────────
+let allResults      = [];
+let filteredResults = [];
+let importedIds     = new Set();
 
-// ─────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────
-let allResults      = [];   // raw results from search
-let filteredResults = [];   // after filters applied
-let importedIds     = new Set(); // track which rows were imported this session
+const LOADING_MSGS = [
+  "Querying Google Maps…",
+  "Fetching business data…",
+  "Analyzing results…",
+  "Almost ready…",
+];
+let loadingMsgInterval = null;
+let loadingMsgIdx      = 0;
 
-// ─────────────────────────────────────────────
-//  UTILS
-// ─────────────────────────────────────────────
+// ─── Utilities ───────────────────────────────────────────────────
 function esc(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
 async function apiFetch(method, path, body) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  const opts = { method, headers: { "Content-Type": "application/json" } };
   if (body) opts.body = JSON.stringify(body);
   try {
     const res = await fetch(API_BASE + path, opts);
-    if (!res.ok) {
-      const text = await res.text();
-      try { return JSON.parse(text); } catch { return { success: false, message: 'HTTP ' + res.status }; }
-    }
-    return res.json();
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch { return { success: false, message: "HTTP " + res.status }; }
   } catch (err) {
-    console.error('[apiFetch]', method, path, err.message);
-    return { success: false, message: 'Network error — is the server running?' };
+    console.error("[apiFetch]", method, path, err.message);
+    return { success: false, message: "Network error — is the server running?" };
   }
 }
 
-function toast(msg, type = 'info') {
-  const icons = { info: '→', success: '✓', error: '✕' };
-  const el = document.createElement('div');
+function toast(msg, type = "info", action) {
+  const icons = { info: "→", success: "✓", error: "✕" };
+  const el = document.createElement("div");
   el.className = `toast ${type}`;
-  el.innerHTML = `<span>${icons[type]||'→'}</span><span class="toast-msg">${esc(msg)}</span><span class="toast-x" onclick="this.parentElement.remove()">×</span>`;
-  document.getElementById('toasts').appendChild(el);
-  setTimeout(() => el?.remove(), 5000);
+  const actHtml = action
+    ? `<button class="toast-act" onclick="${action.fn}">${esc(action.label)}</button>`
+    : "";
+  el.innerHTML = `<span>${icons[type]||"→"}</span><span class="toast-msg">${esc(msg)}</span>${actHtml}<span class="toast-x" onclick="this.parentElement.remove()">×</span>`;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(() => el?.remove(), 6000);
 }
 
 function showState(name) {
-  ['initial','loading','error','results'].forEach(s => {
-    document.getElementById(`state-${s}`).style.display = s === name ? '' : 'none';
+  ["initial","loading","error","results"].forEach(s => {
+    const el = document.getElementById(`state-${s}`);
+    if (el) el.style.display = (s === name) ? "" : "none";
   });
 }
 
 function stars(rating) {
   if (rating === null || rating === undefined) return '<span style="color:var(--ink3);font-size:12px">—</span>';
   const full  = Math.floor(rating);
-  const half  = rating % 1 >= 0.5 ? 1 : 0;
+  const half  = (rating % 1) >= 0.5 ? 1 : 0;
   const empty = 5 - full - half;
   let html = '<span class="stars">';
   for (let i = 0; i < full;  i++) html += '<span class="star-fill">★</span>';
@@ -672,111 +862,168 @@ function stars(rating) {
   return html;
 }
 
-// ─────────────────────────────────────────────
-//  DATA SOURCE
-// ─────────────────────────────────────────────
+// ─── Connection + Source ─────────────────────────────────────────
+async function checkConnection() {
+  try {
+    const res = await fetch("/api/health");
+    if (!res.ok) throw new Error();
+    const d  = await res.json();
+    const el = document.getElementById("status");
+    if (el) el.innerText = d.status === "healthy" ? "● Connected" : "● Degraded";
+  } catch {
+    const el = document.getElementById("status");
+    if (el) el.innerText = "● Offline";
+  }
+}
+
 async function checkSource() {
   try {
-    const d = await apiFetch('GET', '/api/discovery/source');
-    const badge = document.getElementById('source-badge');
-    const label = document.getElementById('source-label');
-    if (d.source === 'serpapi') {
-      badge.classList.add('live');
-      label.textContent = 'SerpAPI live';
+    const d     = await apiFetch("GET", "/api/discovery/source");
+    const badge = document.getElementById("source-badge");
+    const label = document.getElementById("source-label");
+    if (d.source === "serpapi") {
+      badge.classList.add("live");
+      label.textContent = "SerpAPI live";
     } else {
-      label.textContent = 'Mock data';
+      badge.classList.remove("live");
+      label.textContent = "Mock data";
     }
   } catch { /* non-critical */ }
 }
 
-// ─────────────────────────────────────────────
-//  SEARCH
-// ─────────────────────────────────────────────
-function fillSearch(kw) {
-  document.getElementById('search-input').value = kw;
-  document.getElementById('search-input').focus();
+// ─── Search ──────────────────────────────────────────────────────
+function quickSearch(industry, location) {
+  document.getElementById("industry-input").value = industry;
+  document.getElementById("location-input").value  = location;
+  doSearch();
 }
 
 async function doSearch() {
-  const keyword = document.getElementById('search-input').value.trim();
-  if (!keyword) { toast('Enter a keyword to search.', 'error'); return; }
+  const industry = (document.getElementById("industry-input").value || "").trim();
+  const location = (document.getElementById("location-input").value || "").trim();
+  const limit    = parseInt(document.getElementById("result-limit").value || "20");
 
-  const btn = document.getElementById('btn-search');
+  if (!industry && !location) {
+    document.getElementById("industry-input").focus();
+    toast("Enter a business type or location to search.", "error");
+    return;
+  }
+
+  const keyword = [industry, location].filter(Boolean).join(" ");
+
+  const btn = document.getElementById("btn-search");
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner" style="border-top-color:var(--ink)"></span> Searching...';
+  btn.innerHTML = '<span class="spinner" style="border-top-color:var(--ink);border-color:rgba(26,23,20,.2)"></span> Searching…';
 
-  document.getElementById('loading-keyword').textContent = `"${keyword}"`;
-  showState('loading');
+  document.getElementById("loading-keyword").textContent = `"${keyword}"`;
+  showState("loading");
+  importedIds.clear();
 
-  const d = await apiFetch('POST', '/api/discovery/search', { keyword, limit: 20 });
+  // Loading message cycle
+  loadingMsgIdx = 0;
+  document.getElementById("loading-msg").textContent = LOADING_MSGS[0];
+  clearInterval(loadingMsgInterval);
+  loadingMsgInterval = setInterval(() => {
+    loadingMsgIdx = (loadingMsgIdx + 1) % LOADING_MSGS.length;
+    const el = document.getElementById("loading-msg");
+    if (el) el.textContent = LOADING_MSGS[loadingMsgIdx];
+  }, 900);
 
+  const d = await apiFetch("POST", "/api/discovery/search", { keyword, limit });
+
+  clearInterval(loadingMsgInterval);
   btn.disabled = false;
-  btn.textContent = 'Search';
+  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
 
   if (!d.success) {
-    document.getElementById('error-msg').textContent = d.message || 'Search failed. Please try again.';
-    showState('error');
+    document.getElementById("error-msg").textContent = d.message || "Search failed. Please try again.";
+    showState("error");
     return;
   }
 
   allResults = d.data || [];
-  document.getElementById('strip-count').textContent   = allResults.length;
-  document.getElementById('strip-source').textContent  = d.source === 'serpapi' ? 'Google Maps (SerpAPI)' : 'Mock data';
-  document.getElementById('strip-keyword').textContent = `"${d.keyword}"`;
-  document.getElementById('import-summary').classList.remove('visible');
-  importedIds.clear();
-  clearFilters();
+  document.getElementById("strip-count").textContent   = allResults.length;
+  document.getElementById("strip-source").textContent  = d.source === "serpapi" ? "Google Maps (SerpAPI)" : "Mock data";
+  document.getElementById("strip-keyword").textContent = `"${d.keyword || keyword}"`;
+  document.getElementById("import-summary").classList.remove("visible");
+
+  clearFilters(false);
   applyFilters();
-  showState('results');
+  showState("results");
 }
 
-// ─────────────────────────────────────────────
-//  FILTERS
-// ─────────────────────────────────────────────
+// ─── Filters ─────────────────────────────────────────────────────
 function applyFilters() {
-  const minRating  = parseFloat(document.getElementById('filter-rating').value)  || 0;
-  const website    = document.getElementById('filter-website').value;
-  const minReviews = parseInt(document.getElementById('filter-reviews').value, 10) || 0;
+  const minRating  = parseFloat(document.getElementById("filter-rating").value)   || 0;
+  const website    = document.getElementById("filter-website").value;
+  const minReviews = parseInt(document.getElementById("filter-reviews").value, 10) || 0;
 
   filteredResults = allResults.filter(b => {
-    if (minRating  > 0 && (b.rating === null || b.rating < minRating))      return false;
-    if (website === 'yes' && !b.website)                                      return false;
-    if (website === 'no'  && b.website)                                       return false;
+    if (minRating  > 0 && (b.rating       === null || b.rating       < minRating))  return false;
+    if (website === "yes" && !b.website)                                              return false;
+    if (website === "no"  &&  b.website)                                              return false;
     if (minReviews > 0 && (b.review_count === null || b.review_count < minReviews)) return false;
     return true;
   });
 
-  const filtered = filteredResults.length;
+  // Filtered count strip
   const total    = allResults.length;
-  const stripWrap = document.getElementById('strip-filtered-wrap');
+  const filtered = filteredResults.length;
+  const stripWrap = document.getElementById("strip-filtered-wrap");
   if (filtered < total) {
-    stripWrap.style.display = '';
-    document.getElementById('strip-filtered').textContent = `${filtered} of ${total}`;
+    stripWrap.style.display = "";
+    document.getElementById("strip-filtered").textContent = filtered;
   } else {
-    stripWrap.style.display = 'none';
+    stripWrap.style.display = "none";
+  }
+
+  // No-website badge + export button
+  const noWebCount = filteredResults.filter(b => !b.website).length;
+  const nwBadge    = document.getElementById("no-web-badge");
+  const btnExport  = document.getElementById("btn-export-nw");
+  if (noWebCount > 0) {
+    document.getElementById("no-web-count").textContent  = noWebCount;
+    document.getElementById("export-nw-count").textContent = noWebCount;
+    nwBadge.classList.remove("hidden");
+    btnExport.classList.remove("hidden");
+  } else {
+    nwBadge.classList.add("hidden");
+    btnExport.classList.add("hidden");
+  }
+
+  // Filters meta
+  const metaEl = document.getElementById("filters-meta");
+  if (metaEl && filtered > 0) {
+    const noWeb = filteredResults.filter(b => !b.website).length;
+    metaEl.innerHTML = `${filtered} results · <span class="no-web-count">${noWeb} no website</span> · ${filtered - noWeb} with website`;
+  } else if (metaEl) {
+    metaEl.textContent = "";
   }
 
   renderTable(filteredResults);
-  updateSelectUI();
+  updateSelectionUI();
 }
 
-function clearFilters() {
-  document.getElementById('filter-rating').value  = '0';
-  document.getElementById('filter-website').value = 'any';
-  document.getElementById('filter-reviews').value = '';
+function clearFilters(reRender = true) {
+  document.getElementById("filter-rating").value  = "0";
+  document.getElementById("filter-website").value = "any";
+  document.getElementById("filter-reviews").value = "";
   filteredResults = [...allResults];
-  if (allResults.length) { renderTable(filteredResults); updateSelectUI(); }
+  if (reRender && allResults.length) { applyFilters(); }
 }
 
-// ─────────────────────────────────────────────
-//  TABLE RENDERING
-// ─────────────────────────────────────────────
+// ─── Table rendering ─────────────────────────────────────────────
 function renderTable(list) {
-  const tbody = document.getElementById('results-tbody');
-  document.getElementById('cb-all').checked = false;
+  const tbody = document.getElementById("results-tbody");
+  const cbAll = document.getElementById("cb-all");
+  if (cbAll) cbAll.checked = false;
 
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="state-box" style="padding:40px"><span class="state-icon">◈</span><div class="state-title">No results match your filters</div><p class="state-sub">Try loosening the filter criteria.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="state-box" style="padding:40px">
+      <span class="state-icon" style="font-size:28px">⊘</span>
+      <div class="state-title">No results match your filters</div>
+      <p class="state-sub">Try loosening the filter criteria above.</p>
+    </div></td></tr>`;
     return;
   }
 
@@ -785,113 +1032,114 @@ function renderTable(list) {
     const siteHtml = b.website
       ? `<a href="${esc(b.website)}" target="_blank" rel="noopener" class="site-link">↗ ${esc(trimUrl(b.website))}</a>`
       : `<span class="no-site">No website</span>`;
-    const srcTag = b.source === 'serpapi'
-      ? '<span class="source-tag live">live</span>'
-      : '<span class="source-tag">mock</span>';
+    const srcTag = b.source === "serpapi"
+      ? `<span class="source-tag live">live</span>`
+      : `<span class="source-tag">mock</span>`;
 
     return `
-      <tr id="row-${i}" class="${imported ? 'imported' : ''}" data-idx="${i}">
-        <td>
-          <input type="checkbox" class="cb row-cb" data-idx="${i}"
-            onchange="rowCheckChanged()"
-            ${imported ? 'disabled' : ''} />
-        </td>
+      <tr id="row-${i}" class="${imported ? "imported" : ""}" data-idx="${i}">
+        <td><input type="checkbox" class="cb row-cb" data-idx="${i}"
+          onchange="rowCheckChanged()" ${imported ? "disabled" : ""} /></td>
         <td>
           <div style="font-weight:600;font-size:13px">${esc(b.name)}</div>
-          ${b.phone ? `<div style="font-size:11px;color:var(--ink3);font-family:var(--font-m)">${esc(b.phone)}</div>` : ''}
+          ${b.phone ? `<div style="font-size:11px;color:var(--ink3);font-family:var(--font-m)">${esc(b.phone)}</div>` : ""}
         </td>
         <td style="color:var(--ink2)">${esc(b.location)}</td>
         <td>${stars(b.rating)}</td>
-        <td style="font-family:var(--font-m);font-size:11px;color:var(--ink3)">${b.review_count !== null ? b.review_count.toLocaleString() : '—'}</td>
+        <td style="font-family:var(--font-m);font-size:11px;color:var(--ink3)">${b.review_count !== null ? b.review_count.toLocaleString() : "—"}</td>
         <td>${siteHtml}</td>
-        <td>
-          <span style="font-size:12px;color:var(--ink2)">${esc(b.industry)}</span>
-          ${srcTag}
-        </td>
+        <td><span style="font-size:12px;color:var(--ink2)">${esc(b.industry)}</span> ${srcTag}</td>
         <td>
           ${imported
-            ? '<span class="imported-tag">✓ Imported</span>'
+            ? `<span class="imported-tag">✓ Imported</span>`
             : `<button class="btn-import-single" onclick="importOne(${i})" id="btn-row-${i}">↓ Import</button>`
           }
         </td>
       </tr>`;
-  }).join('');
+  }).join("");
 
-  // Attach index to filteredResults for mapping back
-  list.forEach((b, i) => b._idx = i);
+  list.forEach((b, i) => { b._idx = i; });
+  updateFooterRight();
 }
 
 function trimUrl(url) {
-  return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '').slice(0, 30);
+  return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "").slice(0, 30);
 }
 
-// ─────────────────────────────────────────────
-//  SELECTION
-// ─────────────────────────────────────────────
-function rowCheckChanged() {
-  updateSelectUI();
-}
+// ─── Selection ───────────────────────────────────────────────────
+function rowCheckChanged() { updateSelectionUI(); }
 
 function toggleAll(checked) {
-  document.querySelectorAll('.row-cb:not(:disabled)').forEach(cb => { cb.checked = checked; });
-  updateSelectUI();
+  document.querySelectorAll(".row-cb:not(:disabled)").forEach(cb => { cb.checked = checked; });
+  updateSelectionUI();
 }
 
 function getSelectedIndices() {
-  return Array.from(document.querySelectorAll('.row-cb:checked')).map(cb => parseInt(cb.dataset.idx, 10));
+  return Array.from(document.querySelectorAll(".row-cb:checked")).map(cb => parseInt(cb.dataset.idx, 10));
 }
 
-function updateSelectUI() {
-  const selected = getSelectedIndices().length;
-  const row      = document.getElementById('select-row');
-  const btn1     = document.getElementById('btn-import-selected');
-  const btn2     = document.getElementById('btn-import-bottom');
-
-  document.getElementById('select-count').textContent = `${selected} selected`;
-  row.style.display = selected > 0 ? '' : 'none';
-  if (btn1) btn1.disabled = selected === 0;
-  if (btn2) btn2.disabled = selected === 0;
+function clearSelection() {
+  document.querySelectorAll(".row-cb").forEach(cb => { if (!importedIds.has(cb.dataset.idx)) cb.checked = false; });
+  const cbAll = document.getElementById("cb-all");
+  if (cbAll) cbAll.checked = false;
+  updateSelectionUI();
 }
 
-// ─────────────────────────────────────────────
-//  IMPORT
-// ─────────────────────────────────────────────
+function updateSelectionUI() {
+  const n       = getSelectedIndices().length;
+  const selRow  = document.getElementById("select-row");
+  const ibBtn1  = document.getElementById("btn-import-selected");
+  const ibBar   = document.getElementById("import-bar");
+  const ibCount = document.getElementById("ib-count");
+  const ibBtn   = document.getElementById("btn-ib-import");
+
+  document.getElementById("select-count").textContent = `${n} selected`;
+
+  if (n > 0) {
+    selRow.classList.add("visible");
+    if (ibBar)   ibBar.classList.add("visible");
+    if (ibCount) ibCount.textContent = `${n} lead${n !== 1 ? "s" : ""} selected`;
+  } else {
+    selRow.classList.remove("visible");
+    if (ibBar) ibBar.classList.remove("visible");
+  }
+  if (ibBtn1) ibBtn1.disabled = n === 0;
+  if (ibBtn)  ibBtn.disabled  = n === 0;
+}
+
+// ─── Import ──────────────────────────────────────────────────────
 async function importSelected() {
-  const indices    = getSelectedIndices();
-  if (!indices.length) { toast('Select at least one business.', 'error'); return; }
+  const indices = getSelectedIndices();
+  if (!indices.length) { toast("Select at least one business.", "error"); return; }
 
   const businesses = indices.map(i => filteredResults[i]).filter(Boolean);
 
-  const btn1 = document.getElementById('btn-import-selected');
-  const btn2 = document.getElementById('btn-import-bottom');
-  [btn1, btn2].forEach(b => { if(b) { b.disabled = true; b.innerHTML = '<span class="spinner"></span> Importing...'; } });
+  const btns = ["btn-import-selected","btn-ib-import"].map(id => document.getElementById(id)).filter(Boolean);
+  btns.forEach(b => { b.disabled = true; b.innerHTML = '<span class="spinner dark"></span> Importing…'; });
 
-  const d = await apiFetch('POST', '/api/discovery/import', { businesses });
+  const d = await apiFetch("POST", "/api/discovery/import", { businesses });
 
-  [btn1, btn2].forEach(b => { if(b) { b.disabled = false; b.innerHTML = '↓ Import Selected'; } });
+  btns.forEach(b => { b.disabled = false; b.innerHTML = "↓ Import Selected"; });
+  document.getElementById("btn-ib-import").innerHTML = "↓ Import to pipeline";
 
   if (!d.success && !d.summary) {
-    toast(d.message || 'Import failed.', 'error');
+    toast(d.message || "Import failed.", "error");
     return;
   }
 
-  const s = d.summary;
-  showImportSummary(s);
-
-  // Mark imported rows
+  const s = d.summary || {};
   if (d.data?.imported) {
     indices.forEach(i => importedIds.add(i));
   }
 
-  // Re-render to show imported state
   renderTable(filteredResults);
+  document.getElementById("cb-all").checked = false;
+  updateSelectionUI();
+  showImportSummary(s);
+  updateFooterRight();
 
-  // Uncheck all
-  document.getElementById('cb-all').checked = false;
-  updateSelectUI();
-
-  if (s.imported > 0) toast(`${s.imported} lead${s.imported > 1 ? 's' : ''} imported successfully.`, 'success');
-  if (s.skipped  > 0) toast(`${s.skipped} duplicate${s.skipped > 1 ? 's' : ''} skipped.`, 'info');
+  if ((s.imported || 0) > 0) toast(`${s.imported} lead${s.imported > 1 ? "s" : ""} imported successfully.`, "success", { label: "View Pipeline →", fn: "window.location='/dashboard.html'" });
+  if ((s.skipped  || 0) > 0) toast(`${s.skipped} duplicate${s.skipped > 1 ? "s" : ""} skipped.`, "info");
 }
 
 async function importOne(idx) {
@@ -901,11 +1149,11 @@ async function importOne(idx) {
   const btn = document.getElementById(`btn-row-${idx}`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner dark"></span>'; }
 
-  const d = await apiFetch('POST', '/api/discovery/import-one', {
+  const d = await apiFetch("POST", "/api/discovery/import-one", {
     business_name : b.name,
     location      : b.location,
     industry      : b.industry,
-    website       : b.website || undefined,
+    website       : b.website  || undefined,
     notes         : buildNotes(b),
   });
 
@@ -913,17 +1161,18 @@ async function importOne(idx) {
     importedIds.add(idx);
     const row = document.getElementById(`row-${idx}`);
     if (row) {
-      row.classList.add('imported');
-      const lastTd = row.querySelector('td:last-child');
+      row.classList.add("imported");
+      const lastTd = row.querySelector("td:last-child");
       if (lastTd) lastTd.innerHTML = '<span class="imported-tag">✓ Imported</span>';
     }
-    toast(`"${b.name}" added to leads.`, 'success');
-  } else if (d.message?.includes('already exists')) {
-    toast(`"${b.name}" is already in your leads.`, 'info');
-    if (btn) { btn.disabled = true; btn.textContent = 'Duplicate'; }
+    toast(`"${b.name}" added to leads.`, "success");
+    updateFooterRight();
+  } else if (d.message?.includes("already exists")) {
+    toast(`"${b.name}" is already in your leads.`, "info");
+    if (btn) { btn.disabled = true; btn.textContent = "Duplicate"; }
   } else {
-    toast(d.message || 'Import failed.', 'error');
-    if (btn) { btn.disabled = false; btn.textContent = '↓ Import'; }
+    toast(d.message || "Import failed.", "error");
+    if (btn) { btn.disabled = false; btn.textContent = "↓ Import"; }
   }
 }
 
@@ -932,26 +1181,81 @@ function buildNotes(b) {
   if (b.rating)       parts.push(`Rating: ${b.rating}/5`);
   if (b.review_count) parts.push(`${b.review_count} reviews`);
   if (b.phone)        parts.push(`Phone: ${b.phone}`);
-  parts.push('Imported via Lead Discovery Engine');
-  return parts.join(' · ');
+  parts.push("Imported via Lead Discovery Engine");
+  return parts.join(" · ");
 }
 
 function showImportSummary(s) {
-  const el = document.getElementById('import-summary');
+  const el = document.getElementById("import-summary");
+  const imported = s.imported || 0;
+  const skipped  = s.skipped  || 0;
+  const failed   = s.failed   || 0;
   el.innerHTML = `
     <strong>Import complete:</strong>
-    ${s.imported} imported, ${s.skipped} duplicate${s.skipped !== 1 ? 's' : ''} skipped${s.failed > 0 ? `, ${s.failed} failed` : ''}.
+    ${imported} imported, ${skipped} duplicate${skipped !== 1 ? "s" : ""} skipped${failed > 0 ? `, ${failed} failed` : ""}.
     <a href="/dashboard.html" style="color:var(--green);font-weight:600;margin-left:8px">View in pipeline →</a>
   `;
-  el.classList.add('visible');
-  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  el.classList.add("visible");
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-// ─────────────────────────────────────────────
-//  INIT
-// ─────────────────────────────────────────────
-checkConnection();   // confirm API is reachable, update status
-checkSource();       // show which data source (SerpAPI vs mock) is active
+function updateFooterRight() {
+  const el = document.getElementById("table-footer-right");
+  if (el && importedIds.size > 0) {
+    el.textContent = `${importedIds.size} already imported this session`;
+  }
+}
+
+// ─── Export without website (CSV) ────────────────────────────────
+function exportNoWebsite() {
+  const noWebLeads = filteredResults.filter(b => !b.website);
+  if (!noWebLeads.length) return;
+
+  const headers = ["Business Name","Industry","Location","Rating","Reviews","Phone","Website"];
+  const rows = noWebLeads.map(b => [
+    csvEscape(b.name),
+    csvEscape(b.industry),
+    csvEscape(b.location),
+    b.rating       !== null ? b.rating.toFixed(1) : "",
+    b.review_count !== null ? b.review_count      : "",
+    csvEscape(b.phone || ""),
+    "",
+  ]);
+
+  const csv  = [headers, ...rows].map(r => r.join(",")).join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  const date = new Date().toISOString().slice(0, 10);
+  const kw   = (document.getElementById("industry-input").value || "leads").toLowerCase().replace(/\s+/g, "-");
+  a.href     = url;
+  a.download = `leadflow-no-website-${kw}-${date}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  toast(`${noWebLeads.length} leads exported to CSV`, "success");
+}
+
+function csvEscape(val) {
+  const s = String(val || "").replace(/"/g, '""');
+  return (s.includes(",") || s.includes('"') || s.includes("\n")) ? `"${s}"` : s;
+}
+
+// ─── Keyboard shortcuts ───────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const active = document.activeElement?.id;
+    if (active === "industry-input" || active === "location-input") doSearch();
+  }
+  if (e.key === "Escape") clearSelection();
+});
+
+// ─── Init ─────────────────────────────────────────────────────────
+checkConnection();
+setInterval(checkConnection, 30000);
+checkSource();
 </script>
 
 </body>

@@ -1,212 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Refund Policy – LeadFlow AI</title>
-  <meta name="description" content="LeadFlow AI Refund Policy. Simple, fair refunds with no fine print." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    :root{--bg:#080a10;--bg-card:#0f1319;--bg-el:#161c28;--border:rgba(255,255,255,0.07);--purple:#8b5cf6;--green:#34d399;--yellow:#fbbf24;--text:#f0f2f8;--text-2:#8892a4;--text-3:#4f5b70;}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth}
-    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh}
-    h1,h2,h3,h4{font-family:'Syne',sans-serif}
-    a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}
-    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#1e2433;border-radius:4px}
-    body::before{content:'';position:fixed;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");z-index:0}
-    nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);background:rgba(8,10,16,0.92);border-bottom:1px solid var(--border);}
-    .nav-in{max-width:860px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;}
-    .logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
-    .logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(139,92,246,0.4);}
-    .logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);}
-    .logo-text span{color:var(--purple);}
-    .back-btn{font-size:13px;color:var(--text-2);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color 0.2s;}
-    .back-btn:hover{color:var(--text);text-decoration:none;}
-    .page-wrap{max-width:860px;margin:0 auto;padding:60px 24px 100px;position:relative;z-index:1;}
-    .doc-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
-    .doc-label{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);margin-bottom:12px;}
-    .doc-title{font-size:clamp(30px,5vw,48px);font-weight:800;letter-spacing:-1.5px;color:var(--text);margin-bottom:16px;}
-    .doc-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-    .doc-meta-item{font-size:13px;color:var(--text-3);display:flex;align-items:center;gap:6px;}
-    .doc-meta-dot{width:4px;height:4px;background:var(--text-3);border-radius:50%;}
-
-    /* Summary cards */
-    .refund-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px;}
-    @media(max-width:640px){.refund-summary{grid-template-columns:1fr;}}
-    .refund-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;}
-    .refund-card-icon{font-size:28px;margin-bottom:12px;}
-    .refund-card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
-    .refund-card-desc{font-size:13px;color:var(--text-2);line-height:1.6;}
-    .refund-card.green{border-color:rgba(52,211,153,0.2);background:rgba(52,211,153,0.04);}
-    .refund-card.yellow{border-color:rgba(251,191,36,0.2);background:rgba(251,191,36,0.04);}
-    .refund-card.purple{border-color:rgba(139,92,246,0.2);background:rgba(139,92,246,0.04);}
-
-    .doc-section{margin-bottom:48px;}
-    .doc-section h2{font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;padding-top:8px;display:flex;align-items:center;gap:12px;}
-    .sec-num{font-size:12px;font-weight:700;color:var(--green);background:rgba(52,211,153,0.10);border:1px solid rgba(52,211,153,0.2);padding:3px 9px;border-radius:100px;flex-shrink:0;}
-    .doc-section p{font-size:15px;color:var(--text-2);margin-bottom:14px;line-height:1.75;}
-    .doc-section ul{padding-left:20px;margin-bottom:14px;}
-    .doc-section li{font-size:15px;color:var(--text-2);margin-bottom:8px;line-height:1.7;}
-    .doc-section h3{font-size:16px;font-weight:600;color:var(--text);margin:20px 0 10px;}
-    .green-box{background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.18);border-radius:10px;padding:16px 20px;margin:20px 0;}
-    .green-box p{margin:0;font-size:14px;color:#6ee7b7;}
-    .warn-box{background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:16px 20px;margin:20px 0;}
-    .warn-box p{margin:0;font-size:14px;color:var(--yellow);}
-    .timeline{display:flex;flex-direction:column;gap:0;margin:20px 0;}
-    .tl-item{display:flex;gap:16px;padding-bottom:24px;position:relative;}
-    .tl-item:last-child{padding-bottom:0;}
-    .tl-item:not(:last-child)::after{content:'';position:absolute;left:15px;top:34px;bottom:0;width:1px;background:var(--border);}
-    .tl-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
-    .tl-dot.green{background:rgba(52,211,153,0.15);color:var(--green);border:1px solid rgba(52,211,153,0.25);}
-    .tl-dot.yellow{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2);}
-    .tl-dot.red{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
-    .tl-content{}
-    .tl-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
-    .tl-desc{font-size:14px;color:var(--text-2);}
-    .doc-footer{border-top:1px solid var(--border);padding-top:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
-    .doc-footer-links{display:flex;gap:20px;flex-wrap:wrap;}
-    .doc-footer-links a{font-size:13px;color:var(--text-3);text-decoration:none;transition:color 0.2s;}
-    .doc-footer-links a:hover{color:var(--text-2);}
-    .doc-footer-copy{font-size:13px;color:var(--text-3);}
-  </style>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Refund Policy — LeadFlow AI</title>
+<meta name="description" content="LeadFlow AI refund policy. Simple, fair refunds with no fine print." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css" />
 </head>
 <body>
-
 <nav>
   <div class="nav-in">
-    <a href="pricing.html" class="logo">
-      <div class="logo-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-      <span class="logo-text">LeadFlow <span>AI</span></span>
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-mark"><svg viewBox="0 0 24 24" fill="none" width="13" height="13"><path d="M12 2C12 2 7 7.5 7 11.5C7 15.5 9.2 17 12 17C14.8 17 17 14.5 17 11.5C17 7.5 12 2 12 2Z" fill="white" opacity=".9"/></svg></div>
+      LeadFlow AI
     </a>
-    <a href="pricing.html" class="back-btn">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    <a href="pricing.html" class="nav-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
       Back to Pricing
     </a>
   </div>
 </nav>
-
 <div class="page-wrap">
-
   <div class="doc-header">
-    <div class="doc-label">Billing</div>
+    <div class="doc-eyebrow">Billing</div>
     <h1 class="doc-title">Refund Policy</h1>
     <div class="doc-meta">
-      <span class="doc-meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Last updated: May 20, 2025</span>
+      <span class="doc-meta-item">Last updated: May 20, 2025</span>
       <span class="doc-meta-dot"></span>
       <span class="doc-meta-item">Simple and fair</span>
     </div>
   </div>
 
-  <div class="refund-summary">
-    <div class="refund-card green">
-      <div class="refund-card-icon">✅</div>
-      <div class="refund-card-title">7-Day Full Refund</div>
-      <div class="refund-card-desc">First paid charge within 7 days? Full refund, no questions asked.</div>
+  <div class="summary-cards">
+    <div class="summary-card green">
+      <div class="summary-card-icon">✅</div>
+      <div class="summary-card-title">7-Day Full Refund</div>
+      <div class="summary-card-desc">First paid charge within 7 days? Full refund, no questions asked.</div>
     </div>
-    <div class="refund-card yellow">
-      <div class="refund-card-icon">📅</div>
-      <div class="refund-card-title">Annual Prorated</div>
-      <div class="refund-card-desc">Annual plans refunded for unused months if canceled early.</div>
+    <div class="summary-card amber">
+      <div class="summary-card-icon">📅</div>
+      <div class="summary-card-title">Annual Prorated</div>
+      <div class="summary-card-desc">Annual plans refunded for unused months if canceled early.</div>
     </div>
-    <div class="refund-card purple">
-      <div class="refund-card-icon">💬</div>
-      <div class="refund-card-title">Case-by-Case After 7 Days</div>
-      <div class="refund-card-desc">After the window, we review refund requests individually.</div>
+    <div class="summary-card blue">
+      <div class="summary-card-icon">💬</div>
+      <div class="summary-card-title">Case-by-Case After 7 Days</div>
+      <div class="summary-card-desc">After the window, we review refund requests individually.</div>
     </div>
   </div>
 
-  <div class="green-box">
-    <p>💡 <strong>TL;DR:</strong> If you're not happy within your first 7 days of a paid plan, email us at billing@leadflowai.com and we'll refund you in full. No receipts, no interrogation.</p>
-  </div>
+  <div class="callout callout-green"><strong>TL;DR:</strong> If you're not happy within your first 7 days of a paid plan, email us at <a href="mailto:billing@leadflowai.com" style="color:inherit;font-weight:600">billing@leadflowai.com</a> and we'll refund you in full. No receipts, no interrogation.</div>
 
-  <div class="doc-section" id="s1">
-    <h2><span class="sec-num">01</span>Free Plan</h2>
-    <p>The Free plan has no associated charges and is therefore not subject to refunds. You may cancel or switch plans at any time with no financial impact.</p>
-  </div>
+  <div class="doc-section"><h2><span class="sec-num">01</span>Free Plan</h2>
+    <p>The Free plan has no associated charges and is therefore not subject to refunds. You may cancel or switch plans at any time with no financial impact.</p></div>
 
-  <div class="doc-section" id="s2">
-    <h2><span class="sec-num">02</span>Monthly Subscriptions</h2>
-    <h3>Within 7 Days of First Charge</h3>
-    <p>If you upgrade to a paid plan and request a refund within 7 calendar days of your first charge, you will receive a full refund of that charge. This is a one-time courtesy for new paid subscribers.</p>
-    <h3>After 7 Days</h3>
-    <p>Monthly subscription charges after the initial 7-day window are generally non-refundable. However, we handle exceptional circumstances on a case-by-case basis. Contact us at <a href="mailto:billing@leadflowai.com">billing@leadflowai.com</a> to discuss your situation.</p>
+  <div class="doc-section"><h2><span class="sec-num">02</span>Monthly Subscriptions</h2>
+    <h3>Within 7 days of first charge</h3>
+    <p>If you upgrade to a paid plan and request a refund within 7 calendar days of your first charge, you will receive a full refund. This is a one-time courtesy for new paid subscribers.</p>
+    <h3>After 7 days</h3>
+    <p>Monthly subscription charges after the initial 7-day window are generally non-refundable. However, we handle exceptional circumstances on a case-by-case basis. Contact <a href="mailto:billing@leadflowai.com">billing@leadflowai.com</a>.</p>
     <h3>Cancellation</h3>
-    <p>When you cancel a monthly subscription, your access continues until the end of the current billing period. No partial-month refunds are issued.</p>
-  </div>
+    <p>When you cancel, your access continues until the end of the current billing period. No partial-month refunds are issued.</p></div>
 
-  <div class="doc-section" id="s3">
-    <h2><span class="sec-num">03</span>Annual Subscriptions</h2>
-    <p>Annual plans are billed upfront for 12 months at a 20% discount over monthly pricing.</p>
+  <div class="doc-section"><h2><span class="sec-num">03</span>Annual Subscriptions</h2>
+    <p>Annual plans are billed upfront for 12 months at a 20% discount.</p>
     <div class="timeline">
       <div class="tl-item">
         <div class="tl-dot green">7</div>
-        <div class="tl-content">
+        <div>
           <div class="tl-title">Days 1–7: Full Refund</div>
           <div class="tl-desc">Full refund of the annual charge, no questions asked.</div>
         </div>
       </div>
       <div class="tl-item">
-        <div class="tl-dot yellow">30</div>
-        <div class="tl-content">
+        <div class="tl-dot amber">30</div>
+        <div>
           <div class="tl-title">Days 8–30: Prorated Refund</div>
-          <div class="tl-desc">Refund for unused months (months 2–12), minus the monthly-equivalent rate for the first month used.</div>
+          <div class="tl-desc">Refund for unused months (2–12), minus the monthly-equivalent rate for month 1.</div>
         </div>
       </div>
       <div class="tl-item">
         <div class="tl-dot red">90</div>
-        <div class="tl-content">
+        <div>
           <div class="tl-title">Day 31+: Case-by-Case</div>
-          <div class="tl-desc">Refunds after 30 days are reviewed individually. We consider special circumstances such as extended downtime or major service changes.</div>
+          <div class="tl-desc">Reviewed individually. We consider extended downtime or major service changes.</div>
         </div>
       </div>
-    </div>
-  </div>
+    </div></div>
 
-  <div class="doc-section" id="s4">
-    <h2><span class="sec-num">04</span>Non-Refundable Items</h2>
-    <p>The following are not eligible for refunds under any circumstances:</p>
+  <div class="doc-section"><h2><span class="sec-num">04</span>Non-Refundable Items</h2>
+    <p>The following are not eligible for refunds:</p>
     <ul>
       <li>Add-on services or one-time purchases</li>
       <li>Charges for periods of service already used</li>
       <li>Accounts terminated due to Terms of Service violations</li>
       <li>Charges that occurred more than 180 days prior to the refund request</li>
     </ul>
-    <div class="warn-box">
-      <p>⚠ Chargebacks initiated through your bank or card provider without first contacting us may result in permanent account suspension. Please reach out to us first—we're happy to resolve billing issues directly.</p>
-    </div>
-  </div>
+    <div class="callout callout-amber"><strong>Note:</strong> Chargebacks initiated through your bank without first contacting us may result in permanent account suspension. Please reach out first — we're happy to resolve billing issues directly.</div></div>
 
-  <div class="doc-section" id="s5">
-    <h2><span class="sec-num">05</span>Downtime & Service Credits</h2>
-    <p>If LeadFlow AI experiences downtime that breaches our SLA (99.5% for Pro, 99.9% for Agency), you are eligible for service credits, not cash refunds. Credits are calculated as a percentage of your monthly fee proportional to excess downtime and applied to your next billing period automatically.</p>
-  </div>
+  <div class="doc-section"><h2><span class="sec-num">05</span>Downtime Credits</h2>
+    <p>If LeadFlow AI experiences downtime that breaches our SLA (99.5% for Pro, 99.9% for Agency), you are eligible for service credits — not cash refunds. Credits are proportional to excess downtime and applied to your next billing period automatically.</p></div>
 
-  <div class="doc-section" id="s6">
-    <h2><span class="sec-num">06</span>How to Request a Refund</h2>
-    <p>To request a refund, email <a href="mailto:billing@leadflowai.com">billing@leadflowai.com</a> from the email address associated with your account and include:</p>
+  <div class="doc-section"><h2><span class="sec-num">06</span>How to Request</h2>
+    <p>Email <a href="mailto:billing@leadflowai.com">billing@leadflowai.com</a> from your account email and include:</p>
     <ul>
       <li>Your account email and company name</li>
       <li>The charge date and amount</li>
       <li>Reason for the refund request (optional, but helpful)</li>
     </ul>
-    <p>We aim to respond within 2 business days. Approved refunds are processed within 5–10 business days and returned to the original payment method.</p>
-  </div>
+    <p>We aim to respond within 2 business days. Approved refunds are processed within 5–10 business days to the original payment method.</p></div>
 
   <div class="doc-footer">
     <div class="doc-footer-copy">© 2026 LeadFlow AI, Inc.</div>
     <div class="doc-footer-links">
-      <a href="terms.html">Terms of Service</a>
-      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
       <a href="security.html">Security</a>
       <a href="docs.html">Docs</a>
-      <a href="status.html">Status</a>
       <a href="pricing.html">Pricing</a>
     </div>
   </div>
-
 </div>
 </body>
 </html>

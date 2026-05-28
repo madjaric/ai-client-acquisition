@@ -1,933 +1,1069 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LeadFlow — AI Client Acquisition</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — LeadFlow AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS — matches index.html exactly
+═══════════════════════════════════════════ */
+:root {
+  --bg:        #09090b;
+  --bg-1:      #111116;
+  --bg-2:      #18181e;
+  --bg-3:      #1e1e26;
+  --border:    rgba(255,255,255,.07);
+  --border-2:  rgba(255,255,255,.12);
+  --text:      #f0f0f4;
+  --text-2:    #9191a4;
+  --text-3:    #52525e;
+  --brand:     #22c55e;
+  --brand-dim: rgba(34,197,94,.12);
+  --brand-mid: rgba(34,197,94,.25);
+  --amber:     #f59e0b;
+  --amber-dim: rgba(245,158,11,.12);
+  --amber-mid: rgba(245,158,11,.25);
+  --blue:      #3b82f6;
+  --blue-dim:  rgba(59,130,246,.12);
+  --blue-mid:  rgba(59,130,246,.25);
+  --red:       #f87171;
+  --red-dim:   rgba(248,113,113,.12);
+  --red-mid:   rgba(248,113,113,.25);
+  --radius:    8px;
+  --radius-lg: 12px;
+  --fd: 'Syne', sans-serif;
+  --fb: 'Instrument Sans', sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+  --sidebar-w: 220px;
+}
 
-  <style>
-    /* ══════════════════════════════════════
-       DESIGN SYSTEM — Warm off-white + ink
-       Editorial / refined SaaS aesthetic
-    ══════════════════════════════════════ */
-    :root {
-      --bg:         #f5f3ef;
-      --surface:    #ffffff;
-      --surface2:   #f0ede8;
-      --border:     #e2ddd7;
-      --border2:    #cdc7bf;
-      --ink:        #1a1714;
-      --ink2:       #4a4540;
-      --ink3:       #8a837b;
-      --accent:     #1a1714;
-      --green:      #1c7c4a;
-      --green-bg:   #edf7f2;
-      --red:        #c0392b;
-      --red-bg:     #fdf0ee;
-      --amber:      #92500c;
-      --amber-bg:   #fdf4e7;
-      --blue:       #1a4f8a;
-      --blue-bg:    #eef4fd;
-      --highlight:  #f0c84a;
-      --radius:     6px;
-      --radius-lg:  12px;
-      --shadow:     0 1px 3px rgba(26,23,20,.08), 0 4px 16px rgba(26,23,20,.06);
-      --shadow-lg:  0 8px 32px rgba(26,23,20,.12), 0 2px 8px rgba(26,23,20,.08);
-      --font-display: 'Syne', sans-serif;
-      --font-body:    'Instrument Sans', sans-serif;
-      --font-mono:    'JetBrains Mono', monospace;
-    }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--fb);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ═══ SIDEBAR ═══════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  height: 100vh;
+  position: sticky; top: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden; flex-shrink: 0;
+  z-index: 30;
+}
+.sb-logo {
+  display: flex; align-items: center; gap: 9px;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sb-logo-mark {
+  width: 28px; height: 28px; border-radius: 8px; background: var(--brand);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sb-logo-mark svg { width: 14px; height: 14px; }
+.sb-logo-name { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+.sb-logo-plan { font-family: var(--fm); font-size: 9px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); }
 
-    body {
-      font-family: var(--font-body);
-      background: var(--bg);
-      color: var(--ink);
-      font-size: 14px;
-      line-height: 1.6;
-      min-height: 100vh;
-    }
+.sb-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; scrollbar-width: none; }
+.sb-scroll::-webkit-scrollbar { display: none; }
+.sb-group-label {
+  font-family: var(--fm); font-size: 9px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-3); padding: 10px 16px 3px;
+}
+.sb-div { height: 1px; background: var(--border); margin: 4px 0; }
 
-    /* ── TOP BAR ── */
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: var(--ink);
-      padding: 0 40px;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-    }
-    .topbar-logo {
-      font-family: var(--font-display);
-      font-size: 17px;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -0.02em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .topbar-logo .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--highlight);
-      display: inline-block;
-    }
-    .topbar-nav {
-      display: flex;
-      gap: 4px;
-    }
-    .topbar-nav a {
-      color: rgba(255,255,255,.5);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: var(--radius);
-      transition: all .15s;
-      cursor: pointer;
-    }
-    .topbar-nav a:hover  { color: #fff; background: rgba(255,255,255,.08); }
-    .topbar-nav a.active { color: #fff; background: rgba(255,255,255,.14); }
-    .topbar-status {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: rgba(255,255,255,.4);
-    }
-    .status-orb {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #888;
-      transition: all .3s;
-      flex-shrink: 0;
-    }
-    .status-orb.ok  { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
-    .status-orb.err { background: #f87171; box-shadow: 0 0 6px #f87171; }
+.sb-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 12px 8px 14px;
+  margin: 1px 8px; border-radius: var(--radius);
+  cursor: pointer; color: var(--text-2);
+  font-size: 13.5px; font-family: var(--fb);
+  transition: background .14s, color .14s;
+  white-space: nowrap; border: none; background: transparent; width: calc(100% - 16px);
+  text-align: left; text-decoration: none;
+}
+.sb-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.sb-item.active { background: var(--brand-dim); color: var(--text); font-weight: 500; box-shadow: inset 2px 0 0 var(--brand); }
+.sb-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sb-item.active svg { color: var(--brand); }
+.sb-badge {
+  margin-left: auto;
+  font-family: var(--fm); font-size: 10px; font-weight: 600;
+  background: rgba(255,255,255,.08); color: var(--text-3);
+  padding: 1px 7px; border-radius: 99px;
+}
+.sb-item.active .sb-badge { background: var(--brand-dim); color: var(--brand); }
+.sb-chip {
+  margin-left: auto;
+  font-family: var(--fm); font-size: 9px; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  background: rgba(34,197,94,.18); color: #4ade80;
+  padding: 2px 6px; border-radius: 3px;
+}
 
-    /* ── LAYOUT ── */
-    .page {
-      display: none;
-      max-width: 1140px;
-      margin: 0 auto;
-      padding: 36px 32px 80px;
-      animation: pageFade .25s ease;
-    }
-    .page.active { display: block; }
-    @keyframes pageFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.sb-bottom { border-top: 1px solid var(--border); padding: 8px; }
+.sb-user {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 8px; border-radius: var(--radius);
+  cursor: pointer; transition: background .14s;
+}
+.sb-user:hover { background: rgba(255,255,255,.05); }
+.sb-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 11px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.sb-user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.sb-user-plan { font-family: var(--fm); font-size: 9px; color: var(--brand); font-weight: 600; }
 
-    /* ── PAGE HEADER ── */
-    .page-header {
-      margin-bottom: 32px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 16px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--border);
-    }
-    .page-header h1 {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1;
-    }
-    .page-header p {
-      color: var(--ink3);
-      font-size: 13px;
-      margin-top: 5px;
-    }
+/* Mobile overlay + hamburger */
+.sb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 29; backdrop-filter: blur(3px); }
+.hamburger {
+  display: none; position: fixed; top: 12px; left: 12px; z-index: 31;
+  width: 38px; height: 38px; border-radius: var(--radius);
+  background: var(--bg-1); border: 1px solid var(--border);
+  align-items: center; justify-content: center; cursor: pointer;
+  color: var(--text-2);
+}
 
-    /* ── CARD ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .card-header {
-      padding: 18px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .card-header h2 {
-      font-family: var(--font-display);
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-    .card-body { padding: 24px; }
+/* ═══ MAIN ══════════════════════════════════ */
+.main {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden;
+}
 
-    /* ── GRID HELPERS ── */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-    .span-2 { grid-column: 1 / -1; }
+/* Topbar */
+.topbar {
+  height: 56px; background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px; flex-shrink: 0; z-index: 20;
+}
+.topbar-title { font-family: var(--fd); font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.topbar-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+.topbar-spacer { flex: 1; }
+.topbar-status {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--fm); font-size: 11px; color: var(--text-3);
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 99px;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); flex-shrink: 0; transition: all .3s; }
+.status-dot.ok  { background: var(--brand); box-shadow: 0 0 0 3px var(--brand-dim); }
+.status-dot.err { background: var(--red); }
+.topbar-btn {
+  font-size: 13px; font-weight: 500; font-family: var(--fb);
+  padding: 7px 16px; border-radius: var(--radius);
+  background: var(--bg-2); border: 1px solid var(--border-2);
+  color: var(--text); cursor: pointer; transition: background .14s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.topbar-btn:hover { background: var(--bg-3); }
+.topbar-btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.topbar-btn.primary:hover { background: #16a34a; }
 
-    /* ── FORM ── */
-    .field { display: flex; flex-direction: column; gap: 5px; }
-    .field label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: .1em;
-      color: var(--ink3);
-      text-transform: uppercase;
-    }
-    .field input,
-    .field select,
-    .field textarea {
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 9px 13px;
-      font-family: var(--font-body);
-      font-size: 14px;
-      color: var(--ink);
-      outline: none;
-      transition: border-color .15s, box-shadow .15s;
-      width: 100%;
-    }
-    .field input::placeholder,
-    .field textarea::placeholder { color: var(--ink3); }
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-      border-color: var(--ink);
-      box-shadow: 0 0 0 3px rgba(26,23,20,.06);
-    }
-    .field textarea { resize: vertical; min-height: 88px; line-height: 1.5; }
+/* Content scroll */
+.content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 24px 24px 80px;
+}
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 2px; }
 
-    /* ── BUTTONS ── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 9px 20px;
-      border-radius: var(--radius);
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1.5px solid transparent;
-      transition: all .15s;
-      white-space: nowrap;
-      line-height: 1;
-    }
-    .btn-primary {
-      background: var(--ink);
-      color: #fff;
-      border-color: var(--ink);
-    }
-    .btn-primary:hover { background: #2d2a27; }
-    .btn-outline {
-      background: transparent;
-      color: var(--ink2);
-      border-color: var(--border2);
-    }
-    .btn-outline:hover { border-color: var(--ink); color: var(--ink); background: var(--surface2); }
-    .btn-green {
-      background: var(--green-bg);
-      color: var(--green);
-      border-color: rgba(28,124,74,.2);
-    }
-    .btn-green:hover { background: #d9f0e7; }
-    .btn-amber {
-      background: var(--amber-bg);
-      color: var(--amber);
-      border-color: rgba(146,80,12,.2);
-    }
-    .btn-amber:hover { background: #faebd4; }
-    .btn-blue {
-      background: var(--blue-bg);
-      color: var(--blue);
-      border-color: rgba(26,79,138,.2);
-    }
-    .btn-blue:hover { background: #ddeaf9; }
-    .btn:disabled { opacity: .45; pointer-events: none; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; }
-    .btn-icon { padding: 8px 10px; }
+/* ═══ PANELS ════════════════════════════════ */
+.panel { display: none; flex-direction: column; gap: 20px; animation: fadeIn .2s ease; }
+.panel.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; } }
 
-    /* ── STATS ── */
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 20px 22px;
-      box-shadow: var(--shadow);
-      position: relative;
-      overflow: hidden;
-    }
-    .stat-card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--stat-color, var(--border));
-    }
-    .stat-label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: .1em;
-      color: var(--ink3);
-      text-transform: uppercase;
-    }
-    .stat-value {
-      font-family: var(--font-display);
-      font-size: 32px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1;
-      margin-top: 8px;
-    }
-    .stat-sub { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+/* ═══ ONBOARDING BANNER ═════════════════════ */
+.onboarding-banner {
+  background: var(--bg-1);
+  border: 1px solid var(--brand-mid);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 16px;
+  position: relative; overflow: hidden;
+}
+.onboarding-banner::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+}
+.ob-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--brand-dim); border: 1px solid var(--brand-mid);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ob-icon svg { width: 18px; height: 18px; color: var(--brand); }
+.ob-text { flex: 1; }
+.ob-title { font-family: var(--fd); font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.ob-desc { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+.ob-steps { display: flex; gap: 8px; flex-wrap: wrap; }
+.ob-step {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-2); padding: 4px 10px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 99px; cursor: pointer; transition: all .14s; font-family: var(--fb);
+}
+.ob-step:hover { border-color: var(--brand-mid); color: var(--brand); }
+.ob-step.done { color: var(--brand); border-color: var(--brand-mid); text-decoration: line-through; opacity: .5; }
+.ob-step svg { width: 11px; height: 11px; }
+.ob-dismiss {
+  background: none; border: none; cursor: pointer; color: var(--text-3);
+  font-size: 18px; padding: 0 4px; line-height: 1; flex-shrink: 0;
+  transition: color .14s;
+}
+.ob-dismiss:hover { color: var(--text-2); }
 
-    /* ── TABLE ── */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    thead th {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: .1em;
-      color: var(--ink3);
-      text-transform: uppercase;
-      text-align: left;
-      padding: 11px 16px;
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    tbody td {
-      padding: 13px 16px;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      vertical-align: middle;
-    }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: #faf9f7; }
+/* ═══ KPI CARDS ════════════════════════════ */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi-card {
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 18px 20px;
+  position: relative; overflow: hidden;
+}
+.kpi-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px; background: var(--kpi-color, var(--border));
+}
+.kpi-label {
+  font-family: var(--fm); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.kpi-value {
+  font-family: var(--fd); font-size: 30px; font-weight: 800;
+  letter-spacing: -.04em; line-height: 1; margin-top: 8px;
+}
+.kpi-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
 
-    /* ── BADGES ── */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 9px;
-      border-radius: 20px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-    .badge-new       { background: var(--blue-bg);  color: var(--blue);  }
-    .badge-contacted { background: var(--amber-bg); color: var(--amber); }
-    .badge-qualified { background: var(--green-bg); color: var(--green); }
-    .badge-converted { background: var(--green-bg); color: var(--green); font-weight: 700; }
-    .badge-lost      { background: var(--red-bg);   color: var(--red);   }
+/* ═══ CARD ══════════════════════════════════ */
+.card {
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  gap: 12px; flex-wrap: wrap;
+}
+.card-title { font-family: var(--fd); font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
+.card-body { padding: 20px; }
 
-    .tier-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 26px; height: 26px;
-      border-radius: 5px;
-      font-family: var(--font-display);
-      font-size: 12px;
-      font-weight: 800;
-    }
-    .tier-A { background: var(--green-bg);  color: var(--green); }
-    .tier-B { background: var(--blue-bg);   color: var(--blue); }
-    .tier-C { background: var(--amber-bg);  color: var(--amber); }
-    .tier-D { background: var(--red-bg);    color: var(--red); }
+/* ═══ FORM ══════════════════════════════════ */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-family: var(--fm); font-size: 10px; font-weight: 500;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--text-3);
+}
+.field input, .field select, .field textarea {
+  background: var(--bg-2); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 9px 13px;
+  font-family: var(--fb); font-size: 14px; color: var(--text);
+  outline: none; transition: border-color .15s, box-shadow .15s; width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: rgba(34,197,94,.5);
+  box-shadow: 0 0 0 3px var(--brand-dim);
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--text-3); }
+.field select { cursor: pointer; }
+.field textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
 
-    /* ── SCORE BAR ── */
-    .score-row { display: flex; align-items: center; gap: 8px; }
-    .score-track {
-      flex: 1;
-      height: 5px;
-      background: var(--surface2);
-      border-radius: 3px;
-      overflow: hidden;
-      max-width: 72px;
-    }
-    .score-fill { height: 100%; border-radius: 3px; }
-    .score-num  { font-family: var(--font-mono); font-size: 12px; font-weight: 500; min-width: 22px; }
+/* ═══ BUTTONS ═══════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 18px; border-radius: var(--radius);
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid transparent; transition: all .14s;
+  white-space: nowrap; line-height: 1;
+}
+.btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+.btn-primary:hover { background: rgba(240,240,244,.88); }
+.btn-outline {
+  background: transparent; color: var(--text-2); border-color: var(--border-2);
+}
+.btn-outline:hover { border-color: rgba(255,255,255,.2); color: var(--text); background: rgba(255,255,255,.05); }
+.btn-brand  { background: var(--brand); color: #fff; border-color: var(--brand); }
+.btn-brand:hover  { background: #16a34a; }
+.btn-amber  { background: var(--amber-dim); color: var(--amber); border-color: var(--amber-mid); }
+.btn-amber:hover  { background: rgba(245,158,11,.2); }
+.btn-blue   { background: var(--blue-dim);  color: var(--blue);  border-color: var(--blue-mid);  }
+.btn-blue:hover   { background: rgba(59,130,246,.2); }
+.btn-green  { background: var(--brand-dim); color: var(--brand); border-color: var(--brand-mid); }
+.btn-green:hover  { background: rgba(34,197,94,.2); }
+.btn:disabled { opacity: .4; pointer-events: none; }
+.btn-sm  { padding: 6px 12px; font-size: 12px; }
+.btn-xs  { padding: 4px 9px;  font-size: 11px; }
+.btn-icon { padding: 8px 10px; }
 
-    /* ── RESULT BLOCK ── */
-    .result-block {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 18px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      line-height: 1.7;
-      white-space: pre-wrap;
-      color: var(--ink2);
-    }
-    .result-subject {
-      font-weight: 600;
-      font-size: 13px;
-      color: var(--blue);
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
-      font-family: var(--font-body);
-    }
+/* ═══ TABLE ══════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  font-family: var(--fm); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-3); text-align: left;
+  padding: 10px 16px; background: var(--bg-2); border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 13px; vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,.025); }
 
-    /* ── AI RESULT PANEL ── */
-    .ai-result-panel {
-      display: none;
-      flex-direction: column;
-      gap: 16px;
-      animation: pageFade .2s ease;
-    }
-    .ai-result-panel.visible { display: flex; }
+/* ═══ BADGES ════════════════════════════════ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 99px;
+  font-family: var(--fm); font-size: 10px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+}
+.badge-new       { background: var(--blue-dim);  color: #60a5fa;  }
+.badge-contacted { background: var(--amber-dim); color: var(--amber); }
+.badge-qualified { background: var(--brand-dim); color: var(--brand); }
+.badge-converted { background: var(--brand-dim); color: var(--brand); font-weight: 700; }
+.badge-lost      { background: var(--red-dim);   color: var(--red);   }
 
-    .score-display {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      padding: 20px 24px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-    }
-    .score-big {
-      font-family: var(--font-display);
-      font-size: 52px;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1;
-    }
-    .score-meta { flex: 1; }
-    .score-meta-label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: .1em;
-      color: var(--ink3);
-      text-transform: uppercase;
-      margin-bottom: 3px;
-    }
-    .score-meta-value {
-      font-size: 15px;
-      font-weight: 600;
-    }
-    .score-meta-value.value-range { color: var(--green); }
+.tier-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 6px;
+  font-family: var(--fd); font-size: 12px; font-weight: 800;
+}
+.tier-A { background: var(--brand-dim); color: var(--brand); }
+.tier-B { background: var(--blue-dim);  color: var(--blue); }
+.tier-C { background: var(--amber-dim); color: var(--amber); }
+.tier-D { background: var(--red-dim);   color: var(--red); }
 
-    /* ── RED FLAGS ── */
-    .red-flags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-    .red-flag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 9px;
-      background: var(--red-bg);
-      color: var(--red);
-      border: 1px solid rgba(192,57,43,.15);
-      border-radius: 4px;
-      font-size: 11px;
-    }
+/* ═══ SCORE BAR ═════════════════════════════ */
+.score-row { display: flex; align-items: center; gap: 8px; }
+.score-track { flex: 1; height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden; max-width: 72px; }
+.score-fill  { height: 100%; border-radius: 2px; }
+.score-num   { font-family: var(--fm); font-size: 12px; font-weight: 500; min-width: 22px; }
 
-    /* ── TOAST ── */
-    #toasts {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      z-index: 9000;
-    }
-    .toast {
-      background: var(--ink);
-      color: #fff;
-      padding: 12px 18px;
-      border-radius: var(--radius);
-      font-size: 13px;
-      font-weight: 500;
-      min-width: 260px;
-      max-width: 380px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      box-shadow: var(--shadow-lg);
-      animation: toastIn .2s ease;
-      border-left: 3px solid var(--highlight);
-    }
-    .toast.error { border-left-color: #f87171; }
-    .toast.success { border-left-color: #4ade80; }
-    .toast-msg { flex: 1; line-height: 1.4; }
-    .toast-close { color: rgba(255,255,255,.5); cursor: pointer; font-size: 17px; line-height: 1; flex-shrink: 0; }
-    .toast-close:hover { color: #fff; }
-    @keyframes toastIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+/* ═══ SCORE RESULT PANEL ════════════════════ */
+.ai-result-panel { display: none; flex-direction: column; gap: 16px; animation: fadeIn .2s ease; }
+.ai-result-panel.visible { display: flex; }
 
-    /* ── SPINNER ── */
-    .spinner {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .65s linear infinite;
-      flex-shrink: 0;
-    }
-    .spinner.dark {
-      border-color: rgba(26,23,20,.15);
-      border-top-color: var(--ink);
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+.score-display {
+  display: flex; align-items: center; gap: 20px;
+  padding: 20px 24px; background: var(--bg-1);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+}
+.score-big {
+  font-family: var(--fd); font-size: 52px; font-weight: 800;
+  letter-spacing: -.06em; line-height: 1;
+}
+.score-meta { flex: 1; }
+.score-meta-label {
+  font-family: var(--fm); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 3px;
+}
+.score-meta-value { font-size: 15px; font-weight: 600; }
+.score-meta-value.value-range { color: var(--brand); }
 
-    /* ── EMPTY STATE ── */
-    .empty {
-      text-align: center;
-      padding: 56px 32px;
-      color: var(--ink3);
-    }
-    .empty-icon {
-      font-size: 36px;
-      display: block;
-      margin-bottom: 12px;
-      opacity: .35;
-    }
-    .empty p { font-size: 13px; }
+.red-flags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.red-flag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px;
+  background: var(--red-dim); color: var(--red);
+  border: 1px solid var(--red-mid); border-radius: 4px; font-size: 11px;
+}
 
-    /* ── DIVIDER ── */
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 8px 0;
-    }
+/* ═══ RESULT BLOCK ══════════════════════════ */
+.result-block {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  font-family: var(--fm); font-size: 12px; line-height: 1.75;
+  white-space: pre-wrap; color: var(--text-2);
+}
+.result-subject {
+  font-family: var(--fb); font-weight: 600; font-size: 14px;
+  color: var(--blue); margin-bottom: 10px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
 
-    /* ── SECTION TITLE ── */
-    .section-title {
-      font-family: var(--font-display);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--ink3);
-      margin-bottom: 14px;
-    }
+/* ═══ SECTION TITLE ════════════════════════ */
+.section-title {
+  font-family: var(--fm); font-size: 10px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--text-3);
+  margin-bottom: 10px;
+}
+.reasoning {
+  font-size: 13px; color: var(--text-2); line-height: 1.65;
+  border-left: 2px solid var(--border-2); padding: 4px 0 4px 14px;
+  font-style: italic;
+}
+.action-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.copied { color: var(--brand) !important; }
 
-    /* ── ACTION ROW ── */
-    .action-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+/* ═══ EMPTY STATE ═══════════════════════════ */
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 56px 32px; text-align: center;
+}
+.empty-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+.empty-icon svg { width: 24px; height: 24px; color: var(--text-3); }
+.empty-title { font-family: var(--fd); font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+.empty-desc { font-size: 13px; color: var(--text-2); line-height: 1.6; max-width: 280px; margin-bottom: 16px; }
 
-    /* ── REASONING QUOTE ── */
-    .reasoning {
-      font-size: 13px;
-      color: var(--ink2);
-      line-height: 1.65;
-      border-left: 3px solid var(--border2);
-      padding: 4px 0 4px 14px;
-      font-style: italic;
-    }
+/* ═══ TOAST ═════════════════════════════════ */
+#toasts {
+  position: fixed; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 8px; z-index: 9000;
+}
+.toast {
+  background: var(--bg-2); color: var(--text); padding: 12px 18px;
+  border-radius: var(--radius-lg); font-size: 13px; font-weight: 500;
+  min-width: 260px; max-width: 380px;
+  display: flex; align-items: flex-start; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  animation: toastIn .2s ease;
+  border: 1px solid var(--border); border-left: 3px solid var(--amber);
+}
+.toast.error   { border-left-color: var(--red); }
+.toast.success { border-left-color: var(--brand); }
+.toast-msg  { flex: 1; line-height: 1.4; }
+.toast-close { color: var(--text-3); cursor: pointer; font-size: 17px; line-height: 1; flex-shrink: 0; }
+.toast-close:hover { color: var(--text); }
+@keyframes toastIn { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }
 
-    /* ── COPY BUTTON MICRO-ANIMATION ── */
-    .copied { color: var(--green) !important; }
+/* ═══ SPINNER ═══════════════════════════════ */
+.spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.2); border-top-color: #fff;
+  border-radius: 50%; animation: spin .65s linear infinite; flex-shrink: 0;
+}
+.spinner.dark { border-color: rgba(255,255,255,.1); border-top-color: var(--text); }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+/* ═══ GRIDS ══════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.span-2 { grid-column: 1 / -1; }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .topbar { padding: 0 20px; }
-      .page   { padding: 24px 16px 60px; }
-      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-      .span-2 { grid-column: 1; }
-      .page-header { flex-direction: column; align-items: flex-start; }
-      .score-display { flex-direction: column; align-items: flex-start; }
-    }
-  </style>
+/* ═══ EMAIL LOG ══════════════════════════════ */
+.status-pill {
+  display: inline-block; font-family: var(--fm); font-size: 10px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px;
+}
+.pill-sent     { background: var(--brand-dim); color: var(--brand); }
+.pill-failed   { background: var(--red-dim);   color: var(--red); }
+
+/* ═══ RESPONSIVE ════════════════════════════ */
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform .22s ease; }
+  .sidebar.open { transform: translateX(0); }
+  .sb-overlay.open { display: block; }
+  .hamburger { display: flex; }
+  .main { margin-left: 0; }
+  .topbar { padding: 0 16px 0 56px; }
+  .content { padding: 16px 16px 80px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .score-display { flex-direction: column; align-items: flex-start; }
+}
+</style>
 </head>
 
 <body>
 
-<!-- ══════ TOPBAR ══════ -->
-<header class="topbar">
-  <div class="topbar-logo">
-    <span class="dot"></span>
-    LeadFlow
-  </div>
-  <nav class="topbar-nav">
-    <a class="active" onclick="navigate('leads')">Leads</a>
-    <a onclick="navigate('scoring')">AI Scoring</a>
-    <a onclick="navigate('outreach')">Outreach</a>
-    <a href="/discovery.html" style="background:rgba(240,200,74,.12);color:#f0c84a">⊕ Discovery</a>
-  </nav>
-  <div class="topbar-status">
-    <div class="status-orb" id="status-orb"></div>
-    <span id="status-text">checking...</span>
-  </div>
-</header>
+<!-- Mobile overlay + hamburger -->
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+<button class="hamburger" id="hamburger" onclick="openSidebar()" aria-label="Open menu">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+    <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+  </svg>
+</button>
 
-<!-- ══════════════════════════════════════════
-     PAGE 1 — LEADS
-══════════════════════════════════════════ -->
-<div class="page active" id="page-leads">
-  <div class="page-header">
+<!-- ════ SIDEBAR ════════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-mark">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C12 2 7 7.5 7 11.5C7 15.5 9.2 17 12 17C14.8 17 17 14.5 17 11.5C17 7.5 12 2 12 2Z" fill="white" opacity=".9"/>
+        <path d="M9.5 13C9.5 11.5 10.7 10 12 8.5C13.3 10 14.5 11.5 14.5 13C14.5 14.4 13.38 15.5 12 15.5C10.62 15.5 9.5 14.4 9.5 13Z" fill="rgba(255,255,255,.4)"/>
+      </svg>
+    </div>
     <div>
-      <h1>Leads</h1>
-      <p>Manage your prospect pipeline</p>
+      <div class="sb-logo-name">LeadFlow</div>
+      <div class="sb-logo-plan">AI · Pro</div>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="grid-4" style="margin-bottom:28px">
-    <div class="stat-card" style="--stat-color:#4ade80">
-      <div class="stat-label">Total Leads</div>
-      <div class="stat-value" id="stat-total">—</div>
-      <div class="stat-sub">in pipeline</div>
-    </div>
-    <div class="stat-card" style="--stat-color:#60a5fa">
-      <div class="stat-label">New</div>
-      <div class="stat-value" id="stat-new" style="color:var(--blue)">—</div>
-      <div class="stat-sub">awaiting contact</div>
-    </div>
-    <div class="stat-card" style="--stat-color:#f59e0b">
-      <div class="stat-label">In Progress</div>
-      <div class="stat-value" id="stat-active" style="color:var(--amber)">—</div>
-      <div class="stat-sub">contacted or qualified</div>
-    </div>
-    <div class="stat-card" style="--stat-color:#34d399">
-      <div class="stat-label">Converted</div>
-      <div class="stat-value" id="stat-converted" style="color:var(--green)">—</div>
-      <div class="stat-sub">closed</div>
-    </div>
+  <div class="sb-scroll">
+    <div class="sb-group-label">Pipeline</div>
+    <button class="sb-item active" id="nav-leads" onclick="navigate('leads')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Leads
+      <span class="sb-badge" id="sb-leads-count">—</span>
+    </button>
+
+    <div class="sb-div"></div>
+    <div class="sb-group-label">AI Tools</div>
+    <button class="sb-item" id="nav-scoring" onclick="navigate('scoring')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg>
+      AI Scoring
+    </button>
+    <button class="sb-item" id="nav-outreach" onclick="navigate('outreach')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Outreach Generator
+    </button>
+    <button class="sb-item" id="nav-email" onclick="navigate('email')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Send Email
+    </button>
+    <a class="sb-item" href="/discovery.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Discovery
+      <span class="sb-chip">New</span>
+    </a>
+
+    <div class="sb-div"></div>
+    <div class="sb-group-label">System</div>
+    <a class="sb-item" href="/index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="sb-item" href="/pricing.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Pricing
+    </a>
+    <a class="sb-item" href="/docs.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Docs
+    </a>
   </div>
 
-  <div class="grid-2" style="gap:24px;align-items:start">
-
-    <!-- Add Lead Form -->
-    <div class="card">
-      <div class="card-header">
-        <h2>Add New Lead</h2>
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-avatar">AP</div>
+      <div>
+        <div class="sb-user-name">Account</div>
+        <div class="sb-user-plan">Pro plan</div>
       </div>
-      <div class="card-body">
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div class="grid-2">
-            <div class="field">
-              <label>Business Name *</label>
-              <input id="f-name" placeholder="Acme Dental Group" />
+    </div>
+  </div>
+</aside>
+
+<!-- ════ MAIN ════════════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Leads</div>
+      <div class="topbar-sub" id="topbar-sub">Manage your prospect pipeline</div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-status" id="status-wrap">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Checking…</span>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+
+  <!-- ════════════════════════════════════════
+       PANEL — LEADS
+  ════════════════════════════════════════ -->
+  <div class="panel active" id="panel-leads">
+
+    <!-- Onboarding banner (dismissed via localStorage) -->
+    <div class="onboarding-banner" id="onboarding-banner">
+      <div class="ob-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="ob-text">
+        <div class="ob-title">Welcome to LeadFlow AI — 3 steps to your first booked call</div>
+        <div class="ob-steps">
+          <span class="ob-step" id="obs-1" onclick="window.location='/discovery.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="11" height="11"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            1. Discover leads
+          </span>
+          <span class="ob-step" id="obs-2" onclick="navigate('scoring')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="11" height="11"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg>
+            2. Score with AI
+          </span>
+          <span class="ob-step" id="obs-3" onclick="navigate('outreach')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="11" height="11"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            3. Generate outreach
+          </span>
+        </div>
+      </div>
+      <button class="ob-dismiss" onclick="dismissOnboarding()" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:#22c55e">
+        <div class="kpi-label">Total Leads</div>
+        <div class="kpi-value" id="stat-total">—</div>
+        <div class="kpi-sub">in pipeline</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#3b82f6">
+        <div class="kpi-label">New</div>
+        <div class="kpi-value" id="stat-new" style="color:#60a5fa">—</div>
+        <div class="kpi-sub">awaiting contact</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#f59e0b">
+        <div class="kpi-label">In Progress</div>
+        <div class="kpi-value" id="stat-active" style="color:var(--amber)">—</div>
+        <div class="kpi-sub">contacted or qualified</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#22c55e">
+        <div class="kpi-label">Converted</div>
+        <div class="kpi-value" id="stat-converted" style="color:var(--brand)">—</div>
+        <div class="kpi-sub">closed</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="align-items:start">
+
+      <!-- Add Lead Form -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Add New Lead</div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="grid-2">
+              <div class="field">
+                <label>Business Name *</label>
+                <input id="f-name" placeholder="Acme Dental Group" />
+              </div>
+              <div class="field">
+                <label>Industry *</label>
+                <input id="f-industry" placeholder="Healthcare / Dentistry" />
+              </div>
             </div>
             <div class="field">
-              <label>Industry *</label>
-              <input id="f-industry" placeholder="Healthcare / Dentistry" />
+              <label>Location *</label>
+              <input id="f-location" placeholder="Austin, TX" />
+            </div>
+            <div class="field">
+              <label>Website</label>
+              <input id="f-website" placeholder="https://…" type="url" />
+            </div>
+            <div class="field">
+              <label>Notes</label>
+              <textarea id="f-notes" placeholder="Any context about this prospect…"></textarea>
+            </div>
+            <div class="action-row">
+              <button class="btn btn-brand" id="btn-add-lead" onclick="addLead()">+ Add Lead</button>
+              <button class="btn btn-outline btn-sm" onclick="clearForm()">Clear</button>
+              <a href="/discovery.html" class="btn btn-outline btn-sm" style="margin-left:auto">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Find leads →
+              </a>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Lead List -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Pipeline</div>
+          <div style="display:flex;gap:6px">
+            <input id="lead-search" placeholder="Search…"
+              style="padding:6px 11px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;width:140px;font-family:var(--fb)"
+              oninput="filterLeads()" />
+            <button class="btn btn-outline btn-icon btn-sm" onclick="loadLeads()" title="Refresh">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="leads-list">
+          <div class="empty">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <div class="empty-title">No leads yet</div>
+            <div class="empty-desc">Add your first lead manually, or use Discovery to import from Google Maps.</div>
+            <a href="/discovery.html" class="btn btn-brand btn-sm">Find leads with Discovery →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════
+       PANEL — AI SCORING
+  ════════════════════════════════════════ -->
+  <div class="panel" id="panel-scoring">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+      <div>
+        <h1 style="font-family:var(--fd);font-size:24px;font-weight:800;letter-spacing:-.03em">AI Scoring</h1>
+        <p style="color:var(--text-2);font-size:13px;margin-top:4px">Estimate lead value and prioritize your pipeline</p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadScoredLeads()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+    </div>
+
+    <div class="grid-2" style="align-items:start">
+
+      <div>
+        <!-- Score control -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Score a Lead</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="field">
+              <label>Select Lead</label>
+              <select id="score-select"><option value="">— choose a lead —</option></select>
+            </div>
+            <button class="btn btn-amber" id="btn-score" onclick="scoreLead()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg>
+              Run AI Score
+            </button>
+          </div>
+        </div>
+
+        <!-- Score result -->
+        <div class="ai-result-panel" id="score-result" style="margin-top:16px">
+          <div class="score-display">
+            <div>
+              <div class="score-meta-label">Lead Score</div>
+              <div class="score-big" id="res-score-num">—</div>
+              <div style="font-family:var(--fm);font-size:11px;color:var(--text-3);margin-top:2px">/10</div>
+            </div>
+            <div class="score-meta">
+              <div style="margin-bottom:12px">
+                <div class="score-meta-label">Tier</div>
+                <div id="res-tier"></div>
+              </div>
+              <div>
+                <div class="score-meta-label">Estimated Value</div>
+                <div class="score-meta-value value-range" id="res-value">—</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div class="score-meta-label" style="margin-bottom:6px">Confidence</div>
+              <div id="res-confidence"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Analysis</div>
+              <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">
+                → Generate Outreach
+              </button>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+              <div>
+                <div class="section-title">Reasoning</div>
+                <p class="reasoning" id="res-reasoning">—</p>
+              </div>
+              <div id="res-red-flags-wrap">
+                <div class="section-title">Red Flags</div>
+                <div class="red-flags" id="res-red-flags"></div>
+              </div>
+              <div>
+                <div class="section-title">Recommended Action</div>
+                <p id="res-action" style="font-size:13px;font-weight:600;color:var(--text)">—</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranked table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Ranked Leads</div>
+          <select id="tier-filter" onchange="loadScoredLeads()"
+            style="font-size:12px;padding:5px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;font-family:var(--fb);cursor:pointer">
+            <option value="">All Tiers</option>
+            <option>A</option><option>B</option><option>C</option><option>D</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Business</th><th>Tier</th><th>Score</th><th>Est. Value</th></tr></thead>
+            <tbody id="scored-tbody">
+              <tr><td colspan="4">
+                <div class="empty">
+                  <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg></div>
+                  <div class="empty-title">No scored leads yet</div>
+                  <div class="empty-desc">Select a lead and run AI Score to see results here.</div>
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════
+       PANEL — OUTREACH GENERATOR
+  ════════════════════════════════════════ -->
+  <div class="panel" id="panel-outreach">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+      <div>
+        <h1 style="font-family:var(--fd);font-size:24px;font-weight:800;letter-spacing:-.03em">Outreach Generator</h1>
+        <p style="color:var(--text-2);font-size:13px;margin-top:4px">AI-written emails and DMs, personalised to each lead</p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadOutreachHistory()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        History
+      </button>
+    </div>
+
+    <div class="grid-2" style="align-items:start">
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Generate form -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Generate Messages</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="field">
+              <label>Select Lead *</label>
+              <select id="out-select"><option value="">— choose a lead —</option></select>
+            </div>
+            <div class="field">
+              <label>Tone</label>
+              <select id="out-tone">
+                <option value="">Auto (based on AI score)</option>
+                <option value="consultative">Consultative</option>
+                <option value="soft">Soft</option>
+                <option value="aggressive">Aggressive</option>
+                <option value="casual">Casual</option>
+              </select>
+            </div>
+            <button class="btn btn-blue" id="btn-generate" onclick="generateOutreach()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Generate All Formats
+            </button>
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="ai-result-panel" id="out-result">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:5px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Email
+              </div>
+              <button class="btn btn-outline btn-xs" onclick="copyText('out-email-body', this)">Copy</button>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+              <div>
+                <div class="section-title">Subject Line</div>
+                <div id="out-subject" style="font-size:14px;font-weight:600;color:#60a5fa;padding:10px 14px;background:var(--blue-dim);border-radius:var(--radius);border:1px solid var(--blue-mid)">—</div>
+              </div>
+              <div>
+                <div class="section-title">Body</div>
+                <div class="result-block" id="out-email-body">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Short DM
+              </div>
+              <button class="btn btn-outline btn-xs" onclick="copyText('out-dm', this)">Copy</button>
+            </div>
+            <div class="card-body">
+              <div class="result-block" id="out-dm">—</div>
+              <div style="margin-top:14px">
+                <div class="section-title">Personalization Notes</div>
+                <p class="reasoning" id="out-notes" style="margin-top:4px">—</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Generation History</div>
+          <span id="history-count" style="font-family:var(--fm);font-size:11px;color:var(--text-3)"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Business</th><th>Subject</th><th>Score</th><th>Date</th></tr></thead>
+            <tbody id="history-tbody">
+              <tr><td colspan="4">
+                <div class="empty">
+                  <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                  <div class="empty-title">No messages yet</div>
+                  <div class="empty-desc">Generate your first email to see history here.</div>
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════
+       PANEL — SEND EMAIL
+  ════════════════════════════════════════ -->
+  <div class="panel" id="panel-email">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+      <div>
+        <h1 style="font-family:var(--fd);font-size:24px;font-weight:800;letter-spacing:-.03em">Send Email</h1>
+        <p style="color:var(--text-2);font-size:13px;margin-top:4px">Send via Gmail SMTP with full delivery logging</p>
+      </div>
+      <button class="btn btn-outline btn-sm" id="btn-verify-smtp" onclick="verifySMTP()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Verify SMTP
+      </button>
+    </div>
+
+    <!-- Email stats -->
+    <div class="kpi-grid" id="email-stats-row">
+      <div class="kpi-card" style="--kpi-color:#9191a4">
+        <div class="kpi-label">Total Sent</div>
+        <div class="kpi-value" id="estat-total">—</div>
+        <div class="kpi-sub">all time</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#22c55e">
+        <div class="kpi-label">Delivered</div>
+        <div class="kpi-value" id="estat-sent" style="color:var(--brand)">—</div>
+        <div class="kpi-sub">successful</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#f87171">
+        <div class="kpi-label">Failed</div>
+        <div class="kpi-value" id="estat-failed" style="color:var(--red)">—</div>
+        <div class="kpi-sub">delivery errors</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#f59e0b">
+        <div class="kpi-label">Today</div>
+        <div class="kpi-value" id="estat-today" style="color:var(--amber)">—</div>
+        <div class="kpi-sub">sent today</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="align-items:start">
+
+      <!-- Compose -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Compose</div></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
           <div class="field">
-            <label>Location *</label>
-            <input id="f-location" placeholder="Austin, TX" />
+            <label>Load from Generated Message</label>
+            <select id="email-from-message" onchange="prefillFromMessage()">
+              <option value="">— select generated message —</option>
+            </select>
           </div>
           <div class="field">
-            <label>Website</label>
-            <input id="f-website" placeholder="https://..." type="url" />
+            <label>To *</label>
+            <input id="email-to" type="email" placeholder="recipient@example.com" />
           </div>
           <div class="field">
-            <label>Notes</label>
-            <textarea id="f-notes" placeholder="Any context about this prospect…"></textarea>
+            <label>Reply-to</label>
+            <input id="email-reply-to" type="email" placeholder="your@email.com" />
+          </div>
+          <div class="field">
+            <label>Subject *</label>
+            <input id="email-subject" placeholder="Subject line…" />
+          </div>
+          <div class="field">
+            <label>Body *</label>
+            <textarea id="email-body" style="min-height:140px" placeholder="Email body…"></textarea>
+          </div>
+          <div class="field">
+            <label>Link to Lead</label>
+            <select id="email-lead-id">
+              <option value="">— none —</option>
+            </select>
           </div>
           <div class="action-row">
-            <button class="btn btn-primary" id="btn-add-lead" onclick="addLead()">
-              + Add Lead
+            <button class="btn btn-brand" id="btn-send-email" onclick="doSendEmail()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send Email
             </button>
-            <button class="btn btn-outline btn-sm" onclick="clearForm()">Clear</button>
+            <button class="btn btn-outline btn-sm" onclick="clearEmailForm()">Clear</button>
+            <span id="send-status-msg" style="font-family:var(--fm);font-size:12px;margin-left:auto"></span>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Lead List -->
-    <div class="card">
-      <div class="card-header">
-        <h2>Pipeline</h2>
-        <div style="display:flex;gap:6px">
-          <input id="lead-search" placeholder="Search…" style="padding:6px 11px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--ink);outline:none;width:150px;font-family:var(--font-body)" oninput="filterLeads()" />
-          <button class="btn btn-outline btn-sm btn-icon" onclick="loadLeads()" title="Refresh">↺</button>
-        </div>
-      </div>
-      <div id="leads-list">
-        <div class="empty">
-          <span class="empty-icon">◎</span>
-          <p>No leads yet.<br>Add one using the form.</p>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════════════════
-     PAGE 2 — AI SCORING
-══════════════════════════════════════════ -->
-<div class="page" id="page-scoring">
-  <div class="page-header">
-    <div>
-      <h1>AI Scoring</h1>
-      <p>Estimate lead value and prioritize your pipeline</p>
-    </div>
-    <button class="btn btn-outline btn-sm" onclick="loadScoredLeads()">↺ Refresh</button>
-  </div>
-
-  <div class="grid-2" style="gap:24px;align-items:start">
-
-    <!-- Score a lead -->
-    <div>
+      <!-- Email log -->
       <div class="card">
         <div class="card-header">
-          <h2>Score a Lead</h2>
+          <div class="card-title">Email Log</div>
+          <select id="email-log-filter" onchange="loadEmailLogs()"
+            style="font-size:12px;padding:5px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;font-family:var(--fb);cursor:pointer">
+            <option value="">All</option>
+            <option value="sent">Sent</option>
+            <option value="failed">Failed</option>
+          </select>
         </div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
-          <div class="field">
-            <label>Select Lead</label>
-            <select id="score-select">
-              <option value="">— choose a lead —</option>
-            </select>
-          </div>
-          <button class="btn btn-amber" id="btn-score" onclick="scoreLead()">
-            ◆ Run AI Score
-          </button>
-        </div>
-      </div>
-
-      <!-- Score result -->
-      <div class="ai-result-panel" id="score-result" style="margin-top:20px">
-        <div class="score-display">
-          <div>
-            <div class="score-meta-label">Lead Score</div>
-            <div class="score-big" id="res-score-num">—</div>
-            <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink3);margin-top:2px">/10</div>
-          </div>
-          <div class="score-meta">
-            <div style="margin-bottom:12px">
-              <div class="score-meta-label">Tier</div>
-              <div id="res-tier"></div>
-            </div>
-            <div>
-              <div class="score-meta-label">Estimated Value</div>
-              <div class="score-meta-value value-range" id="res-value">—</div>
-            </div>
-          </div>
-          <div style="text-align:right">
-            <div class="score-meta-label" style="margin-bottom:6px">Confidence</div>
-            <div id="res-confidence"></div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h2>Analysis</h2>
-            <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">
-              → Generate Outreach
-            </button>
-          </div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
-            <div>
-              <div class="section-title">Reasoning</div>
-              <p class="reasoning" id="res-reasoning">—</p>
-            </div>
-            <div id="res-red-flags-wrap">
-              <div class="section-title">Red Flags</div>
-              <div class="red-flags" id="res-red-flags"></div>
-            </div>
-            <div>
-              <div class="section-title">Recommended Action</div>
-              <p id="res-action" style="font-size:13px;font-weight:500;color:var(--ink)">—</p>
-            </div>
-          </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>To</th><th>Subject</th><th>Status</th><th>Source</th><th>Sent</th><th></th></tr></thead>
+            <tbody id="email-log-body">
+              <tr><td colspan="6">
+                <div class="empty">
+                  <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+                  <div class="empty-title">No emails logged yet</div>
+                  <div class="empty-desc">Sent emails will appear here with full delivery status.</div>
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-
-    <!-- Ranked leads table -->
-    <div class="card">
-      <div class="card-header">
-        <h2>Ranked Leads</h2>
-        <select id="tier-filter" onchange="loadScoredLeads()" style="font-size:12px;padding:5px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--ink);outline:none;font-family:var(--font-body)">
-          <option value="">All Tiers</option>
-          <option>A</option><option>B</option><option>C</option><option>D</option>
-        </select>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Business</th>
-              <th>Tier</th>
-              <th>Score</th>
-              <th>Est. Value</th>
-            </tr>
-          </thead>
-          <tbody id="scored-tbody">
-            <tr><td colspan="4"><div class="empty"><span class="empty-icon">◆</span><p>No scored leads yet.</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════════════════
-     PAGE 3 — OUTREACH
-══════════════════════════════════════════ -->
-<div class="page" id="page-outreach">
-  <div class="page-header">
-    <div>
-      <h1>Outreach Generator</h1>
-      <p>AI-written emails and DMs, personalised to each lead</p>
-    </div>
-    <button class="btn btn-outline btn-sm" onclick="loadOutreachHistory()">↺ History</button>
   </div>
 
-  <div class="grid-2" style="gap:24px;align-items:start">
+  </div><!-- .content -->
+</div><!-- .main -->
 
-    <!-- Generate form -->
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="card">
-        <div class="card-header">
-          <h2>Generate Messages</h2>
-        </div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
-          <div class="field">
-            <label>Select Lead *</label>
-            <select id="out-select">
-              <option value="">— choose a lead —</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Tone</label>
-            <select id="out-tone">
-              <option value="">Auto (based on AI score)</option>
-              <option value="consultative">Consultative</option>
-              <option value="soft">Soft</option>
-              <option value="aggressive">Aggressive</option>
-              <option value="casual">Casual</option>
-            </select>
-          </div>
-          <button class="btn btn-blue" id="btn-generate" onclick="generateOutreach()">
-            ✦ Generate All Formats
-          </button>
-        </div>
-      </div>
-
-      <!-- Output panels -->
-      <div class="ai-result-panel" id="out-result">
-
-        <!-- Subject + Email -->
-        <div class="card">
-          <div class="card-header">
-            <h2>📧 Email</h2>
-            <button class="btn btn-outline btn-sm" onclick="copyText('out-email-body', this)">Copy</button>
-          </div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-            <div>
-              <div class="section-title">Subject Line</div>
-              <div id="out-subject" style="font-size:15px;font-weight:600;color:var(--blue);padding:10px 14px;background:var(--blue-bg);border-radius:var(--radius);border:1px solid rgba(26,79,138,.12)">—</div>
-            </div>
-            <div>
-              <div class="section-title">Body</div>
-              <div class="result-block" id="out-email-body">—</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Short DM -->
-        <div class="card">
-          <div class="card-header">
-            <h2>💬 Short DM</h2>
-            <button class="btn btn-outline btn-sm" onclick="copyText('out-dm', this)">Copy</button>
-          </div>
-          <div class="card-body">
-            <div class="result-block" id="out-dm">—</div>
-            <div style="margin-top:12px">
-              <div class="section-title">Personalization Notes</div>
-              <p class="reasoning" id="out-notes" style="margin-top:4px">—</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- History -->
-    <div class="card">
-      <div class="card-header">
-        <h2>Generation History</h2>
-        <span id="history-count" style="font-family:var(--font-mono);font-size:11px;color:var(--ink3)"></span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Business</th>
-              <th>Subject</th>
-              <th>Score</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody id="history-tbody">
-            <tr><td colspan="4"><div class="empty"><span class="empty-icon">✦</span><p>No messages generated yet.</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ══ TOASTS ══ -->
+<!-- Toasts -->
 <div id="toasts"></div>
 
-
-<!-- ════════════════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════
+     JAVASCRIPT — all original functions preserved
+════════════════════════════════════════════════ -->
 <script>
 "use strict";
 
-// ─────────────────────────────────────────────
-//  CONFIG — relative paths, works when served by Express at localhost:3000
-// ─────────────────────────────────────────────
-const API_BASE = '';   // empty = same origin; no hardcoded localhost needed
-const API      = API_BASE; // alias kept for any legacy references
-
-// ─────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────
+const API_BASE = '';
 let allLeads     = [];
 let lastScoredId = null;
 
-// ─────────────────────────────────────────────
-//  UTILS
-// ─────────────────────────────────────────────
+/* ─── Utils ─────────────────────────────────── */
 function esc(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -944,37 +1080,34 @@ async function apiFetch(method, path, body) {
     return res.json();
   } catch (err) {
     console.error('[apiFetch]', method, path, err.message);
-    return { success: false, message: 'Network error — is the server running on port 3000?' };
+    return { success: false, message: 'Network error — is the server running?' };
   }
 }
 
-// ─────────────────────────────────────────────
-//  CONNECTION STATUS
-//  checkConnection() is the canonical name per spec.
-//  checkHealth() is kept as an alias so all existing call sites work.
-// ─────────────────────────────────────────────
+/* ─── Connection ─────────────────────────────── */
 async function checkConnection() {
-  const orb  = document.getElementById('status-orb');
+  const dot  = document.getElementById('status-dot');
   const text = document.getElementById('status-text');
   try {
     const res = await fetch('/api/health');
     if (!res.ok) throw new Error('not ok');
     const d  = await res.json();
     const ok = d.status === 'healthy';
-    if (orb)  orb.className    = 'status-orb ' + (ok ? 'ok' : 'err');
-    if (text) text.textContent = ok ? '🟢 Connected' : '🟡 Degraded';
+    if (dot)  dot.className  = 'status-dot ' + (ok ? 'ok' : 'err');
+    if (text) text.textContent = ok ? 'Connected' : 'Degraded';
   } catch {
-    if (orb)  orb.className    = 'status-orb err';
-    if (text) text.textContent = '🔴 Offline';
+    if (dot)  dot.className  = 'status-dot err';
+    if (text) text.textContent = 'Offline';
   }
 }
-const checkHealth = checkConnection; // alias — existing callers still work
+const checkHealth = checkConnection;
 
+/* ─── Toast ─────────────────────────────────── */
 function toast(msg, type = 'info') {
   const icons = { info: '→', success: '✓', error: '✕' };
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span>${icons[type] || '→'}</span><span class="toast-msg">${esc(msg)}</span><span class="toast-close" onclick="this.parentElement.remove()">×</span>`;
+  el.innerHTML = `<span>${icons[type]||'→'}</span><span class="toast-msg">${esc(msg)}</span><span class="toast-close" onclick="this.parentElement.remove()">×</span>`;
   document.getElementById('toasts').appendChild(el);
   setTimeout(() => el?.remove(), 5000);
 }
@@ -984,39 +1117,32 @@ function setBtn(id, loading, text) {
   if (!btn) return;
   btn.disabled = loading;
   btn.innerHTML = loading
-    ? `<span class="spinner"></span> ${text || 'Working...'}`
+    ? `<span class="spinner"></span> ${text || 'Working…'}`
     : text;
 }
 
+/* ─── Score helpers ──────────────────────────── */
 function scoreColor(n) {
-  if (n >= 8) return 'var(--green)';
-  if (n >= 6) return 'var(--blue)';
+  if (n >= 8) return 'var(--brand)';
+  if (n >= 6) return '#60a5fa';
   if (n >= 4) return 'var(--amber)';
   return 'var(--red)';
 }
 
 function scoreBar(n) {
   const col = scoreColor(n);
-  return `
-    <div class="score-row">
-      <span class="score-num" style="color:${col}">${n}</span>
-      <div class="score-track">
-        <div class="score-fill" style="width:${n*10}%;background:${col}"></div>
-      </div>
-    </div>`;
+  return `<div class="score-row">
+    <span class="score-num" style="color:${col}">${n}</span>
+    <div class="score-track"><div class="score-fill" style="width:${n*10}%;background:${col}"></div></div>
+  </div>`;
 }
 
-function badgeStatus(s) {
-  return `<span class="badge badge-${s}">${s}</span>`;
-}
-
-function tierBadge(t) {
-  return `<span class="tier-badge tier-${t}">${t}</span>`;
-}
+function badgeStatus(s) { return `<span class="badge badge-${s}">${s}</span>`; }
+function tierBadge(t)   { return `<span class="tier-badge tier-${t}">${t}</span>`; }
 
 function confidenceBadge(c) {
   const map = { high: 'badge-qualified', medium: 'badge-contacted', low: 'badge-lost' };
-  return `<span class="badge ${map[c] || 'badge-new'}">${c}</span>`;
+  return `<span class="badge ${map[c]||'badge-new'}">${c}</span>`;
 }
 
 async function copyText(id, btn) {
@@ -1024,46 +1150,76 @@ async function copyText(id, btn) {
   try {
     await navigator.clipboard.writeText(text);
     const orig = btn.textContent;
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
     setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
     toast('Copied to clipboard.', 'success');
   } catch { toast('Copy failed — select text manually.', 'error'); }
 }
 
-// ─────────────────────────────────────────────
-//  NAVIGATION
-// ─────────────────────────────────────────────
-function navigate(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.topbar-nav a').forEach(a => a.classList.remove('active'));
+/* ─── Navigation ────────────────────────────── */
+const PAGE_META = {
+  leads:    { title: 'Leads',              sub: 'Manage your prospect pipeline' },
+  scoring:  { title: 'AI Scoring',         sub: 'Estimate value and prioritize your pipeline' },
+  outreach: { title: 'Outreach Generator', sub: 'AI-written emails and DMs, personalised to each lead' },
+  email:    { title: 'Send Email',         sub: 'Send via Gmail SMTP with full delivery logging' },
+};
 
-  document.getElementById(`page-${page}`)?.classList.add('active');
-  const navIdx = { leads: 0, scoring: 1, outreach: 2 };
-  const links = document.querySelectorAll('.topbar-nav a');
-  if (links[navIdx[page]]) links[navIdx[page]].classList.add('active');
+function navigate(page) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(a => a.classList.remove('active'));
+
+  const panel = document.getElementById(`panel-${page}`);
+  const navBtn = document.getElementById(`nav-${page}`);
+  if (panel) panel.classList.add('active');
+  if (navBtn) navBtn.classList.add('active');
+
+  const meta = PAGE_META[page] || {};
+  const titleEl = document.getElementById('topbar-title');
+  const subEl   = document.getElementById('topbar-sub');
+  if (titleEl) titleEl.textContent = meta.title || page;
+  if (subEl)   subEl.textContent   = meta.sub   || '';
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
 
-  // Lazy load on navigate
   if (page === 'leads')    { loadLeads(); refreshSelects(); }
   if (page === 'scoring')  { loadScoredLeads(); refreshSelects(); }
   if (page === 'outreach') { loadOutreachHistory(); refreshSelects(); }
+  if (page === 'email')    { loadEmailStats(); loadEmailLogs(); loadEmailSelects(); }
 }
 
-// ─────────────────────────────────────────────
-//  HEALTH CHECK — handled by checkConnection() above
-// ─────────────────────────────────────────────
+/* ─── Mobile sidebar ─────────────────────────── */
+function openSidebar()  {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sbOverlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('open');
+}
 
-// ─────────────────────────────────────────────
-//  LEADS
-// ─────────────────────────────────────────────
+/* ─── Onboarding banner ──────────────────────── */
+function dismissOnboarding() {
+  localStorage.setItem('lf_ob_dismissed', '1');
+  const el = document.getElementById('onboarding-banner');
+  if (el) el.style.display = 'none';
+}
+function initOnboarding() {
+  if (localStorage.getItem('lf_ob_dismissed')) {
+    const el = document.getElementById('onboarding-banner');
+    if (el) el.style.display = 'none';
+  }
+}
+
+/* ─── Leads ─────────────────────────────────── */
 async function loadLeads() {
   const d = await apiFetch('GET', '/api/leads?limit=200');
   allLeads = d.data || [];
   renderLeads(allLeads);
   updateStats(allLeads);
   refreshSelects();
+  const badge = document.getElementById('sb-leads-count');
+  if (badge) badge.textContent = allLeads.length || '—';
 }
 
 function updateStats(leads) {
@@ -1076,50 +1232,44 @@ function updateStats(leads) {
 function renderLeads(list) {
   const el = document.getElementById('leads-list');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><span class="empty-icon">◎</span><p>No leads found.</p></div>`;
+    el.innerHTML = `<div class="empty">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <div class="empty-title">No leads found</div>
+      <div class="empty-desc">Add one using the form, or import from Discovery.</div>
+      <a href="/discovery.html" class="btn btn-brand btn-sm">Find leads →</a>
+    </div>`;
     return;
   }
-
-  el.innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Business</th>
-            <th>Industry</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th>Score</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          ${list.map(l => `
-            <tr>
-              <td>
-                <strong style="font-size:13px">${esc(l.business_name || l.name)}</strong>
-                ${l.website ? `<br><a href="${esc(l.website)}" target="_blank" style="font-size:11px;color:var(--ink3);text-decoration:none">${esc(l.website.replace('https://',''))}</a>` : ''}
-              </td>
-              <td style="color:var(--ink2)">${esc(l.industry || '—')}</td>
-              <td style="color:var(--ink2)">${esc(l.location || '—')}</td>
-              <td>${badgeStatus(l.status)}</td>
-              <td>${l.score ? scoreBar(l.score) : `<span style="color:var(--ink3);font-family:var(--font-mono);font-size:11px">—</span>`}</td>
-              <td>
-                <div style="display:flex;gap:4px">
-                  <button class="btn btn-amber btn-sm" onclick="quickScore('${l.id}')">Score</button>
-                  <button class="btn btn-blue btn-sm" onclick="quickOutreach('${l.id}')">Outreach</button>
-                </div>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>`;
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Business</th><th>Industry</th><th>Location</th><th>Status</th><th>Score</th><th></th></tr></thead>
+    <tbody>${list.map(l => `
+      <tr>
+        <td>
+          <strong style="font-size:13px">${esc(l.business_name||l.name)}</strong>
+          ${l.website ? `<br><a href="${esc(l.website)}" target="_blank" style="font-size:11px;color:var(--text-3);text-decoration:none">${esc(l.website.replace('https://','').replace('http://','').slice(0,32))}</a>` : ''}
+        </td>
+        <td style="color:var(--text-2)">${esc(l.industry||'—')}</td>
+        <td style="color:var(--text-2)">${esc(l.location||'—')}</td>
+        <td>${badgeStatus(l.status)}</td>
+        <td>${l.score ? scoreBar(l.score) : `<span style="color:var(--text-3);font-family:var(--fm);font-size:11px">—</span>`}</td>
+        <td>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-amber btn-xs" onclick="quickScore('${l.id}')">Score</button>
+            <button class="btn btn-blue btn-xs"  onclick="quickOutreach('${l.id}')">Outreach</button>
+          </div>
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table></div>`;
 }
 
 function filterLeads() {
   const q = document.getElementById('lead-search').value.toLowerCase();
-  renderLeads(q ? allLeads.filter(l => (l.business_name||l.name||'').toLowerCase().includes(q) || (l.industry||'').toLowerCase().includes(q) || (l.location||'').toLowerCase().includes(q)) : allLeads);
+  renderLeads(q ? allLeads.filter(l =>
+    (l.business_name||l.name||'').toLowerCase().includes(q) ||
+    (l.industry||'').toLowerCase().includes(q) ||
+    (l.location||'').toLowerCase().includes(q)
+  ) : allLeads);
 }
 
 async function addLead() {
@@ -1130,35 +1280,32 @@ async function addLead() {
   const notes    = document.getElementById('f-notes').value.trim();
 
   if (!name || !industry || !location) {
-    toast('Business name, industry, and location are required.', 'error');
-    return;
+    toast('Business name, industry, and location are required.', 'error'); return;
   }
 
   setBtn('btn-add-lead', true, 'Adding…');
-
   const d = await apiFetch('POST', '/api/leads', {
     business_name: name, industry, location,
-    website: website || undefined,
-    notes:   notes   || undefined,
+    website: website || undefined, notes: notes || undefined,
   });
-
   setBtn('btn-add-lead', false, '+ Add Lead');
 
   if (d.success) {
     toast(`"${name}" added to pipeline.`, 'success');
-    clearForm();
-    loadLeads();
+    clearForm(); loadLeads();
+    // Mark onboarding step 1 done (leads imported)
+    const s1 = document.getElementById('obs-1');
+    if (s1) s1.classList.add('done');
   } else {
-    const errMsg = d.errors
-      ? Object.values(d.errors).flat().join(' · ')
-      : d.message || 'Failed to add lead.';
+    const errMsg = d.errors ? Object.values(d.errors).flat().join(' · ') : d.message || 'Failed to add lead.';
     toast(errMsg, 'error');
   }
 }
 
 function clearForm() {
-  ['f-name','f-industry','f-location','f-website','f-notes']
-    .forEach(id => { document.getElementById(id).value = ''; });
+  ['f-name','f-industry','f-location','f-website','f-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
 }
 
 function refreshSelects() {
@@ -1170,27 +1317,26 @@ function refreshSelects() {
   });
 }
 
-// ─────────────────────────────────────────────
-//  SCORING
-// ─────────────────────────────────────────────
+/* ─── Scoring ────────────────────────────────── */
 async function scoreLead() {
   const leadId = document.getElementById('score-select').value;
   if (!leadId) { toast('Select a lead first.', 'error'); return; }
 
   setBtn('btn-score', true, 'Analyzing…');
-
   const d = await apiFetch('POST', '/api/score-lead', { lead_id: leadId });
-
-  setBtn('btn-score', false, '◆ Run AI Score');
+  setBtn('btn-score', false, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg> Run AI Score`);
 
   if (!d.success) { toast(d.message || 'Scoring failed.', 'error'); return; }
 
   const s = d.data.score;
   lastScoredId = leadId;
   renderScoreResult(s);
-  loadLeads();
-  loadScoredLeads();
+  loadLeads(); loadScoredLeads();
   toast(`Scored: Tier ${s.tier} · ${s.lead_score}/10`, 'success');
+
+  // Mark onboarding step 2 done
+  const s2 = document.getElementById('obs-2');
+  if (s2) s2.classList.add('done');
 }
 
 function renderScoreResult(s) {
@@ -1200,22 +1346,21 @@ function renderScoreResult(s) {
   const col = scoreColor(s.lead_score);
   document.getElementById('res-score-num').textContent = s.lead_score;
   document.getElementById('res-score-num').style.color = col;
-  document.getElementById('res-tier').innerHTML = tierBadge(s.tier);
-  document.getElementById('res-value').textContent = s.estimated_value_range || '—';
-  document.getElementById('res-confidence').innerHTML = confidenceBadge(s.confidence);
+  document.getElementById('res-tier').innerHTML        = tierBadge(s.tier);
+  document.getElementById('res-value').textContent     = s.estimated_value_range || '—';
+  document.getElementById('res-confidence').innerHTML  = confidenceBadge(s.confidence);
   document.getElementById('res-reasoning').textContent = s.reasoning || '—';
-  document.getElementById('res-action').textContent = s.recommended_action || '—';
+  document.getElementById('res-action').textContent    = s.recommended_action || '—';
 
   const flags = Array.isArray(s.red_flags) ? s.red_flags
     : (typeof s.red_flags === 'string' ? JSON.parse(s.red_flags || '[]') : []);
 
   const flagWrap = document.getElementById('res-red-flags-wrap');
   if (flags.length) {
-    document.getElementById('res-red-flags').innerHTML =
-      flags.map(f => `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
+    document.getElementById('res-red-flags').innerHTML = flags.map(f => `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
     flagWrap.style.display = 'block';
   } else {
-    flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--green)">✓ None identified</span>`;
+    flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--brand)">✓ None identified</span>`;
   }
 }
 
@@ -1227,18 +1372,19 @@ async function loadScoredLeads() {
 
   const tbody = document.getElementById('scored-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><span class="empty-icon">◆</span><p>No scored leads yet.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg></div>
+      <div class="empty-title">No scored leads yet</div>
+      <div class="empty-desc">Select a lead and run AI Score to see results here.</div>
+    </div></td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(s => `
-    <tr style="cursor:pointer" onclick="showScoredDetail('${s.score_id || s.id}')">
-      <td>
-        <strong>${esc(s.business_name)}</strong>
-        <div style="font-size:11px;color:var(--ink3)">${esc(s.industry || '')} · ${esc(s.location || '')}</div>
-      </td>
+    <tr style="cursor:pointer" onclick="showScoredDetail('${s.score_id||s.id}')">
+      <td><strong>${esc(s.business_name)}</strong><div style="font-size:11px;color:var(--text-3)">${esc(s.industry||'')} · ${esc(s.location||'')}</div></td>
       <td>${tierBadge(s.tier)}</td>
       <td>${scoreBar(s.lead_score)}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--green);font-weight:500">${esc(s.estimated_value_range)}</td>
+      <td style="font-family:var(--fm);font-size:11px;color:var(--brand);font-weight:600">${esc(s.estimated_value_range)}</td>
     </tr>`).join('');
 }
 
@@ -1246,36 +1392,25 @@ async function showScoredDetail(scoreId) {
   const d = await apiFetch('GET', `/api/score-lead/${scoreId}`);
   if (!d.success) return;
   renderScoreResult(d.data);
-  // Scroll to result
   document.getElementById('score-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function quickScore(leadId) {
   navigate('scoring');
-  setTimeout(() => {
-    const sel = document.getElementById('score-select');
-    if (sel) { sel.value = leadId; }
-    scoreLead();
-  }, 100);
+  setTimeout(() => { const sel = document.getElementById('score-select'); if (sel) sel.value = leadId; scoreLead(); }, 100);
 }
 
-// ─────────────────────────────────────────────
-//  OUTREACH GENERATOR
-// ─────────────────────────────────────────────
+/* ─── Outreach ───────────────────────────────── */
 async function generateOutreach() {
   const leadId = document.getElementById('out-select').value;
   const tone   = document.getElementById('out-tone').value;
-
   if (!leadId) { toast('Select a lead first.', 'error'); return; }
 
   setBtn('btn-generate', true, 'Generating…');
-
   const body = { lead_id: leadId };
   if (tone) body.tone_override = tone;
-
   const d = await apiFetch('POST', '/api/generate-outreach', body);
-
-  setBtn('btn-generate', false, '✦ Generate All Formats');
+  setBtn('btn-generate', false, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate All Formats`);
 
   if (!d.success) { toast(d.message || 'Generation failed.', 'error'); return; }
 
@@ -1283,12 +1418,15 @@ async function generateOutreach() {
   renderOutreachResult(msg);
   loadOutreachHistory();
   toast('Email + DM generated and saved.', 'success');
+
+  // Mark onboarding step 3 done
+  const s3 = document.getElementById('obs-3');
+  if (s3) s3.classList.add('done');
 }
 
 function renderOutreachResult(msg) {
   const panel = document.getElementById('out-result');
   panel.classList.add('visible');
-
   document.getElementById('out-subject').textContent    = msg.subject_line || '—';
   document.getElementById('out-email-body').textContent = msg.email_body   || '—';
   document.getElementById('out-dm').textContent         = msg.short_dm     || '—';
@@ -1296,25 +1434,26 @@ function renderOutreachResult(msg) {
 }
 
 async function loadOutreachHistory() {
-  const d = await apiFetch('GET', '/api/generate-outreach?limit=30');
+  const d    = await apiFetch('GET', '/api/generate-outreach?limit=30');
   const list = d.data || [];
   const count = d.meta?.total ?? list.length;
   document.getElementById('history-count').textContent = count ? `${count} total` : '';
 
   const tbody = document.getElementById('history-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><span class="empty-icon">✦</span><p>No messages yet.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <div class="empty-title">No messages yet</div>
+      <div class="empty-desc">Generate your first email to see history here.</div>
+    </div></td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(m => `
     <tr style="cursor:pointer" onclick="loadHistoricMessage('${m.id}')">
-      <td>
-        <strong style="font-size:13px">${esc(m.business_name || '—')}</strong>
-        <div style="font-size:11px;color:var(--ink3)">${esc(m.industry || '')}</div>
-      </td>
-      <td style="font-size:12px;color:var(--blue);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.subject_line || '—')}</td>
-      <td>${m.lead_score_at_generation ? scoreBar(m.lead_score_at_generation) : `<span style="color:var(--ink3);font-size:11px">—</span>`}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--ink3)">${m.created_at ? new Date(m.created_at).toLocaleDateString() : '—'}</td>
+      <td><strong style="font-size:13px">${esc(m.business_name||'—')}</strong><div style="font-size:11px;color:var(--text-3)">${esc(m.industry||'')}</div></td>
+      <td style="font-size:12px;color:#60a5fa;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.subject_line||'—')}</td>
+      <td>${m.lead_score_at_generation ? scoreBar(m.lead_score_at_generation) : `<span style="color:var(--text-3);font-size:11px">—</span>`}</td>
+      <td style="font-family:var(--fm);font-size:11px;color:var(--text-3)">${m.created_at ? new Date(m.created_at).toLocaleDateString() : '—'}</td>
     </tr>`).join('');
 }
 
@@ -1327,10 +1466,7 @@ async function loadHistoricMessage(id) {
 
 function quickOutreach(leadId) {
   navigate('outreach');
-  setTimeout(() => {
-    const sel = document.getElementById('out-select');
-    if (sel) { sel.value = leadId; }
-  }, 120);
+  setTimeout(() => { const sel = document.getElementById('out-select'); if (sel) sel.value = leadId; }, 120);
 }
 
 function setOutreachLead() {
@@ -1339,11 +1475,122 @@ function setOutreachLead() {
   if (sel) sel.value = lastScoredId;
 }
 
-// ─────────────────────────────────────────────
-//  INIT
-// ─────────────────────────────────────────────
-checkConnection();                        // immediately check & update status indicator
-setInterval(checkConnection, 30000);      // recheck every 30 s
+/* ─── Email panel ────────────────────────────── */
+async function loadEmailStats() {
+  const d = await apiFetch('GET', '/api/send-email/logs/stats');
+  if (!d.success) return;
+  const s = d.data;
+  document.getElementById('estat-total').textContent  = s.total  ?? '—';
+  document.getElementById('estat-sent').textContent   = s.sent   ?? '—';
+  document.getElementById('estat-failed').textContent = s.failed ?? '—';
+  document.getElementById('estat-today').textContent  = s.today  ?? '—';
+}
+
+async function loadEmailSelects() {
+  if (!allLeads.length) await loadLeads();
+  const sel = document.getElementById('email-lead-id');
+  if (sel) sel.innerHTML = '<option value="">— none —</option>' +
+    allLeads.map(l => `<option value="${l.id}">${esc(l.business_name||l.name)} (${esc(l.location||'')})</option>`).join('');
+
+  const msgSel = document.getElementById('email-from-message');
+  if (msgSel) {
+    const d    = await apiFetch('GET', '/api/generate-outreach?limit=50');
+    const msgs = d.data || [];
+    msgSel.innerHTML = '<option value="">— select generated message —</option>' +
+      msgs.map(m => `<option value="${m.id}" data-subject="${esc(m.subject_line)}" data-body="${esc(m.email_body)}">${esc(m.business_name||'Lead')} — ${esc(m.subject_line?.slice(0,45)||'')}</option>`).join('');
+  }
+}
+
+function prefillFromMessage() {
+  const sel = document.getElementById('email-from-message');
+  const opt = sel?.options[sel.selectedIndex];
+  if (!opt || !opt.value) return;
+  document.getElementById('email-subject').value = opt.dataset.subject || '';
+  document.getElementById('email-body').value    = opt.dataset.body?.replace(/\\n/g,'\n') || '';
+}
+
+async function doSendEmail() {
+  const to      = document.getElementById('email-to').value.trim();
+  const subject = document.getElementById('email-subject').value.trim();
+  const body    = document.getElementById('email-body').value.trim();
+  const replyTo = document.getElementById('email-reply-to').value.trim();
+  const leadId  = document.getElementById('email-lead-id').value;
+
+  if (!to || !subject || !body) { toast('To, subject, and body are required.', 'error'); return; }
+
+  const btn = document.getElementById('btn-send-email');
+  const statusMsg = document.getElementById('send-status-msg');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending…';
+  statusMsg.textContent = '';
+
+  const payload = { to, subject, body, source: 'manual' };
+  if (replyTo) payload.reply_to = replyTo;
+  if (leadId)  payload.lead_id  = leadId;
+
+  const d = await apiFetch('POST', '/api/send-email', payload);
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Email`;
+
+  if (d.success) {
+    toast('Email sent successfully.', 'success');
+    statusMsg.innerHTML = `<span style="color:var(--brand);font-family:var(--fm);font-size:11px">✓ Sent · ${new Date().toLocaleTimeString()}</span>`;
+    clearEmailForm(); loadEmailStats(); loadEmailLogs();
+  } else {
+    toast(d.message || 'Send failed.', 'error');
+    statusMsg.innerHTML = `<span style="color:var(--red);font-family:var(--fm);font-size:11px">✕ ${esc(d.message||'Failed')}</span>`;
+  }
+}
+
+async function loadEmailLogs() {
+  const status = document.getElementById('email-log-filter')?.value || '';
+  const url    = '/api/send-email/logs?limit=30' + (status ? '&status=' + status : '');
+  const d      = await apiFetch('GET', url);
+  const logs   = d.data || [];
+
+  const tbody = document.getElementById('email-log-body');
+  if (!logs.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+      <div class="empty-title">No emails logged yet</div>
+      <div class="empty-desc">Sent emails will appear here.</div>
+    </div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = logs.map(l => `
+    <tr>
+      <td style="font-family:var(--fm);font-size:12px">${esc(l.to_address)}</td>
+      <td style="font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.subject)}</td>
+      <td>${l.status === 'sent'
+        ? '<span class="status-pill pill-sent">sent</span>'
+        : '<span class="status-pill pill-failed">failed</span>'}</td>
+      <td><span style="font-family:var(--fm);font-size:10px;color:var(--text-3)">${esc(l.source||'manual')}</span></td>
+      <td style="font-family:var(--fm);font-size:11px;color:var(--text-3)">${l.sent_at ? new Date(l.sent_at).toLocaleString() : '—'}</td>
+      <td>${l.error_message ? `<span title="${esc(l.error_message)}" style="color:var(--red);font-family:var(--fm);font-size:10px;cursor:help">⚠ error</span>` : ''}</td>
+    </tr>`).join('');
+
+  loadEmailStats();
+}
+
+async function verifySMTP() {
+  const btn = document.getElementById('btn-verify-smtp');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  const d = await apiFetch('GET', '/api/send-email/verify');
+  btn.disabled = false; btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Verify SMTP`;
+  if (d.success) toast('SMTP connection verified. Ready to send.', 'success');
+  else toast('SMTP error: ' + (d.message || 'Check your credentials.'), 'error');
+}
+
+function clearEmailForm() {
+  ['email-to','email-reply-to','email-subject','email-body'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const sel1 = document.getElementById('email-lead-id');
+  const sel2 = document.getElementById('email-from-message');
+  if (sel1) sel1.value = ''; if (sel2) sel2.value = '';
+}
+
+/* ─── Init ───────────────────────────────────── */
+initOnboarding();
+checkConnection();
+setInterval(checkConnection, 30000);
 loadLeads();
 loadScoredLeads();
 loadOutreachHistory();
