@@ -1987,7 +1987,21 @@ function discUpdateSelUI() {
 async function discImportSelected() {
   const indices = discGetSelected();
   if (!indices.length) { toast('Select at least one business.', 'error'); return; }
-  const businesses = indices.map(i => discFiltered[i]).filter(Boolean);
+
+  // Normalize to what backend createLead() expects: business_name (not name)
+  const businesses = indices.map(i => discFiltered[i]).filter(Boolean).map(b => ({
+    business_name : b.name,
+    industry      : b.industry,
+    location      : b.location,
+    website       : b.website  || undefined,
+    notes         : [
+      b.rating       && `Rating: ${b.rating}/5`,
+      b.review_count && `${b.review_count} reviews`,
+      b.phone        && `Phone: ${b.phone}`,
+      'Imported via Discovery',
+    ].filter(Boolean).join(' · '),
+  }));
+
   const btn = document.getElementById('disc-btn-import-sel');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Importing…'; }
 
@@ -2002,7 +2016,7 @@ async function discImportSelected() {
   discRenderTable(discFiltered);
   discClearSelection();
   discShowImportSummary(s);
-  loadLeads(); // refresh lead count in sidebar
+  loadLeads();
 
   if ((s.imported || 0) > 0) toast(`${s.imported} lead${s.imported > 1 ? 's' : ''} imported.`, 'success');
   if ((s.skipped  || 0) > 0) toast(`${s.skipped} duplicate${s.skipped > 1 ? 's' : ''} skipped.`, 'info');
@@ -2044,10 +2058,24 @@ async function discImportNoWebsite() {
   const noWebLeads = discFiltered.filter((b, i) => !b.website && !discImportedIds.has(i));
   if (!noWebLeads.length) { toast('All no-website leads already imported.', 'info'); return; }
 
+  // Normalize field names for backend
+  const businesses = noWebLeads.map(b => ({
+    business_name : b.name,
+    industry      : b.industry,
+    location      : b.location,
+    website       : b.website  || undefined,
+    notes         : [
+      b.rating       && `Rating: ${b.rating}/5`,
+      b.review_count && `${b.review_count} reviews`,
+      b.phone        && `Phone: ${b.phone}`,
+      'Imported via Discovery',
+    ].filter(Boolean).join(' · '),
+  }));
+
   const btn = document.getElementById('disc-btn-import-nowebsite');
   if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner dark"></span> Importing ${noWebLeads.length}…`; }
 
-  const d = await apiFetch('POST', '/api/discovery/import', { businesses: noWebLeads });
+  const d = await apiFetch('POST', '/api/discovery/import', { businesses });
 
   if (btn) {
     btn.disabled = false;
