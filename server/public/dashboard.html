@@ -4,24 +4,29 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard — LeadFlow AI</title>
-<!-- ═══ AUTH GUARD — must be first script, blocks render if no token ═══ -->
+<!-- ═══ OPTIONAL AUTH INIT — guests see the page, logged-in users get API access ═══ -->
 <script>
 (function() {
   var token = localStorage.getItem('lf_token');
-  if (!token) { window.location.replace('/login.html'); return; }
+  window.LF_TOKEN   = null;
+  window.LF_USER    = null;
+  window.LF_HEADERS = { 'Content-Type': 'application/json' };
+
+  if (!token) return; // guest — show page without auth
+
+  // Validate token expiry client-side
   try {
     var payload = JSON.parse(atob(token.split('.')[1]));
     if (payload.exp && Date.now() / 1000 > payload.exp) {
       localStorage.removeItem('lf_token');
       localStorage.removeItem('lf_user');
-      window.location.replace('/login.html?reason=expired');
-      return;
+      return; // expired — treat as guest
     }
   } catch(e) {
     localStorage.removeItem('lf_token');
-    window.location.replace('/login.html');
     return;
   }
+
   window.LF_TOKEN   = token;
   try { window.LF_USER = JSON.parse(localStorage.getItem('lf_user')); } catch(e) { window.LF_USER = null; }
   window.LF_HEADERS = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
@@ -726,12 +731,16 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
         <div class="sb-quota" id="sb-quota"></div>
       </div>
     </div>
-    <button class="sb-upgrade" id="sb-upgrade-btn" style="display:none">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <button class=\"sb-upgrade\" id=\"sb-upgrade-btn\" style=\"display:none\">
+      <svg width=\"11\" height=\"11\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><polyline points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/></svg>
       Upgrade Plan
     </button>
-    <button class="sb-logout" id="sb-logout-btn">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    <a class=\"sb-logout\" href=\"/login.html\" id=\"sb-signin-btn\">
+      <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"/><polyline points=\"10 17 15 12 10 7\"/><line x1=\"15\" y1=\"12\" x2=\"3\" y2=\"12\"/></svg>
+      Sign In / Register
+    </a>
+    <button class=\"sb-logout\" id=\"sb-logout-btn\" style=\"display:none\">
+      <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/></svg>
       Sign Out
     </button>
   </div>
@@ -1566,11 +1575,13 @@ async function apiFetch(method, path, body) {
   try {
     const res = await fetch(API_BASE + path, opts);
     if (res.status === 401) {
-      // Token expired or invalid — force re-login
-      localStorage.removeItem('lf_token');
-      localStorage.removeItem('lf_user');
-      window.location.replace('/login.html?reason=expired');
-      return { success: false, message: 'Session expired.' };
+      // Only force re-login if user had a token (session expired)
+      if (window.LF_TOKEN) {
+        localStorage.removeItem('lf_token');
+        localStorage.removeItem('lf_user');
+        window.location.replace('/login.html?reason=expired');
+      }
+      return { success: false, message: 'Please sign in to use this feature.' };
     }
     if (!res.ok) {
       const text = await res.text();
@@ -2438,10 +2449,26 @@ document.addEventListener('keydown', e => {
 
 /* ─── Auth: populate sidebar user block ──────── */
 function initUserBlock() {
-  const user = window.LF_USER;
-  if (!user) return;
+  const user       = window.LF_USER;
+  const signinBtn  = document.getElementById('sb-signin-btn');
+  const logoutBtn  = document.getElementById('sb-logout-btn');
+  const userBlock  = document.getElementById('sb-user-block');
+  const upgradeBtn = document.getElementById('sb-upgrade-btn');
 
-  // Avatar initials from email
+  if (!user) {
+    // Guest — show Sign In, hide user block and logout
+    if (signinBtn)  signinBtn.style.display  = 'flex';
+    if (logoutBtn)  logoutBtn.style.display  = 'none';
+    if (userBlock)  userBlock.style.display  = 'none';
+    if (upgradeBtn) upgradeBtn.style.display = 'none';
+    return;
+  }
+
+  // Logged in — hide Sign In, show user info and logout
+  if (signinBtn)  signinBtn.style.display  = 'none';
+  if (logoutBtn)  logoutBtn.style.display  = 'flex';
+  if (userBlock)  userBlock.style.display  = '';
+
   const initials = (user.email || '?').substring(0, 2).toUpperCase();
   const avatarEl = document.getElementById('sb-avatar');
   const nameEl   = document.getElementById('sb-user-name');
@@ -2450,15 +2477,11 @@ function initUserBlock() {
   if (nameEl)   nameEl.textContent   = user.email;
   if (planEl)   planEl.textContent   = (user.plan || 'free').toUpperCase();
 
-  // Show upgrade button only for free users
-  const upgradeBtn = document.getElementById('sb-upgrade-btn');
   if (upgradeBtn && user.plan === 'free') {
     upgradeBtn.style.display = 'flex';
     upgradeBtn.addEventListener('click', () => openUpgradeModal());
   }
 
-  // Logout
-  const logoutBtn = document.getElementById('sb-logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('lf_token');
