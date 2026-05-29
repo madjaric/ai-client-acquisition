@@ -4,34 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard — LeadFlow AI</title>
-<!-- ═══ OPTIONAL AUTH INIT — guests see the page, logged-in users get API access ═══ -->
-<script>
-(function() {
-  var token = localStorage.getItem('lf_token');
-  window.LF_TOKEN   = null;
-  window.LF_USER    = null;
-  window.LF_HEADERS = { 'Content-Type': 'application/json' };
-
-  if (!token) return; // guest — show page without auth
-
-  // Validate token expiry client-side
-  try {
-    var payload = JSON.parse(atob(token.split('.')[1]));
-    if (payload.exp && Date.now() / 1000 > payload.exp) {
-      localStorage.removeItem('lf_token');
-      localStorage.removeItem('lf_user');
-      return; // expired — treat as guest
-    }
-  } catch(e) {
-    localStorage.removeItem('lf_token');
-    return;
-  }
-
-  window.LF_TOKEN   = token;
-  try { window.LF_USER = JSON.parse(localStorage.getItem('lf_user')); } catch(e) { window.LF_USER = null; }
-  window.LF_HEADERS = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
-})();
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
@@ -159,143 +131,9 @@ body {
 }
 .sb-user-name { font-size: 13px; font-weight: 500; color: var(--text); }
 .sb-user-plan { font-family: var(--fm); font-size: 9px; color: var(--brand); font-weight: 600; }
-.sb-quota {
-  font-family: var(--fm); font-size: 9px; color: var(--text-3); margin-top: 1px;
-  transition: color .2s;
-}
-.sb-quota.warn { color: var(--amber); }
-.sb-quota.full { color: var(--red); }
-.sb-logout {
-  display: flex; align-items: center; gap: 7px;
-  width: calc(100% - 16px); margin: 2px 8px 0;
-  padding: 7px 10px; border-radius: var(--radius);
-  border: none; background: transparent;
-  color: var(--text-3); font-size: 12px; font-family: var(--fb);
-  cursor: pointer; text-align: left; transition: background .14s, color .14s;
-}
-.sb-logout:hover { background: var(--red-dim); color: var(--red); }
-.sb-upgrade {
-  display: flex; align-items: center; gap: 7px;
-  width: calc(100% - 16px); margin: 4px 8px 2px;
-  padding: 7px 10px; border-radius: var(--radius);
-  border: 1px solid var(--brand-mid); background: var(--brand-dim);
-  color: var(--brand); font-size: 12px; font-family: var(--fb); font-weight: 500;
-  cursor: pointer; text-align: left; transition: background .14s;
-}
-.sb-upgrade:hover { background: rgba(34,197,94,.2); }
 
-/* ═══ UPGRADE MODAL ══════════════════════════════ */
-.modal-overlay {
-  display: none; position: fixed; inset: 0; z-index: 100;
-  background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
-  align-items: center; justify-content: center; padding: 1rem;
-}
-.modal-overlay.open { display: flex; animation: fadeIn .18s ease; }
-@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
-
-.upgrade-modal {
-  background: var(--bg-1); border: 1px solid var(--border-2);
-  border-radius: 16px; width: 100%; max-width: 1020px;
-  max-height: 90vh; overflow-y: auto; position: relative;
-  animation: slideUp .22s ease;
-}
-@keyframes slideUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-
-.modal-header {
-  padding: 1.5rem 1.5rem 0;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
-}
-.modal-header-text {}
-.modal-title {
-  font-family: var(--fd); font-size: 1.2rem; font-weight: 700;
-  letter-spacing: -.02em; margin-bottom: .25rem;
-}
-.modal-sub { font-size: 12px; color: var(--text-2); }
-.modal-close {
-  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
-  background: transparent; color: var(--text-2); cursor: pointer; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 14px;
-  transition: background .14s, color .14s;
-}
-.modal-close:hover { background: var(--red-dim); color: var(--red); }
-
-.plans-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: .75rem; padding: 1.25rem 1.5rem 1.5rem;
-}
-@media (max-width: 860px) { .plans-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px) { .plans-grid { grid-template-columns: 1fr; } }
-
-.plan-card {
-  background: var(--bg-2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column; gap: .9rem;
-  position: relative; transition: border-color .2s;
-}
-.plan-card:hover { border-color: var(--border-2); }
-.plan-card.featured {
-  border-color: var(--brand); background: linear-gradient(160deg, rgba(34,197,94,.06), var(--bg-2));
-}
-.plan-badge-popular {
-  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-  background: var(--brand); color: #000; font-family: var(--fm);
-  font-size: 9px; font-weight: 700; letter-spacing: .06em;
-  padding: 2px 10px; border-radius: 20px; text-transform: uppercase; white-space: nowrap;
-}
-.plan-name {
-  font-family: var(--fd); font-size: .8rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .08em; color: var(--text-2);
-}
-.plan-subtitle {
-  font-family: var(--fd); font-size: 1.05rem; font-weight: 700;
-  letter-spacing: -.02em; color: var(--text); margin-top: .1rem;
-}
-.plan-desc {
-  font-size: 11px; color: var(--text-3); line-height: 1.5;
-}
-.plan-price {
-  display: flex; align-items: baseline; gap: 3px;
-}
-.plan-price-amt {
-  font-family: var(--fd); font-size: 2rem; font-weight: 800;
-  letter-spacing: -.04em; color: var(--text);
-}
-.plan-price-period { font-size: 11px; color: var(--text-3); }
-.plan-features {
-  list-style: none; display: flex; flex-direction: column; gap: .45rem; flex: 1;
-}
-.plan-features li {
-  font-size: 12px; color: var(--text-2); display: flex; align-items: flex-start; gap: .5rem;
-}
-.plan-features li::before {
-  content: ''; width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
-  background: var(--brand-dim); border: 1px solid var(--brand-mid);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l2.5 2.5L10 3.5' stroke='%2322c55e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: center; background-size: 9px;
-}
-.plan-features li.dim { color: var(--text-3); }
-.plan-features li.dim::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6h6' stroke='%2352525e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-color: var(--bg-3); border-color: var(--border);
-}
-.plan-cta {
-  width: 100%; padding: .65rem; border-radius: 8px; border: none;
-  font-family: var(--fd); font-size: .8rem; font-weight: 600; cursor: pointer;
-  transition: opacity .15s, transform .1s;
-}
-.plan-cta:hover { opacity: .88; }
-.plan-cta:active { transform: scale(.97); }
-.plan-cta.free    { background: var(--bg-3); border: 1px solid var(--border); color: var(--text-2); cursor: default; }
-.plan-cta.starter { background: var(--bg-3); border: 1px solid var(--border-2); color: var(--text); }
-.plan-cta.starter:hover { opacity: 1; background: rgba(255,255,255,.08); }
-.plan-cta.pro     { background: var(--brand); color: #000; }
-.plan-cta.agency  { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
-
-.modal-footer {
-  border-top: 1px solid var(--border); padding: .9rem 1.5rem;
-  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
-}
-.modal-footer-note { font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: .4rem; }
-
+/* Mobile overlay + hamburger */
+.sb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 29; backdrop-filter: blur(3px); }
 .hamburger {
   display: none; position: fixed; top: 12px; left: 12px; z-index: 31;
   width: 38px; height: 38px; border-radius: var(--radius);
@@ -723,26 +561,13 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
   </div>
 
   <div class="sb-bottom">
-    <div class="sb-user" id="sb-user-block">
-      <div class="sb-avatar" id="sb-avatar">??</div>
+    <div class="sb-user">
+      <div class="sb-avatar">AP</div>
       <div>
-        <div class="sb-user-name" id="sb-user-name">Loading…</div>
-        <div class="sb-user-plan" id="sb-user-plan">FREE</div>
-        <div class="sb-quota" id="sb-quota"></div>
+        <div class="sb-user-name">Account</div>
+        <div class="sb-user-plan">Pro plan</div>
       </div>
     </div>
-    <button class=\"sb-upgrade\" id=\"sb-upgrade-btn\" style=\"display:none\">
-      <svg width=\"11\" height=\"11\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><polyline points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/></svg>
-      Upgrade Plan
-    </button>
-    <a class=\"sb-logout\" href=\"/login.html\" id=\"sb-signin-btn\">
-      <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"/><polyline points=\"10 17 15 12 10 7\"/><line x1=\"15\" y1=\"12\" x2=\"3\" y2=\"12\"/></svg>
-      Sign In / Register
-    </a>
-    <button class=\"sb-logout\" id=\"sb-logout-btn\" style=\"display:none\">
-      <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/></svg>
-      Sign Out
-    </button>
   </div>
 </aside>
 
@@ -1408,148 +1233,6 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
   </div><!-- .content -->
 </div><!-- .main -->
 
-<!-- ════ UPGRADE MODAL ══════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="upgrade-modal" onclick="if(event.target===this)closeUpgradeModal()">
-  <div class="upgrade-modal">
-
-    <div class="modal-header">
-      <div class="modal-header-text">
-        <div class="modal-title">Upgrade your plan</div>
-        <div class="modal-sub" id="upgrade-modal-sub">Unlock more searches, emails, and AI features.</div>
-      </div>
-      <button class="modal-close" onclick="closeUpgradeModal()">✕</button>
-    </div>
-
-    <div class="plans-grid">
-
-      <!-- FREE -->
-      <div class="plan-card">
-        <div>
-          <div class="plan-name">Free</div>
-          <div class="plan-subtitle">Explore</div>
-          <div class="plan-desc">See how LeadFlow AI works before committing</div>
-        </div>
-        <div class="plan-price">
-          <span class="plan-price-amt">$0</span>
-          <span class="plan-price-period">forever free</span>
-        </div>
-        <ul class="plan-features">
-          <li>5 lead searches / month</li>
-          <li>Up to 20 leads / search</li>
-          <li>20 AI emails / month</li>
-          <li>Open &amp; copy preview links</li>
-          <li>5 AI edits / month</li>
-          <li>Pipeline, notes &amp; status</li>
-          <li>Import &amp; export leads</li>
-        </ul>
-        <button class="plan-cta free" disabled>Current plan</button>
-      </div>
-
-      <!-- STARTER -->
-      <div class="plan-card">
-        <div>
-          <div class="plan-name">Starter</div>
-          <div class="plan-subtitle">Build</div>
-          <div class="plan-desc">Find qualified leads and create personalized previews</div>
-        </div>
-        <div class="plan-price">
-          <span class="plan-price-amt">$20</span>
-          <span class="plan-price-period">/ month</span>
-        </div>
-        <ul class="plan-features">
-          <li>50 lead searches / month</li>
-          <li>Up to 100 leads / search</li>
-          <li>500 AI emails / month</li>
-          <li>Advanced AI lead scoring</li>
-          <li>Campaign manager</li>
-          <li>CSV export</li>
-          <li>Priority support</li>
-          <li>30 AI website previews / mo <span style="font-family:var(--fm);font-size:9px;background:var(--amber-dim);border:1px solid var(--amber-mid);color:var(--amber);padding:1px 5px;border-radius:3px;margin-left:2px">Soon</span></li>
-        </ul>
-        <button class="plan-cta starter" onclick="handleUpgradeClick('starter')">
-          Upgrade to Starter →
-        </button>
-      </div>
-
-      <!-- PRO -->
-      <div class="plan-card featured">
-        <div class="plan-badge-popular">Most Popular</div>
-        <div>
-          <div class="plan-name">Pro</div>
-          <div class="plan-subtitle">Outreach</div>
-          <div class="plan-desc">Automate prospecting and scale your outreach workflow</div>
-        </div>
-        <div class="plan-price">
-          <span class="plan-price-amt">$50</span>
-          <span class="plan-price-period">/ month</span>
-        </div>
-        <ul class="plan-features">
-          <li>100 lead searches / month</li>
-          <li>Up to 250 leads / search</li>
-          <li>2,000 AI emails / month</li>
-          <li>Advanced AI scoring</li>
-          <li>AI editor — 150 edits / mo</li>
-          <li>Gmail connection</li>
-          <li>Email drafts + templates</li>
-          <li>Reviewed auto-send workflow</li>
-          <li>Follow-up tracker + analytics</li>
-          <li>Campaign manager + CSV export</li>
-          <li>Everything in Starter</li>
-        </ul>
-        <button class="plan-cta pro" onclick="handleUpgradeClick('pro')">
-          Start Pro — 14 days free →
-        </button>
-      </div>
-
-      <!-- AGENCY -->
-      <div class="plan-card">
-        <div>
-          <div class="plan-name">Agency</div>
-          <div class="plan-subtitle">Scale</div>
-          <div class="plan-desc">Higher-volume workflows with team controls</div>
-        </div>
-        <div class="plan-price">
-          <span class="plan-price-amt">$120</span>
-          <span class="plan-price-period">/ month</span>
-        </div>
-        <ul class="plan-features">
-          <li>400 lead searches / month</li>
-          <li>Unlimited AI emails</li>
-          <li>AI editor — 500 edits / mo</li>
-          <li>Advanced scoring controls</li>
-          <li>Multi-client workspace</li>
-          <li>Team collaboration</li>
-          <li>White-label reports</li>
-          <li>API access</li>
-          <li>Advanced analytics</li>
-          <li>Priority support</li>
-          <li>Everything in Pro</li>
-        </ul>
-        <button class="plan-cta agency" onclick="handleUpgradeClick('agency')">
-          Start Agency →
-        </button>
-      </div>
-
-    </div>
-
-    <div class="modal-footer">
-      <span class="modal-footer-note">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        No credit card required to start
-      </span>
-      <span class="modal-footer-note">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        Cancel anytime
-      </span>
-      <span class="modal-footer-note">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Instant activation
-      </span>
-    </div>
-
-  </div>
-</div>
-
 <!-- Toasts -->
 <div id="toasts"></div>
 
@@ -1569,20 +1252,10 @@ function esc(s) {
 }
 
 async function apiFetch(method, path, body) {
-  const headers = Object.assign({}, window.LF_HEADERS || { 'Content-Type': 'application/json' });
-  const opts = { method, headers };
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (body) opts.body = JSON.stringify(body);
   try {
     const res = await fetch(API_BASE + path, opts);
-    if (res.status === 401) {
-      // Only force re-login if user had a token (session expired)
-      if (window.LF_TOKEN) {
-        localStorage.removeItem('lf_token');
-        localStorage.removeItem('lf_user');
-        window.location.replace('/login.html?reason=expired');
-      }
-      return { success: false, message: 'Please sign in to use this feature.' };
-    }
     if (!res.ok) {
       const text = await res.text();
       try { return JSON.parse(text); } catch { return { success: false, message: 'HTTP ' + res.status }; }
@@ -2169,16 +1842,12 @@ async function discSearch() {
   btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
 
   if (!d.success) {
-    // Quota exceeded — detect by code OR by message text (server compatibility)
-    const isQuota = d.code === 'QUOTA_EXCEEDED' || (d.message && d.message.toLowerCase().includes('limit reached'));
-    if (isQuota) {
-      openUpgradeModal(`You've used all your searches on the free plan this month.`);
-      discShowState('initial'); return;
-    }
     const errEl = document.getElementById('disc-error-msg');
     if (errEl) errEl.textContent = d.message || 'Search failed.';
     discShowState('error'); return;
-  }  discAllResults = d.data || [];
+  }
+
+  discAllResults = d.data || [];
   document.getElementById('disc-results-title').textContent = `${discAllResults.length} business${discAllResults.length !== 1 ? 'es' : ''} found`;
   document.getElementById('disc-results-sub').innerHTML = `<strong>${d.source === 'serpapi' ? 'Google Maps (SerpAPI)' : 'Mock data'}</strong> · query: "${esc(d.keyword || keyword)}"`;
   document.getElementById('disc-import-summary').style.display = 'none';
@@ -2446,142 +2115,12 @@ document.addEventListener('keydown', e => {
     if (id === 'disc-industry' || id === 'disc-location') discSearch();
   }
 });
-
-/* ─── Auth: populate sidebar user block ──────── */
-function initUserBlock() {
-  const user       = window.LF_USER;
-  const signinBtn  = document.getElementById('sb-signin-btn');
-  const logoutBtn  = document.getElementById('sb-logout-btn');
-  const userBlock  = document.getElementById('sb-user-block');
-  const upgradeBtn = document.getElementById('sb-upgrade-btn');
-
-  if (!user) {
-    // Guest — show Sign In, hide user block and logout
-    if (signinBtn)  signinBtn.style.display  = 'flex';
-    if (logoutBtn)  logoutBtn.style.display  = 'none';
-    if (userBlock)  userBlock.style.display  = 'none';
-    if (upgradeBtn) upgradeBtn.style.display = 'none';
-    return;
-  }
-
-  // Logged in — hide Sign In, show user info and logout
-  if (signinBtn)  signinBtn.style.display  = 'none';
-  if (logoutBtn)  logoutBtn.style.display  = 'flex';
-  if (userBlock)  userBlock.style.display  = '';
-
-  const initials = (user.email || '?').substring(0, 2).toUpperCase();
-  const avatarEl = document.getElementById('sb-avatar');
-  const nameEl   = document.getElementById('sb-user-name');
-  const planEl   = document.getElementById('sb-user-plan');
-  if (avatarEl) avatarEl.textContent = initials;
-  if (nameEl)   nameEl.textContent   = user.email;
-  if (planEl)   planEl.textContent   = (user.plan || 'free').toUpperCase();
-
-  if (upgradeBtn && user.plan === 'free') {
-    upgradeBtn.style.display = 'flex';
-    upgradeBtn.addEventListener('click', () => openUpgradeModal());
-  }
-
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('lf_token');
-      localStorage.removeItem('lf_user');
-      window.location.href = '/login.html';
-    });
-  }
-}
-
-/* ─── Auth: load + display search quota ─────── */
-async function loadQuota() {
-  try {
-    const res  = await fetch('/api/discovery/quota', { headers: window.LF_HEADERS });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (!data.success || !data.quota) return;
-
-    const { used, limit, plan } = data.quota;
-    const quotaEl = document.getElementById('sb-quota');
-    if (!quotaEl) return;
-
-    if (limit === null) {
-      // Unlimited (agency)
-      quotaEl.textContent = `${used} searches`;
-      return;
-    }
-
-    quotaEl.textContent = `${used}/${limit} searches`;
-    const pct = used / limit;
-    quotaEl.className = 'sb-quota' + (pct >= 1 ? ' full' : pct >= 0.8 ? ' warn' : '');
-
-    // Also update discovery panel counter if it exists
-    const discQuotaEl = document.getElementById('disc-quota-display');
-    if (discQuotaEl) {
-      discQuotaEl.textContent = limit === null
-        ? `${used} searches used`
-        : `${used} / ${limit} searches used this month`;
-    }
-  } catch(e) {
-    console.warn('Could not load quota:', e);
-  }
-}
-
-/* ─── Upgrade Modal ──────────────────────────────── */
-function openUpgradeModal(reason) {
-  const modal = document.getElementById('upgrade-modal');
-  const sub   = document.getElementById('upgrade-modal-sub');
-  if (sub) sub.textContent = reason || 'Unlock more searches, emails, and AI features.';
-
-  // Mark current plan card
-  modal.querySelectorAll('.plan-cta.free').forEach(btn => {
-    const plan = window.LF_USER?.plan || 'free';
-    btn.textContent = plan === 'free' ? 'Current plan' : '✓ Active';
-  });
-
-  modal.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeUpgradeModal() {
-  document.getElementById('upgrade-modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Close on Escape key
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeUpgradeModal();
-});
-
-async function handleUpgradeClick(plan) {
-  const btn = document.querySelector(`.plan-cta.${plan}`);
-  const labels = {
-    starter: 'Upgrade to Starter →',
-    pro    : 'Start Pro — 14 days free →',
-    agency : 'Start Agency →',
-  };
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Redirecting…'; }
-
-  try {
-    const d = await apiFetch('POST', '/api/payments/create-checkout', { plan });
-    if (d.success && d.url) {
-      window.location.href = d.url;
-    } else {
-      toast(d.message || 'Payments not configured yet. Contact support.', 'error');
-      if (btn) { btn.disabled = false; btn.textContent = labels[plan] || 'Upgrade'; }
-    }
-  } catch (err) {
-    toast('Could not start checkout. Please try again.', 'error');
-    if (btn) { btn.disabled = false; btn.textContent = labels[plan] || 'Upgrade'; }
-  }
-}
-
-initUserBlock();
 initOnboarding();
 checkConnection();
 setInterval(checkConnection, 30000);
 loadLeads();
 loadScoredLeads();
 loadOutreachHistory();
-loadQuota();
 </script>
 
 </body>
