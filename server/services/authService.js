@@ -13,7 +13,7 @@ const SALT_ROUNDS = 12;
 const JWT_SECRET  = process.env.JWT_SECRET   || "changeme_use_strong_secret_in_prod";
 const JWT_EXPIRES = process.env.JWT_EXPIRES_IN || "7d";
 
-const PLAN_LIMITS = { free: 5, pro: 500, agency: Infinity };
+const PLAN_LIMITS = { free: 3, pro: 100, agency: Infinity };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
