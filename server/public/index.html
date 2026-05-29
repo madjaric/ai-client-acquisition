@@ -387,12 +387,13 @@ nav {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 .plan-card {
   background: var(--bg-1); border: 1px solid var(--border);
   border-radius: var(--radius-xl); padding: 28px;
   position: relative;
+  display: flex; flex-direction: column;
   transition: border-color .2s, transform .2s;
 }
 .plan-card:hover {
@@ -402,9 +403,9 @@ nav {
 .plan-card.featured {
   border-color: rgba(34,197,94,.45);
   background: linear-gradient(180deg, rgba(34,197,94,.05) 0%, var(--bg-1) 55%);
-  transform: translateY(-6px);
+  transform: none;
 }
-.plan-card.featured:hover { transform: translateY(-8px); }
+.plan-card.featured:hover { transform: translateY(-2px); }
 .plan-popular {
   position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
   font-family: var(--fm); font-size: 10px; font-weight: 700; letter-spacing: .06em;
@@ -430,7 +431,7 @@ nav {
 .plan-amount { font-family: var(--fd); font-size: 42px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
 .plan-period { font-size: 12px; color: var(--text-3); margin-bottom: 16px; }
 .plan-divider { height: 1px; background: var(--border); margin: 20px 0; }
-.plan-features { display: flex; flex-direction: column; gap: 9px; margin-bottom: 22px; }
+.plan-features { display: flex; flex-direction: column; gap: 9px; margin-bottom: 22px; flex: 1; }
 .plan-feature {
   display: flex; align-items: flex-start; gap: 9px;
   font-size: 13px; color: var(--text-2); line-height: 1.45;
