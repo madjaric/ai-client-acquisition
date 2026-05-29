@@ -2102,19 +2102,16 @@ async function discSearch() {
   btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
 
   if (!d.success) {
-    // Quota exceeded — open upgrade modal instead of generic error
-    if (d.code === 'QUOTA_EXCEEDED') {
-      openUpgradeModal(`You've used all ${d.used} searches on the free plan this month.`);
+    // Quota exceeded — detect by code OR by message text (server compatibility)
+    const isQuota = d.code === 'QUOTA_EXCEEDED' || (d.message && d.message.toLowerCase().includes('limit reached'));
+    if (isQuota) {
+      openUpgradeModal(`You've used all your searches on the free plan this month.`);
       discShowState('initial'); return;
     }
     const errEl = document.getElementById('disc-error-msg');
     if (errEl) errEl.textContent = d.message || 'Search failed.';
     discShowState('error'); return;
-  }
-    discShowState('error'); return;
-  }
-
-  discAllResults = d.data || [];
+  }  discAllResults = d.data || [];
   document.getElementById('disc-results-title').textContent = `${discAllResults.length} business${discAllResults.length !== 1 ? 'es' : ''} found`;
   document.getElementById('disc-results-sub').innerHTML = `<strong>${d.source === 'serpapi' ? 'Google Maps (SerpAPI)' : 'Mock data'}</strong> · query: "${esc(d.keyword || keyword)}"`;
   document.getElementById('disc-import-summary').style.display = 'none';
