@@ -190,7 +190,7 @@ body {
 
 .upgrade-modal {
   background: var(--bg-1); border: 1px solid var(--border-2);
-  border-radius: 16px; width: 100%; max-width: 780px;
+  border-radius: 16px; width: 100%; max-width: 1020px;
   max-height: 90vh; overflow-y: auto; position: relative;
   animation: slideUp .22s ease;
 }
@@ -215,9 +215,10 @@ body {
 .modal-close:hover { background: var(--red-dim); color: var(--red); }
 
 .plans-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   gap: .75rem; padding: 1.25rem 1.5rem 1.5rem;
 }
+@media (max-width: 860px) { .plans-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px) { .plans-grid { grid-template-columns: 1fr; } }
 
 .plan-card {
@@ -238,6 +239,13 @@ body {
 .plan-name {
   font-family: var(--fd); font-size: .8rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .08em; color: var(--text-2);
+}
+.plan-subtitle {
+  font-family: var(--fd); font-size: 1.05rem; font-weight: 700;
+  letter-spacing: -.02em; color: var(--text); margin-top: .1rem;
+}
+.plan-desc {
+  font-size: 11px; color: var(--text-3); line-height: 1.5;
 }
 .plan-price {
   display: flex; align-items: baseline; gap: 3px;
@@ -272,6 +280,8 @@ body {
 .plan-cta:hover { opacity: .88; }
 .plan-cta:active { transform: scale(.97); }
 .plan-cta.free    { background: var(--bg-3); border: 1px solid var(--border); color: var(--text-2); cursor: default; }
+.plan-cta.starter { background: var(--bg-3); border: 1px solid var(--border-2); color: var(--text); }
+.plan-cta.starter:hover { opacity: 1; background: rgba(255,255,255,.08); }
 .plan-cta.pro     { background: var(--brand); color: #000; }
 .plan-cta.agency  { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
 
@@ -1403,62 +1413,108 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 
     <div class="plans-grid">
 
-      <!-- Free -->
+      <!-- FREE -->
       <div class="plan-card">
-        <div class="plan-name">Starter</div>
+        <div>
+          <div class="plan-name">Free</div>
+          <div class="plan-subtitle">Explore</div>
+          <div class="plan-desc">See how LeadFlow AI works before committing</div>
+        </div>
         <div class="plan-price">
           <span class="plan-price-amt">$0</span>
           <span class="plan-price-period">forever free</span>
         </div>
         <ul class="plan-features">
-          <li>3 lead searches / month</li>
-          <li>1 AI email / month</li>
-          <li>Basic lead scoring</li>
-          <li class="dim">CSV export</li>
-          <li class="dim">Campaign manager</li>
-          <li class="dim">Website previews</li>
-          <li class="dim">Priority support</li>
+          <li>5 lead searches / month</li>
+          <li>Up to 20 leads / search</li>
+          <li>20 AI emails / month</li>
+          <li>Open &amp; copy preview links</li>
+          <li>5 AI edits / month</li>
+          <li>Pipeline, notes &amp; status</li>
+          <li>Import &amp; export leads</li>
         </ul>
         <button class="plan-cta free" disabled>Current plan</button>
       </div>
 
-      <!-- Pro -->
+      <!-- STARTER -->
+      <div class="plan-card">
+        <div>
+          <div class="plan-name">Starter</div>
+          <div class="plan-subtitle">Build</div>
+          <div class="plan-desc">Find qualified leads and create personalized previews</div>
+        </div>
+        <div class="plan-price">
+          <span class="plan-price-amt">$20</span>
+          <span class="plan-price-period">/ month</span>
+        </div>
+        <ul class="plan-features">
+          <li>50 lead searches / month</li>
+          <li>Up to 100 leads / search</li>
+          <li>500 AI emails / month</li>
+          <li>Advanced AI lead scoring</li>
+          <li>Campaign manager</li>
+          <li>CSV export</li>
+          <li>Priority support</li>
+          <li>30 AI website previews / mo <span style="font-family:var(--fm);font-size:9px;background:var(--amber-dim);border:1px solid var(--amber-mid);color:var(--amber);padding:1px 5px;border-radius:3px;margin-left:2px">Soon</span></li>
+        </ul>
+        <button class="plan-cta starter" onclick="handleUpgradeClick('starter')">
+          Upgrade to Starter →
+        </button>
+      </div>
+
+      <!-- PRO -->
       <div class="plan-card featured">
         <div class="plan-badge-popular">Most Popular</div>
-        <div class="plan-name">Professional</div>
+        <div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-subtitle">Outreach</div>
+          <div class="plan-desc">Automate prospecting and scale your outreach workflow</div>
+        </div>
         <div class="plan-price">
-          <span class="plan-price-amt">$49</span>
+          <span class="plan-price-amt">$50</span>
           <span class="plan-price-period">/ month</span>
         </div>
         <ul class="plan-features">
           <li>100 lead searches / month</li>
-          <li>1,000 AI emails</li>
+          <li>Up to 250 leads / search</li>
+          <li>2,000 AI emails / month</li>
           <li>Advanced AI scoring</li>
-          <li>CSV export</li>
-          <li>Campaign manager</li>
-          <li>30 website previews <span style="font-family:var(--fm);font-size:9px;background:var(--amber-dim);border:1px solid var(--amber-mid);color:var(--amber);padding:1px 5px;border-radius:3px;margin-left:3px">Soon</span></li>
-          <li>Priority support</li>
+          <li>AI editor — 150 edits / mo</li>
+          <li>Gmail connection</li>
+          <li>Email drafts + templates</li>
+          <li>Reviewed auto-send workflow</li>
+          <li>Follow-up tracker + analytics</li>
+          <li>Campaign manager + CSV export</li>
+          <li>Everything in Starter</li>
         </ul>
         <button class="plan-cta pro" onclick="handleUpgradeClick('pro')">
           Start Pro — 14 days free →
         </button>
       </div>
 
-      <!-- Agency -->
+      <!-- AGENCY -->
       <div class="plan-card">
-        <div class="plan-name">Agency</div>
+        <div>
+          <div class="plan-name">Agency</div>
+          <div class="plan-subtitle">Scale</div>
+          <div class="plan-desc">Higher-volume workflows with team controls</div>
+        </div>
         <div class="plan-price">
-          <span class="plan-price-amt">$149</span>
+          <span class="plan-price-amt">$120</span>
           <span class="plan-price-period">/ month</span>
         </div>
         <ul class="plan-features">
-          <li>Unlimited lead searches</li>
+          <li>400 lead searches / month</li>
           <li>Unlimited AI emails</li>
-          <li>Advanced AI scoring</li>
-          <li>CSV export</li>
-          <li>Campaign manager</li>
-          <li>Unlimited website previews <span style="font-family:var(--fm);font-size:9px;background:var(--amber-dim);border:1px solid var(--amber-mid);color:var(--amber);padding:1px 5px;border-radius:3px;margin-left:3px">Soon</span></li>
-          <li>Dedicated CSM + API access</li>
+          <li>AI editor — 500 edits / mo</li>
+          <li>Advanced scoring controls</li>
+          <li>Multi-client workspace</li>
+          <li>Team collaboration</li>
+          <li>White-label reports</li>
+          <li>API access</li>
+          <li>Advanced analytics</li>
+          <li>Priority support</li>
+          <li>Everything in Pro</li>
         </ul>
         <button class="plan-cta agency" onclick="handleUpgradeClick('agency')">
           Start Agency →
@@ -2474,6 +2530,11 @@ document.addEventListener('keydown', e => {
 
 async function handleUpgradeClick(plan) {
   const btn = document.querySelector(`.plan-cta.${plan}`);
+  const labels = {
+    starter: 'Upgrade to Starter →',
+    pro    : 'Start Pro — 14 days free →',
+    agency : 'Start Agency →',
+  };
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Redirecting…'; }
 
   try {
@@ -2481,13 +2542,12 @@ async function handleUpgradeClick(plan) {
     if (d.success && d.url) {
       window.location.href = d.url;
     } else {
-      // Stripe not configured — show friendly message
       toast(d.message || 'Payments not configured yet. Contact support.', 'error');
-      if (btn) { btn.disabled = false; btn.textContent = plan === 'pro' ? 'Start Pro — 14 days free →' : 'Start Agency →'; }
+      if (btn) { btn.disabled = false; btn.textContent = labels[plan] || 'Upgrade'; }
     }
   } catch (err) {
     toast('Could not start checkout. Please try again.', 'error');
-    if (btn) { btn.disabled = false; btn.textContent = plan === 'pro' ? 'Start Pro — 14 days free →' : 'Start Agency →'; }
+    if (btn) { btn.disabled = false; btn.textContent = labels[plan] || 'Upgrade'; }
   }
 }
 
