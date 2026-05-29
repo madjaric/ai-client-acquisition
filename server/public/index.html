@@ -391,7 +391,7 @@ nav {
 }
 .plan-card {
   background: var(--bg-1); border: 1px solid var(--border);
-  border-radius: var(--radius-xl); padding: 28px;
+  border-radius: var(--radius-xl); padding: 20px;
   position: relative;
   display: flex; flex-direction: column;
   transition: border-color .2s, transform .2s;
@@ -413,30 +413,30 @@ nav {
   background: var(--brand); color: #fff;
   padding: 4px 14px; border-radius: 99px; white-space: nowrap;
 }
-.plan-header { margin-bottom: 20px; }
+.plan-header { margin-bottom: 12px; }
 .plan-name {
-  font-family: var(--fd); font-size: 13px; font-weight: 700;
+  font-family: var(--fd); font-size: 11px; font-weight: 700;
   letter-spacing: .04em; text-transform: uppercase;
   color: var(--text-3); margin-bottom: 2px;
 }
 .plan-subtitle {
-  font-family: var(--fd); font-size: 18px; font-weight: 700;
-  color: var(--text); letter-spacing: -.02em; margin-bottom: 6px;
+  font-family: var(--fd); font-size: 16px; font-weight: 700;
+  color: var(--text); letter-spacing: -.02em; margin-bottom: 4px;
 }
 .plan-desc {
-  font-size: 12px; color: var(--text-3); line-height: 1.5;
+  font-size: 11px; color: var(--text-3); line-height: 1.45;
 }
-.plan-price { display: flex; align-items: baseline; gap: 4px; margin: 16px 0 4px; }
-.plan-currency { font-size: 20px; font-weight: 600; color: var(--text-2); }
-.plan-amount { font-family: var(--fd); font-size: 42px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
-.plan-period { font-size: 12px; color: var(--text-3); margin-bottom: 16px; }
-.plan-divider { height: 1px; background: var(--border); margin: 20px 0; }
-.plan-features { display: flex; flex-direction: column; gap: 9px; margin-bottom: 22px; flex: 1; }
+.plan-price { display: flex; align-items: baseline; gap: 3px; margin: 10px 0 2px; }
+.plan-currency { font-size: 16px; font-weight: 600; color: var(--text-2); }
+.plan-amount { font-family: var(--fd); font-size: 34px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+.plan-period { font-size: 11px; color: var(--text-3); margin-bottom: 10px; }
+.plan-divider { height: 1px; background: var(--border); margin: 12px 0; }
+.plan-features { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; flex: 1; }
 .plan-feature {
-  display: flex; align-items: flex-start; gap: 9px;
-  font-size: 13px; color: var(--text-2); line-height: 1.45;
+  display: flex; align-items: flex-start; gap: 7px;
+  font-size: 12px; color: var(--text-2); line-height: 1.4;
 }
-.plan-feature svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+.plan-feature svg { width: 12px; height: 12px; flex-shrink: 0; margin-top: 2px; }
 .pf-yes { color: var(--brand); }
 .pf-no  { color: var(--text-3); }
 .plan-feature.disabled { opacity: .35; }
@@ -914,15 +914,12 @@ footer {
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>100 lead searches/month</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Up to 250 leads/search</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>2,000 AI emails/month</li>
-        <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Advanced AI scoring</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>AI editor — 150 edits/month</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Gmail connection</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Email drafts + templates</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Reviewed auto-send workflow</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Follow-up tracker + analytics</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Contact info where available</li>
-        <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Campaign manager</li>
-        <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>CSV export + priority support</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Everything in Starter</li>
       </ul>
       <a href="/dashboard.html" class="btn-plan btn-plan-primary">Start Pro — 14 days free →</a>
@@ -948,7 +945,6 @@ footer {
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>White-label reports</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>API access</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Advanced analytics</li>
-        <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
         <li class="plan-feature"><svg class="pf-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Everything in Pro</li>
       </ul>
       <a href="/dashboard.html" class="btn-plan btn-plan-secondary">Start Agency →</a>
