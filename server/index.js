@@ -13,9 +13,35 @@ const morgan       = require("morgan");
 const rateLimit    = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 
-const { getDb, closeDb }          = require("./db/connection");
-const { requireAuth }             = require("./middleware/requireAuth");
-const { runUserMigrations }       = require("./db/migrations/002_add_users");
+const { getDb, closeDb } = require("./db/connection");
+const { requireAuth }    = require("./middleware/requireAuth");
+
+// Inline users migration — no separate file needed
+function runUserMigrations(db) {
+  const stmts = [
+    `CREATE TABLE IF NOT EXISTS users (
+      id                     TEXT PRIMARY KEY,
+      email                  TEXT NOT NULL UNIQUE,
+      password_hash          TEXT NOT NULL,
+      plan                   TEXT NOT NULL DEFAULT 'free'
+                               CHECK(plan IN ('free','pro','agency')),
+      searches_this_month    INTEGER NOT NULL DEFAULT 0,
+      searches_reset_at      TEXT NOT NULL DEFAULT (datetime('now')),
+      stripe_customer_id     TEXT,
+      stripe_subscription_id TEXT,
+      created_at             TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at             TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)`,
+    `CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_customer_id)`,
+  ];
+  for (const sql of stmts) {
+    try { db.prepare(sql).run(); } catch (e) {
+      if (!e.message.includes("already exists")) throw e;
+    }
+  }
+  console.log("  ✅ Users table ready.");
+}
 
 // ─── Route imports ────────────────────────────────────────────────────────────
 const healthRouter           = require("./routes/health");
