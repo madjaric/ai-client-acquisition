@@ -28,18 +28,18 @@ router.get("/quota", requireAuth, (req, res) => {
 // ── POST /search ──────────────────────────────────────────────────────────────
 router.post("/search", requireAuth, async (req, res) => {
   try {
-    const { query, limit } = req.body;
+    const query = (req.body.query || req.body.keyword || "").trim();
 
-    if (!query || typeof query !== "string" || query.trim().length < 2) {
+    if (!query || query.length < 2) {
       return res.status(400).json({
         success: false,
         message: "A search query of at least 2 characters is required.",
       });
     }
 
-    const results = await searchBusinesses(query.trim(), {
+    const results = await searchBusinesses(query, {
       userId: req.user.id,
-      limit : Number(limit) || 20,
+      limit : Number(req.body.limit) || 20,
     });
 
     // Return updated quota so the frontend can update the counter
