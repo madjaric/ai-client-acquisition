@@ -4,6 +4,29 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard — LeadFlow AI</title>
+<!-- ═══ AUTH GUARD — must be first script, blocks render if no token ═══ -->
+<script>
+(function() {
+  var token = localStorage.getItem('lf_token');
+  if (!token) { window.location.replace('/login.html'); return; }
+  try {
+    var payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.exp && Date.now() / 1000 > payload.exp) {
+      localStorage.removeItem('lf_token');
+      localStorage.removeItem('lf_user');
+      window.location.replace('/login.html?reason=expired');
+      return;
+    }
+  } catch(e) {
+    localStorage.removeItem('lf_token');
+    window.location.replace('/login.html');
+    return;
+  }
+  window.LF_TOKEN   = token;
+  try { window.LF_USER = JSON.parse(localStorage.getItem('lf_user')); } catch(e) { window.LF_USER = null; }
+  window.LF_HEADERS = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
@@ -131,6 +154,30 @@ body {
 }
 .sb-user-name { font-size: 13px; font-weight: 500; color: var(--text); }
 .sb-user-plan { font-family: var(--fm); font-size: 9px; color: var(--brand); font-weight: 600; }
+.sb-quota {
+  font-family: var(--fm); font-size: 9px; color: var(--text-3); margin-top: 1px;
+  transition: color .2s;
+}
+.sb-quota.warn { color: var(--amber); }
+.sb-quota.full { color: var(--red); }
+.sb-logout {
+  display: flex; align-items: center; gap: 7px;
+  width: calc(100% - 16px); margin: 2px 8px 0;
+  padding: 7px 10px; border-radius: var(--radius);
+  border: none; background: transparent;
+  color: var(--text-3); font-size: 12px; font-family: var(--fb);
+  cursor: pointer; text-align: left; transition: background .14s, color .14s;
+}
+.sb-logout:hover { background: var(--red-dim); color: var(--red); }
+.sb-upgrade {
+  display: flex; align-items: center; gap: 7px;
+  width: calc(100% - 16px); margin: 4px 8px 2px;
+  padding: 7px 10px; border-radius: var(--radius);
+  border: 1px solid var(--brand-mid); background: var(--brand-dim);
+  color: var(--brand); font-size: 12px; font-family: var(--fb); font-weight: 500;
+  cursor: pointer; text-align: left; transition: background .14s;
+}
+.sb-upgrade:hover { background: rgba(34,197,94,.2); }
 
 /* Mobile overlay + hamburger */
 .sb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 29; backdrop-filter: blur(3px); }
@@ -561,13 +608,22 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
   </div>
 
   <div class="sb-bottom">
-    <div class="sb-user">
-      <div class="sb-avatar">AP</div>
+    <div class="sb-user" id="sb-user-block">
+      <div class="sb-avatar" id="sb-avatar">??</div>
       <div>
-        <div class="sb-user-name">Account</div>
-        <div class="sb-user-plan">Pro plan</div>
+        <div class="sb-user-name" id="sb-user-name">Loading…</div>
+        <div class="sb-user-plan" id="sb-user-plan">FREE</div>
+        <div class="sb-quota" id="sb-quota"></div>
       </div>
     </div>
+    <button class="sb-upgrade" id="sb-upgrade-btn" style="display:none">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Upgrade Plan
+    </button>
+    <button class="sb-logout" id="sb-logout-btn">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
   </div>
 </aside>
 
@@ -1252,10 +1308,18 @@ function esc(s) {
 }
 
 async function apiFetch(method, path, body) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  const headers = Object.assign({}, window.LF_HEADERS || { 'Content-Type': 'application/json' });
+  const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
   try {
     const res = await fetch(API_BASE + path, opts);
+    if (res.status === 401) {
+      // Token expired or invalid — force re-login
+      localStorage.removeItem('lf_token');
+      localStorage.removeItem('lf_user');
+      window.location.replace('/login.html?reason=expired');
+      return { success: false, message: 'Session expired.' };
+    }
     if (!res.ok) {
       const text = await res.text();
       try { return JSON.parse(text); } catch { return { success: false, message: 'HTTP ' + res.status }; }
@@ -2115,12 +2179,81 @@ document.addEventListener('keydown', e => {
     if (id === 'disc-industry' || id === 'disc-location') discSearch();
   }
 });
+
+/* ─── Auth: populate sidebar user block ──────── */
+function initUserBlock() {
+  const user = window.LF_USER;
+  if (!user) return;
+
+  // Avatar initials from email
+  const initials = (user.email || '?').substring(0, 2).toUpperCase();
+  const avatarEl = document.getElementById('sb-avatar');
+  const nameEl   = document.getElementById('sb-user-name');
+  const planEl   = document.getElementById('sb-user-plan');
+  if (avatarEl) avatarEl.textContent = initials;
+  if (nameEl)   nameEl.textContent   = user.email;
+  if (planEl)   planEl.textContent   = (user.plan || 'free').toUpperCase();
+
+  // Show upgrade button only for free users
+  const upgradeBtn = document.getElementById('sb-upgrade-btn');
+  if (upgradeBtn && user.plan === 'free') {
+    upgradeBtn.style.display = 'flex';
+    upgradeBtn.addEventListener('click', () => { window.location.href = '/pricing.html'; });
+  }
+
+  // Logout
+  const logoutBtn = document.getElementById('sb-logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('lf_token');
+      localStorage.removeItem('lf_user');
+      window.location.href = '/login.html';
+    });
+  }
+}
+
+/* ─── Auth: load + display search quota ─────── */
+async function loadQuota() {
+  try {
+    const res  = await fetch('/api/discovery/quota', { headers: window.LF_HEADERS });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.success || !data.quota) return;
+
+    const { used, limit, plan } = data.quota;
+    const quotaEl = document.getElementById('sb-quota');
+    if (!quotaEl) return;
+
+    if (limit === null) {
+      // Unlimited (agency)
+      quotaEl.textContent = `${used} searches`;
+      return;
+    }
+
+    quotaEl.textContent = `${used}/${limit} searches`;
+    const pct = used / limit;
+    quotaEl.className = 'sb-quota' + (pct >= 1 ? ' full' : pct >= 0.8 ? ' warn' : '');
+
+    // Also update discovery panel counter if it exists
+    const discQuotaEl = document.getElementById('disc-quota-display');
+    if (discQuotaEl) {
+      discQuotaEl.textContent = limit === null
+        ? `${used} searches used`
+        : `${used} / ${limit} searches used this month`;
+    }
+  } catch(e) {
+    console.warn('Could not load quota:', e);
+  }
+}
+
+initUserBlock();
 initOnboarding();
 checkConnection();
 setInterval(checkConnection, 30000);
 loadLeads();
 loadScoredLeads();
 loadOutreachHistory();
+loadQuota();
 </script>
 
 </body>

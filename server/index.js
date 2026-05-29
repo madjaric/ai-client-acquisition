@@ -5,16 +5,22 @@
 
 require("dotenv").config();
 
-const path    = require("path");               // FIX 1: top-level import
-const express = require("express");
-const helmet  = require("helmet");
-const cors    = require("cors");
-const morgan  = require("morgan");
-const rateLimit = require("express-rate-limit");
+const path         = require("path");
+const express      = require("express");
+const helmet       = require("helmet");
+const cors         = require("cors");
+const morgan       = require("morgan");
+const rateLimit    = require("express-rate-limit");
+const cookieParser = require("cookie-parser");
 
-const { getDb, closeDb } = require("./db/connection");
+const { getDb, closeDb }          = require("./db/connection");
+const { requireAuth }             = require("./middleware/requireAuth");
+const { runUserMigrations }       = require("./db/migrations/002_add_users");
 
+// ─── Route imports ────────────────────────────────────────────────────────────
 const healthRouter           = require("./routes/health");
+const authRouter             = require("./routes/auth");
+const paymentsRouter         = require("./routes/payments");
 const leadsRouter            = require("./routes/leads");
 const scoreLeadRouter        = require("./routes/scoreLead");
 const campaignsRouter        = require("./routes/campaigns");
@@ -31,19 +37,26 @@ const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
 
 // ─────────────────────────────────────────────
+//  ⚠️  Stripe webhook — MUST be registered BEFORE express.json()
+//  It needs the raw body for signature verification.
+// ─────────────────────────────────────────────
+app.use(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" }),
+  paymentsRouter
+);
+
+// ─────────────────────────────────────────────
 //  Security & Middleware
 // ─────────────────────────────────────────────
-
-// FIX 2: Helmet CSP was blocking inline scripts and Google Fonts.
-// We relax only what the dashboards actually need — everything else stays strict.
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'unsafe-inline'"], // 🔥 OVO JE KLJUČNO
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        scriptSrc    : ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'unsafe-inline'"],
+        styleSrc     : ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc      : ["'self'", "https://fonts.gstatic.com"],
       },
     },
   })
@@ -52,53 +65,51 @@ app.use(
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 if (process.env.NODE_ENV !== "test") {
   app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 }
 
-// Rate limiter — API routes only, never static files
+// Rate limiter — API routes only
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max     : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  windowMs       : parseInt(process.env.RATE_LIMIT_WINDOW_MS)    || 15 * 60 * 1000,
+  max            : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
   standardHeaders: true,
   legacyHeaders  : false,
-  message: { success: false, message: "Too many requests — please try again later." },
+  message        : { success: false, message: "Too many requests — please try again later." },
 });
 app.use("/api", limiter);
 
 // ─────────────────────────────────────────────
-//  Static files — BEFORE API routes and before the 404 handler
+//  Static files
 // ─────────────────────────────────────────────
-// FIX 3: static middleware moved before API routes and the old JSON root handler.
-// express.static will serve dashboard.html, discovery.html, etc.
-// index.html is NOT the primary entrypoint here (dashboard.html is), but it
-// is still served correctly at /index.html.
 app.use(express.static(PUBLIC_DIR, {
-  // Cache for 1 hour in production, no cache in dev
   maxAge: process.env.NODE_ENV === "production" ? "1h" : 0,
 }));
 
 // ─────────────────────────────────────────────
-//  API Routes
+//  API Routes — Public (no auth required)
 // ─────────────────────────────────────────────
-app.use("/api/health",           healthRouter);
-app.use("/api/leads",            leadsRouter);
-app.use("/api/score-lead",       scoreLeadRouter);
-app.use("/api/campaigns",        campaignsRouter);
-app.use("/api/outreach",         outreachRouter);
-app.use("/api/generate-outreach",generateOutreachRouter);
-app.use("/api/send-email",       sendEmailRouter);
-app.use("/api/discovery",        discoveryRouter);
+app.use("/api/health",   healthRouter);
+app.use("/api/auth",     authRouter);
+app.use("/api/payments", paymentsRouter);   // webhook handled above; rest of routes here
+
+// ─────────────────────────────────────────────
+//  API Routes — Protected (JWT required)
+// ─────────────────────────────────────────────
+app.use("/api/leads",             requireAuth, leadsRouter);
+app.use("/api/score-lead",        requireAuth, scoreLeadRouter);
+app.use("/api/campaigns",         requireAuth, campaignsRouter);
+app.use("/api/outreach",          requireAuth, outreachRouter);
+app.use("/api/generate-outreach", requireAuth, generateOutreachRouter);
+app.use("/api/send-email",        requireAuth, sendEmailRouter);
+app.use("/api/discovery",         discoveryRouter);  // requireAuth applied per-endpoint inside
 
 // ─────────────────────────────────────────────
 //  Root redirect
 // ─────────────────────────────────────────────
-// FIX 4: Root used to return JSON, hijacking the browser before static could
-// serve dashboard.html.  Now it redirects to the real dashboard.
 app.get("/", (req, res) => {
-  // Accept: text/html → redirect to dashboard
-  // Accept: application/json (curl, Postman) → return the API index JSON
   const wantsHtml = req.headers.accept && req.headers.accept.includes("text/html");
   if (wantsHtml) {
     return res.redirect(302, "/dashboard.html");
@@ -109,20 +120,21 @@ app.get("/", (req, res) => {
     ui      : "http://localhost:" + PORT + "/dashboard.html",
     endpoints: {
       health            : "GET  /api/health",
+      auth              : "POST /api/auth/register  |  POST /api/auth/login  |  GET /api/auth/me",
+      payments          : "POST /api/payments/create-checkout  |  POST /api/payments/create-portal",
       leads             : "GET  /api/leads  |  POST /api/leads  |  PATCH /api/leads/:id",
       score_lead        : "POST /api/score-lead  |  GET /api/score-lead/ranked",
       generate_outreach : "POST /api/generate-outreach",
       send_email        : "POST /api/send-email",
-      discovery         : "POST /api/discovery/search  |  POST /api/discovery/import",
+      discovery         : "POST /api/discovery/search  |  POST /api/discovery/import  |  GET /api/discovery/quota",
     },
   });
 });
 
 // ─────────────────────────────────────────────
-//  SPA fallback — serves dashboard.html for any unknown non-API route
+//  SPA fallback — unknown non-API routes → dashboard
+//  (auth guard in dashboard.html handles the redirect to /login.html)
 // ─────────────────────────────────────────────
-// FIX 5: Catch-all for client-side routes. Must come AFTER all API routes
-// so /api/* 404s still return JSON, not HTML.
 app.get(/^(?!\/api\/).*/, (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, "dashboard.html"));
 });
@@ -130,16 +142,15 @@ app.get(/^(?!\/api\/).*/, (req, res) => {
 // ─────────────────────────────────────────────
 //  Error handlers
 // ─────────────────────────────────────────────
-// API 404 — only reached for /api/* paths not matched above
 app.use("/api", (req, res) => {
   res.status(404).json({ success: false, message: `API route not found: ${req.originalUrl}` });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   console.error("❌ Unhandled error:", err);
-  const wantsJson = req.originalUrl.startsWith("/api") ||
-                    (req.headers.accept && req.headers.accept.includes("application/json"));
+  const wantsJson =
+    req.originalUrl.startsWith("/api") ||
+    (req.headers.accept && req.headers.accept.includes("application/json"));
   if (wantsJson) {
     return res.status(500).json({
       success: false,
@@ -154,17 +165,21 @@ app.use((err, req, res, next) => {
 // ─────────────────────────────────────────────
 function start() {
   getDb(); // open + cache SQLite connection
+
   console.log("📦 Running database migrations...");
   require("./db/migrate").runMigrations();
+  runUserMigrations(getDb());   // creates users table + indexes
 
   const server = app.listen(PORT, () => {
     console.log(`\n🚀 LeadFlow — AI Client Acquisition System`);
-    console.log(`   Env      : ${process.env.NODE_ENV || "development"}`);
-    console.log(`   Dashboard: http://localhost:${PORT}/dashboard.html`);
-    console.log(`   Discovery: http://localhost:${PORT}/discovery.html`);
+    console.log(`   Env       : ${process.env.NODE_ENV || "development"}`);
+    console.log(`   Dashboard : http://localhost:${PORT}/dashboard.html`);
+    console.log(`   Login     : http://localhost:${PORT}/login.html`);
     console.log(`   API Health: http://localhost:${PORT}/api/health`);
-    console.log(`   SERPAPI  : ${process.env.SERPAPI_KEY ? "✅ configured" : "⚠️  not set (mock data)"}`);
-    console.log(`   AI       : ${process.env.GEMINI_API_KEY ? "✅ configured" : "⚠️  ANTHROPIC_API_KEY not set"}\n`);
+    console.log(`   SERPAPI   : ${process.env.SERPAPI_KEY        ? "✅ configured" : "⚠️  not set (mock data)"}`);
+    console.log(`   Gemini AI : ${process.env.GEMINI_API_KEY     ? "✅ configured" : "⚠️  not set"}`);
+    console.log(`   JWT       : ${process.env.JWT_SECRET         ? "✅ configured" : "⚠️  using default (set JWT_SECRET in .env!)"}`);
+    console.log(`   Stripe    : ${process.env.STRIPE_SECRET_KEY  ? "✅ configured" : "⚠️  not set (payments disabled)"}\n`);
   });
 
   process.on("SIGTERM", () => shutdown(server));
