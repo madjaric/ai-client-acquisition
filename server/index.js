@@ -138,14 +138,12 @@ app.use("/api/discovery",         discoveryRouter);  // requireAuth applied per-
 app.get("/", (req, res) => {
   const wantsHtml = req.headers.accept && req.headers.accept.includes("text/html");
   if (wantsHtml) {
-    // Browser → landing page (index.html)
-    return res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+    return res.redirect(302, "/dashboard.html");
   }
-  // curl/Postman → JSON API index
   res.json({
     name    : "AI Client Acquisition System — LeadFlow",
     version : "1.0.0",
-    ui      : "http://localhost:" + PORT + "/",
+    ui      : "http://localhost:" + PORT + "/dashboard.html",
     endpoints: {
       health            : "GET  /api/health",
       auth              : "POST /api/auth/register  |  POST /api/auth/login  |  GET /api/auth/me",
@@ -160,13 +158,11 @@ app.get("/", (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-//  SPA fallback
-//  - Known HTML pages → serve directly (express.static handles them)
-//  - /dashboard.html, /login.html, /register.html etc. are static files
-//  - Any unknown route → serve index.html (landing page)
+//  SPA fallback — unknown non-API routes → dashboard
+//  (auth guard in dashboard.html handles the redirect to /login.html)
 // ─────────────────────────────────────────────
 app.get(/^(?!\/api\/).*/, (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+  res.sendFile(path.join(PUBLIC_DIR, "dashboard.html"));
 });
 
 // ─────────────────────────────────────────────
