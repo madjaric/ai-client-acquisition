@@ -54,8 +54,6 @@ const outreachRouter         = require("./routes/outreach");
 const generateOutreachRouter = require("./routes/generateOutreach");
 const sendEmailRouter        = require("./routes/sendEmail");
 const discoveryRouter        = require("./routes/discovery");
-const leadIntelligenceRouter = require("./routes/leadIntelligence");
-const pipelineAnalyticsRouter = require("./routes/pipelineAnalytics");
 
 // ─────────────────────────────────────────────
 //  App Setup
@@ -133,8 +131,6 @@ app.use("/api/outreach",          requireAuth, outreachRouter);
 app.use("/api/generate-outreach", requireAuth, generateOutreachRouter);
 app.use("/api/send-email",        requireAuth, sendEmailRouter);
 app.use("/api/discovery",         discoveryRouter);  // requireAuth applied per-endpoint inside
-app.use("/api/lead-intelligence", requireAuth, leadIntelligenceRouter);
-app.use("/api/pipeline",          requireAuth, pipelineAnalyticsRouter);
 
 // ─────────────────────────────────────────────
 //  Gemini proxy — website generator
@@ -156,16 +152,21 @@ OUTPUT
 Return ONLY raw HTML starting with <!DOCTYPE html>. No markdown. No code fences. No comments outside code.
 Single file: all CSS in <style>, all JS before </body>.
 Allowed external resources: Google Fonts <link> only.
-Use real Unsplash photos: https://images.unsplash.com/photo-ID?w=1400&q=85&fit=crop
-  — Search for photo IDs that genuinely match the industry. Examples:
-  — Auto repair: 1492144533 (mechanic), 1486262322 (car engine), 1558618666 (garage)
-  — Dental: 3845810 (dental chair), 3279209 (smile), 298611 (clinic)
-  — HVAC: 162568 (tools), 1216589 (technician), 257636 (air unit)
-  — Restaurant: 1640777 (food), 262978 (restaurant interior), 299347 (chef)
-  — Gym: 1954524 (gym), 1552106 (weights), 841130 (fitness)
-  — Landscaping: 1214497 (garden), 296230 (lawn), 273749 (landscape)
-  — Plumbing: 210881 (pipes), 2988232 (plumber), 1029599 (tools)
-  Use at least 3 photos across the page.
+
+IMAGES — use https://source.unsplash.com/1600x900/?KEYWORD format. This ALWAYS works.
+  Replace KEYWORD with 2-3 comma-separated terms relevant to the industry. Examples:
+  — Auto repair:   https://source.unsplash.com/1600x900/?mechanic,car,repair
+  — Dental:        https://source.unsplash.com/1600x900/?dentist,dental,smile
+  — Jewelry:       https://source.unsplash.com/1600x900/?jewelry,gold,ring
+  — HVAC:          https://source.unsplash.com/1600x900/?hvac,technician,tools
+  — Restaurant:    https://source.unsplash.com/1600x900/?restaurant,food,dining
+  — Gym:           https://source.unsplash.com/1600x900/?gym,fitness,workout
+  — Landscaping:   https://source.unsplash.com/1600x900/?garden,landscape,lawn
+  — Plumbing:      https://source.unsplash.com/1600x900/?plumber,pipes,tools
+  — Real estate:   https://source.unsplash.com/1600x900/?house,realestate,home
+  — Law firm:      https://source.unsplash.com/1600x900/?law,office,professional
+  For the about section smaller image use 800x600 instead of 1600x900.
+  Use at least 3 DIFFERENT keyword combinations across the page so images look varied.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DESIGN SYSTEM — follow exactly
@@ -194,12 +195,15 @@ SPACING SCALE — use these exact values for padding/margin:
   4px 8px 12px 16px 24px 32px 48px 64px 80px 96px 120px
 
 TYPOGRAPHY SCALE:
-  .display   { font: 800 clamp(3.5rem,8vw,7.5rem)/1.0 'Syne'; letter-spacing:-0.04em }
-  .h1        { font: 800 clamp(2.4rem,5vw,4.5rem)/1.1 'Syne'; letter-spacing:-0.03em }
-  .h2        { font: 800 clamp(1.8rem,3.5vw,3rem)/1.2 'Syne'; letter-spacing:-0.02em }
-  .h3        { font: 700 clamp(1.2rem,2vw,1.5rem)/1.3 'Syne' }
+  .display   { font: 800 clamp(2.2rem,4.5vw,4rem)/1.05 'Syne'; letter-spacing:-0.03em }
+  .h1        { font: 800 clamp(1.8rem,3.5vw,3rem)/1.1 'Syne'; letter-spacing:-0.02em }
+  .h2        { font: 800 clamp(1.5rem,2.5vw,2.4rem)/1.2 'Syne'; letter-spacing:-0.02em }
+  .h3        { font: 700 clamp(1.1rem,1.8vw,1.35rem)/1.3 'Syne' }
   body text  { font: 400 1.05rem/1.8 'DM Sans'; color: var(--c-text) }
   .overline  { font: 600 .7rem/.85 'DM Sans'; letter-spacing:.12em; text-transform:uppercase; color:var(--c-primary) }
+  
+  IMPORTANT: The hero headline must be SHORT — maximum 5-7 words total, written as 2 lines at most.
+  Do NOT write long sentences as the display headline. Keep it punchy: e.g. "Quality You Can Trust" or "Expert Service, Every Time".
 
 GLOBAL RESET — include this exactly:
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
@@ -229,7 +233,7 @@ SECTIONS — build all of these in order
    - Content centered, max-width 800px, text-align:center, position:relative z-index:1
    - Layout from top to bottom:
      a) Overline badge: display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:99px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); backdrop-filter:blur(8px); font-size:.75rem; letter-spacing:.1em; color:white; text-transform:uppercase; margin-bottom:24px
-     b) Giant headline: .display class, color white, margin-bottom:20px. Make it 2-3 lines. Bold claim.
+     b) Hero headline: .display class, color white, margin-bottom:20px. MAXIMUM 6 WORDS. Write it as one SHORT punchy line or 2 short lines at most. Examples: "Nakit koji Traje Generacije" / "Expert Care, Every Visit" / "Your Trusted Local Plumber". Never write a long sentence — it must fit on 1-2 lines at this font size.
      c) Subheading: font-size:clamp(1rem,2vw,1.25rem); color:rgba(255,255,255,.75); max-width:560px; margin:0 auto 32px; line-height:1.7
      d) Stars row (if rating given): display:flex; gap:4px; justify-content:center; align-items:center; margin-bottom:36px. Gold stars (★) + rating text in white/80%
      e) CTA row: display:flex; gap:12px; justify-content:center; flex-wrap:wrap
@@ -429,8 +433,6 @@ app.get("/", (req, res) => {
       generate_outreach : "POST /api/generate-outreach",
       send_email        : "POST /api/send-email",
       discovery         : "POST /api/discovery/search  |  POST /api/discovery/import  |  GET /api/discovery/quota",
-      lead_intelligence : "GET  /api/lead-intelligence/:leadId",
-      pipeline_analytics: "GET  /api/pipeline/analytics",
     },
   });
 });
