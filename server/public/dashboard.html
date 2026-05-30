@@ -2413,7 +2413,14 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 
       <!-- Result state -->
       <div id="wo-gen-state-result" style="display:none">
-        <iframe id="wo-gen-iframe" style="width:100%;height:460px;border:none" sandbox="allow-scripts allow-same-origin" title="Generated website preview"></iframe>
+        <div style="display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg-2);gap:8px">
+          <span style="font-family:var(--fm);font-size:10px;color:var(--text-3);flex:1">Preview — scroll to see full page</span>
+          <button class="btn btn-outline btn-sm" onclick="woOpenFullPreview('gen')" style="display:inline-flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open Full Preview
+          </button>
+        </div>
+        <iframe id="wo-gen-iframe" style="width:100%;height:440px;border:none" sandbox="allow-scripts allow-same-origin" title="Generated website preview"></iframe>
         <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span style="font-size:13px;font-weight:600;color:var(--brand)">✓ Website generated!</span>
           <span style="flex:1"></span>
@@ -2472,6 +2479,13 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
           <button class="btn btn-brand btn-sm" onclick="woCloseProject();navigate('discovery')">Go to Discovery →</button>
         </div>
         <div id="wo-project-preview" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:flex-end;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg-2);gap:8px">
+            <span style="font-family:var(--fm);font-size:10px;color:var(--text-3);flex:1">Preview — scroll to see full page</span>
+            <button class="btn btn-outline btn-sm" onclick="woOpenFullPreview('project')" style="display:inline-flex;align-items:center;gap:6px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Full Preview
+            </button>
+          </div>
           <iframe id="wo-project-iframe" style="width:100%;height:480px;border:none;border-radius:0" sandbox="allow-scripts allow-same-origin" title="Website preview"></iframe>
         </div>
       </div>
@@ -4494,6 +4508,31 @@ function woGenOpenProject() {
   const id = woGenCurrentId;
   woCloseGeneratorModal();
   setTimeout(() => woOpenProject(id), 100);
+}
+
+function woOpenFullPreview(source) {
+  // Get HTML from the right source
+  let html = null;
+  if (source === 'gen') {
+    const opp = woppOpps.find(o => o.id === woGenCurrentId);
+    html = opp?.html || null;
+  } else {
+    const opp = woppOpps.find(o => o.id === woppCurrentId);
+    html = opp?.html || null;
+  }
+  if (!html) { toast('No website generated yet.', 'error'); return; }
+
+  // Open as blob URL in a new tab — full browser viewport, no restrictions
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const tab  = window.open(url, '_blank');
+
+  // Revoke the object URL after the tab has loaded to free memory
+  if (tab) {
+    tab.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+    // Fallback revoke after 10s in case load event doesn't fire
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
 }
 
 function woppAddActivity(id, type, text) {
