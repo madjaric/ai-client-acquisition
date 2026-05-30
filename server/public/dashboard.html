@@ -1057,6 +1057,143 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
   .iwg-btn-remove-svc { margin-top: 0; }
 }
 
+/* ═══ WEBSITE OPPORTUNITIES ════════════════════ */
+.wo-pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.wo-stage {
+  padding: 16px 18px;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .14s;
+  position: relative;
+}
+.wo-stage:last-child { border-right: none; }
+.wo-stage:hover { background: rgba(255,255,255,.03); }
+.wo-stage.active { background: var(--brand-dim); }
+.wo-stage-label {
+  font-family: var(--fm); font-size: 9px; font-weight: 600;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--text-3);
+  margin-bottom: 6px;
+}
+.wo-stage.active .wo-stage-label { color: var(--brand); }
+.wo-stage-count {
+  font-family: var(--fd); font-size: 26px; font-weight: 800;
+  letter-spacing: -.04em; color: var(--text); line-height: 1;
+}
+.wo-stage-arrow {
+  position: absolute; right: -8px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--bg-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2; color: var(--text-3); font-size: 9px;
+}
+.wo-stage:last-child .wo-stage-arrow { display: none; }
+
+.wo-table-actions { display: flex; gap: 6px; align-items: center; }
+.wo-status-pill {
+  display: inline-block; font-family: var(--fm); font-size: 10px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px;
+}
+.wo-status-0 { background: var(--bg-3); border: 1px solid var(--border); color: var(--text-3); }
+.wo-status-1 { background: var(--blue-dim); border: 1px solid var(--blue-mid); color: var(--blue); }
+.wo-status-2 { background: var(--amber-dim); border: 1px solid var(--amber-mid); color: var(--amber); }
+.wo-status-3 { background: var(--brand-dim); border: 1px solid var(--brand-mid); color: var(--brand); }
+
+/* Project modal */
+.project-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center; padding: 1rem;
+}
+.project-modal-overlay.open { display: flex; animation: fadeIn .18s ease; }
+.project-modal {
+  background: var(--bg-1); border: 1px solid var(--border-2);
+  border-radius: 16px; width: 100%; max-width: 860px;
+  max-height: 90vh; overflow: hidden;
+  display: flex; flex-direction: column;
+  animation: slideUp .22s ease;
+}
+.project-modal-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+}
+.project-modal-title { font-family: var(--fd); font-size: 15px; font-weight: 700; flex: 1; }
+.project-modal-body { flex: 1; overflow-y: auto; }
+
+.pm-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  padding: 0 20px; flex-shrink: 0;
+}
+.pm-tab {
+  font-size: 13px; font-weight: 500; font-family: var(--fb);
+  color: var(--text-3); padding: 11px 14px; border: none; background: none;
+  cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .14s, border-color .14s; display: flex; align-items: center; gap: 6px;
+}
+.pm-tab:hover { color: var(--text); }
+.pm-tab.active { color: var(--text); border-bottom-color: var(--brand); }
+.pm-tab svg { width: 13px; height: 13px; }
+
+.pm-tab-content { display: none; padding: 20px; }
+.pm-tab-content.active { display: block; }
+
+.activity-log { display: flex; flex-direction: column; gap: 0; }
+.activity-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0;
+}
+.activity-dot-gen  { background: var(--brand); }
+.activity-dot-exp  { background: var(--blue); }
+.activity-dot-sent { background: var(--amber); }
+.activity-dot-won  { background: #a78bfa; }
+.activity-dot-info { background: var(--text-3); }
+.activity-text { font-size: 13px; color: var(--text); flex: 1; line-height: 1.5; }
+.activity-time { font-family: var(--fm); font-size: 11px; color: var(--text-3); flex-shrink: 0; }
+
+/* Dashboard overview card */
+.wo-overview-card {
+  background: var(--bg-1);
+  border: 1px solid var(--brand-mid);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+}
+.wo-overview-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--brand), #60a5fa, var(--brand));
+  background-size: 200% 100%;
+  animation: iwgGradientShift 4s linear infinite;
+}
+.wo-overview-inner {
+  display: flex; align-items: center; gap: 20px;
+  padding: 16px 20px; flex-wrap: wrap;
+}
+.wo-ov-icon {
+  width: 44px; height: 44px; border-radius: 11px;
+  background: var(--brand-dim); border: 1px solid var(--brand-mid);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.wo-ov-icon svg { color: var(--brand); }
+.wo-ov-text { flex: 1; }
+.wo-ov-title { font-family: var(--fd); font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.wo-ov-sub { font-size: 12px; color: var(--text-2); }
+.wo-ov-stats { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.wo-ov-stat { text-align: center; }
+.wo-ov-stat-num { font-family: var(--fd); font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+.wo-ov-stat-lbl { font-family: var(--fm); font-size: 9px; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); margin-top: 1px; }
+
 /* ═══ RESPONSIVE ════════════════════════════ */
 @media (max-width: 900px) {
   .grid-4 { grid-template-columns: 1fr 1fr; }
@@ -1127,6 +1264,14 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
     <button class="sb-item" id="nav-email" onclick="navigate('email')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       Send Email
+    </button>
+
+    <div class="sb-div"></div>
+    <div class="sb-group-label">Revenue</div>
+    <button class="sb-item" id="nav-wopp" onclick="navigate('wopp')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      Website Opps
+      <span class="sb-chip">⚡ PRO</span>
     </button>
 
     <div class="sb-div"></div>
@@ -1239,6 +1384,38 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
         <div class="kpi-label">Converted</div>
         <div class="kpi-value" id="stat-converted" style="color:var(--brand)">—</div>
         <div class="kpi-sub">closed</div>
+      </div>
+    </div>
+
+    <!-- Website Opportunities overview card -->
+    <div class="wo-overview-card">
+      <div class="wo-overview-inner">
+        <div class="wo-ov-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div class="wo-ov-text">
+          <div class="wo-ov-title">⚡ Website Opportunities</div>
+          <div class="wo-ov-sub">Businesses without websites in your pipeline — generate sites instantly and close deals faster.</div>
+        </div>
+        <div class="wo-ov-stats">
+          <div class="wo-ov-stat">
+            <div class="wo-ov-stat-num" id="wo-ov-nosite" style="color:var(--amber)">—</div>
+            <div class="wo-ov-stat-lbl">No Website</div>
+          </div>
+          <div style="width:1px;height:32px;background:var(--border)"></div>
+          <div class="wo-ov-stat">
+            <div class="wo-ov-stat-num" id="wo-ov-generated" style="color:var(--brand)">—</div>
+            <div class="wo-ov-stat-lbl">Generated</div>
+          </div>
+          <div style="width:1px;height:32px;background:var(--border)"></div>
+          <div class="wo-ov-stat">
+            <div class="wo-ov-stat-num" id="wo-ov-revenue" style="color:#a78bfa">—</div>
+            <div class="wo-ov-stat-lbl">Pot. Revenue</div>
+          </div>
+        </div>
+        <button class="btn btn-brand btn-sm" onclick="navigate('wopp')">
+          Open Website Opps →
+        </button>
       </div>
     </div>
 
@@ -2039,7 +2216,241 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
   </div><!-- iwg-anchor -->
 
 
+  <!-- ════════════════════════════════════════
+       PANEL — WEBSITE OPPORTUNITIES
+  ════════════════════════════════════════ -->
+  <div class="panel" id="panel-wopp">
+
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);margin-bottom:6px">⚡ Premium Feature</div>
+        <h1 style="font-family:var(--fd);font-size:24px;font-weight:800;letter-spacing:-.03em">Website Opportunities</h1>
+        <p style="color:var(--text-2);font-size:13px;margin-top:4px">Find businesses without websites · Generate instantly · Close deals</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-outline btn-sm" onclick="woppRefresh()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+        <button class="btn btn-brand btn-sm" onclick="navigate('discovery')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Discover More
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:var(--amber)">
+        <div class="kpi-label">Without Websites</div>
+        <div class="kpi-value" id="wo-kpi-nosite" style="color:var(--amber)">—</div>
+        <div class="kpi-sub">businesses found</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--brand)">
+        <div class="kpi-label">Websites Generated</div>
+        <div class="kpi-value" id="wo-kpi-gen" style="color:var(--brand)">—</div>
+        <div class="kpi-sub">ready to send</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--blue)">
+        <div class="kpi-label">Prospects Contacted</div>
+        <div class="kpi-value" id="wo-kpi-sent" style="color:var(--blue)">—</div>
+        <div class="kpi-sub">sent to business</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#a78bfa">
+        <div class="kpi-label">Deals Won</div>
+        <div class="kpi-value" id="wo-kpi-won" style="color:#a78bfa">—</div>
+        <div class="kpi-sub">revenue closed</div>
+      </div>
+    </div>
+
+    <!-- Pipeline stages -->
+    <div>
+      <div style="font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Pipeline</div>
+      <div class="wo-pipeline">
+        <div class="wo-stage active" id="wo-stage-0" onclick="woppFilterStage(0)">
+          <div class="wo-stage-label">Not Generated</div>
+          <div class="wo-stage-count" id="wo-s-count-0">—</div>
+          <div class="wo-stage-arrow">›</div>
+        </div>
+        <div class="wo-stage" id="wo-stage-1" onclick="woppFilterStage(1)">
+          <div class="wo-stage-label">Generated</div>
+          <div class="wo-stage-count" id="wo-s-count-1">—</div>
+          <div class="wo-stage-arrow">›</div>
+        </div>
+        <div class="wo-stage" id="wo-stage-2" onclick="woppFilterStage(2)">
+          <div class="wo-stage-label">Sent To Prospect</div>
+          <div class="wo-stage-count" id="wo-s-count-2">—</div>
+          <div class="wo-stage-arrow">›</div>
+        </div>
+        <div class="wo-stage" id="wo-stage-3" onclick="woppFilterStage(3)">
+          <div class="wo-stage-label">Won</div>
+          <div class="wo-stage-count" id="wo-s-count-3">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Opportunities table -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">All Opportunities</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px">Businesses without websites from your Discovery searches</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="wo-status-filter" onchange="woppRenderTable()"
+            style="font-size:12px;padding:5px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;font-family:var(--fb);cursor:pointer">
+            <option value="">All Statuses</option>
+            <option value="0">Not Generated</option>
+            <option value="1">Generated</option>
+            <option value="2">Sent</option>
+            <option value="3">Won</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Business</th>
+              <th>Category</th>
+              <th>Location</th>
+              <th>Rating</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="wo-tbody"></tbody>
+        </table>
+      </div>
+      <div style="padding:10px 18px;border-top:1px solid var(--border);font-family:var(--fm);font-size:11px;color:var(--text-3);display:flex;justify-content:space-between">
+        <span id="wo-footer-left">Generated websites are saved in your browser session.</span>
+        <span id="wo-footer-right"></span>
+      </div>
+    </div>
+
+    <!-- Revenue potential -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Revenue Potential</div>
+      </div>
+      <div class="card-body" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+        <div style="flex:1;min-width:240px">
+          <div style="font-size:13px;color:var(--text-2);line-height:1.65;margin-bottom:12px">
+            Each no-website business is a potential web design client. Average website deals range from $500–$3,000 for a basic landing page to $5,000–$15,000 for full sites.
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;flex:1;min-width:100px">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Conservative</div>
+              <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--brand)" id="wo-rev-low">—</div>
+              <div style="font-size:11px;color:var(--text-3)">@ $500/site</div>
+            </div>
+            <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;flex:1;min-width:100px">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Realistic</div>
+              <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--amber)" id="wo-rev-mid">—</div>
+              <div style="font-size:11px;color:var(--text-3)">@ $2,000/site</div>
+            </div>
+            <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;flex:1;min-width:100px">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Optimistic</div>
+              <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:#a78bfa" id="wo-rev-high">—</div>
+              <div style="font-size:11px;color:var(--text-3)">@ $5,000/site</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:14px 16px;max-width:280px">
+          <div style="font-family:var(--fd);font-size:13px;font-weight:700;margin-bottom:6px;color:var(--brand)">💡 How to close deals</div>
+          <ol style="font-size:12px;color:var(--text-2);line-height:1.7;padding-left:16px">
+            <li>Generate a website for a no-website business</li>
+            <li>Send the business owner a preview link</li>
+            <li>Offer to build the real version for a flat fee</li>
+            <li>Mark it Won when they pay</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- panel-wopp -->
+
+
 </div><!-- .main -->
+
+<!-- ════ PROJECT MODAL (Website Opportunities) ════════════════════ -->
+<div class="project-modal-overlay" id="wo-project-modal" onclick="if(event.target===this)woCloseProject()">
+  <div class="project-modal">
+    <div class="project-modal-header">
+      <div class="wo-ov-icon" style="width:36px;height:36px;border-radius:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      </div>
+      <div class="project-modal-title" id="wo-project-name">—</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="wo-project-status" onchange="woUpdateStatus()" 
+          style="font-size:12px;padding:5px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;font-family:var(--fb);cursor:pointer">
+          <option value="0">Not Generated</option>
+          <option value="1">Generated</option>
+          <option value="2">Sent To Prospect</option>
+          <option value="3">Won ✓</option>
+        </select>
+        <button class="modal-close" onclick="woCloseProject()">✕</button>
+      </div>
+    </div>
+    <div class="pm-tabs" id="wo-project-tabs">
+      <button class="pm-tab active" id="pm-tab-preview" onclick="pmTab('preview')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Preview
+      </button>
+      <button class="pm-tab" id="pm-tab-export" onclick="pmTab('export')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+      <button class="pm-tab" id="pm-tab-activity" onclick="pmTab('activity')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Activity
+      </button>
+    </div>
+    <div class="project-modal-body">
+      <div class="pm-tab-content active" id="pm-tc-preview">
+        <div id="wo-project-nohtml" style="text-align:center;padding:48px;color:var(--text-3)">
+          <div style="font-size:36px;margin-bottom:12px">🌐</div>
+          <div style="font-family:var(--fd);font-size:15px;font-weight:700;margin-bottom:6px">No website generated yet</div>
+          <div style="font-size:13px;margin-bottom:16px">Use the ⚡ Site button in Discovery to generate a website for this business.</div>
+          <button class="btn btn-brand btn-sm" onclick="woCloseProject();navigate('discovery')">Go to Discovery →</button>
+        </div>
+        <div id="wo-project-preview" style="display:none">
+          <iframe id="wo-project-iframe" style="width:100%;height:480px;border:none;border-radius:0" sandbox="allow-scripts allow-same-origin" title="Website preview"></iframe>
+        </div>
+      </div>
+      <div class="pm-tab-content" id="pm-tc-export">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text-2)">
+            <strong style="color:var(--brand)">💡 Pro tip:</strong> Send the downloaded HTML file to the business owner as your outreach opener — showing them their potential site dramatically increases close rates.
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-brand" onclick="woDownload()" id="wo-pm-download">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download HTML
+            </button>
+            <button class="btn btn-outline" onclick="woCopyHtml()" id="wo-pm-copy">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy HTML
+            </button>
+            <button class="btn btn-amber btn-sm" onclick="woMarkSent()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Mark as Sent
+            </button>
+            <button class="btn btn-sm" style="background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);color:#a78bfa" onclick="woMarkWon()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Mark Won
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="pm-tab-content" id="pm-tc-activity">
+        <div class="activity-log" id="wo-activity-log">
+          <div style="text-align:center;padding:32px;color:var(--text-3);font-size:13px">No activity yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ════ UPGRADE MODAL ══════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="upgrade-modal" onclick="if(event.target===this)closeUpgradeModal()">
@@ -2301,11 +2712,12 @@ async function copyText(id, btn) {
 
 /* ─── Navigation ────────────────────────────── */
 const PAGE_META = {
-  leads:     { title: 'Leads',              sub: 'Manage your prospect pipeline' },
-  scoring:   { title: 'AI Scoring',         sub: 'Estimate value and prioritize your pipeline' },
-  outreach:  { title: 'Outreach Generator', sub: 'AI-written emails and DMs, personalised to each lead' },
-  email:     { title: 'Send Email',         sub: 'Send via Gmail SMTP with full delivery logging' },
-  discovery: { title: 'Lead Discovery',     sub: 'Find local businesses via Google Maps and import to pipeline' },
+  leads:     { title: 'Leads',                 sub: 'Manage your prospect pipeline' },
+  scoring:   { title: 'AI Scoring',            sub: 'Estimate value and prioritize your pipeline' },
+  outreach:  { title: 'Outreach Generator',    sub: 'AI-written emails and DMs, personalised to each lead' },
+  email:     { title: 'Send Email',            sub: 'Send via Gmail SMTP with full delivery logging' },
+  discovery: { title: 'Lead Discovery',        sub: 'Find local businesses via Google Maps and import to pipeline' },
+  wopp:      { title: '⚡ Website Opportunities', sub: 'Generate websites for no-website businesses and close deals' },
 };
 
 function navigate(page) {
@@ -2331,6 +2743,7 @@ function navigate(page) {
   if (page === 'outreach')  { loadOutreachHistory(); refreshSelects(); }
   if (page === 'email')     { loadEmailStats(); loadEmailLogs(); loadEmailSelects(); }
   if (page === 'discovery') { checkDiscoverySource(); }
+  if (page === 'wopp')      { woppSyncFromDisc(); woppUpdateStats(); woppRenderTable(); }
 }
 
 /* ─── Mobile sidebar ─────────────────────────── */
@@ -3272,6 +3685,14 @@ function iwgShowState(name) {
     const el = document.getElementById(`iwg-state-${s}`);
     if (el) el.style.display = s === name ? '' : 'none';
   });
+  // Auto-register opportunity when website is generated
+  if (name === 'result') {
+    setTimeout(() => {
+      if (iwgCurrentBiz && iwgGeneratedHtml && typeof woppOnGenerated === 'function') {
+        woppOnGenerated(iwgCurrentBiz, iwgGeneratedHtml);
+      }
+    }, 600);
+  }
 }
 
 /* Called from the ⚡ Site button in discovery table rows */
@@ -3570,6 +3991,370 @@ function iwgCopyHtml() {
   }).catch(() => toast('Copy failed. Try downloading instead.', 'error'));
 }
 
+/* ═══════════════════════════════════════════════════
+   WEBSITE OPPORTUNITIES — WOPP
+   Storage: in-memory + localStorage for persistence
+═══════════════════════════════════════════════════ */
+
+// opportunities = array of {id, name, industry, location, rating, reviewCount, status, html, activity, createdAt}
+// status: 0=not generated, 1=generated, 2=sent, 3=won
+let woppOpps       = [];
+let woppActiveStage = null; // null = all
+let woppCurrentId  = null;  // project modal
+
+const WOPP_STATUS_LABELS = ['Not Generated', 'Generated', 'Sent', 'Won'];
+const WOPP_STORAGE_KEY   = 'lf_wopp_v1';
+
+function woppSave() {
+  try {
+    // Save without html to save space — html stored separately
+    const slim = woppOpps.map(o => ({ ...o, html: undefined }));
+    localStorage.setItem(WOPP_STORAGE_KEY, JSON.stringify(slim));
+    // save htmls separately
+    woppOpps.forEach(o => {
+      if (o.html) {
+        try { localStorage.setItem(`lf_wopp_html_${o.id}`, o.html); } catch(e) {}
+      }
+    });
+  } catch(e) {}
+}
+
+function woppLoad() {
+  try {
+    const raw = localStorage.getItem(WOPP_STORAGE_KEY);
+    if (!raw) return;
+    const slim = JSON.parse(raw);
+    woppOpps = slim.map(o => ({
+      ...o,
+      html: (() => { try { return localStorage.getItem(`lf_wopp_html_${o.id}`) || null; } catch(e) { return null; } })()
+    }));
+  } catch(e) { woppOpps = []; }
+}
+
+function woppInit() {
+  woppLoad();
+  woppUpdateStats();
+  woppRenderTable();
+}
+
+/** Called when a website is generated in IWG — creates/updates an opportunity entry */
+function woppOnGenerated(biz, html) {
+  const existing = woppOpps.find(o => o.name === biz.name && o.location === biz.location);
+  if (existing) {
+    existing.html   = html;
+    existing.status = Math.max(existing.status, 1);
+    woppAddActivity(existing.id, 'gen', 'Website generated');
+  } else {
+    const id = 'wo_' + Date.now();
+    const opp = {
+      id, name: biz.name, industry: biz.industry || '—', location: biz.location || '—',
+      rating: biz.rating, reviewCount: biz.review_count,
+      status: 1, html,
+      activity: [{ type:'gen', text:'Website generated', time: new Date().toISOString() }],
+      createdAt: new Date().toISOString()
+    };
+    woppOpps.unshift(opp);
+  }
+  woppSave();
+  woppUpdateStats();
+  woppRenderTable();
+  toast('Opportunity created in Website Opps!', 'success');
+}
+
+/** Sync no-website leads from discFiltered into opportunities (without html) */
+function woppSyncFromDisc() {
+  if (!discFiltered || !discFiltered.length) return;
+  let added = 0;
+  discFiltered.forEach(b => {
+    if (b.website) return;
+    const exists = woppOpps.find(o => o.name === b.name && o.location === b.location);
+    if (!exists) {
+      woppOpps.push({
+        id: 'wo_' + Date.now() + '_' + Math.random().toString(36).slice(2),
+        name: b.name, industry: b.industry || '—', location: b.location || '—',
+        rating: b.rating, reviewCount: b.review_count,
+        status: 0, html: null,
+        activity: [{ type:'info', text:'Found in Discovery (no website)', time: new Date().toISOString() }],
+        createdAt: new Date().toISOString()
+      });
+      added++;
+    }
+  });
+  if (added) {
+    woppSave();
+    woppUpdateStats();
+    woppRenderTable();
+  }
+}
+
+function woppRefresh() {
+  woppSyncFromDisc();
+  woppUpdateStats();
+  woppRenderTable();
+  toast('Opportunities refreshed.', 'success');
+}
+
+function woppFilterStage(stage) {
+  woppActiveStage = (woppActiveStage === stage) ? null : stage;
+  document.querySelectorAll('.wo-stage').forEach((el, i) => el.classList.toggle('active', i === woppActiveStage));
+  const sel = document.getElementById('wo-status-filter');
+  if (sel) sel.value = woppActiveStage !== null ? String(woppActiveStage) : '';
+  woppRenderTable();
+}
+
+function woppUpdateStats() {
+  const counts = [0,0,0,0];
+  woppOpps.forEach(o => counts[o.status]++);
+  const total = woppOpps.length;
+
+  // KPI cards
+  const nosite = woppOpps.filter(o => !o.html && o.status === 0).length;
+  document.getElementById('wo-kpi-nosite').textContent = total;
+  document.getElementById('wo-kpi-gen').textContent    = counts[1] + counts[2] + counts[3];
+  document.getElementById('wo-kpi-sent').textContent   = counts[2] + counts[3];
+  document.getElementById('wo-kpi-won').textContent    = counts[3];
+
+  // Pipeline counts
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById(`wo-s-count-${i}`);
+    if (el) el.textContent = counts[i];
+  }
+
+  // Overview card
+  const ovNosite = document.getElementById('wo-ov-nosite');
+  const ovGen    = document.getElementById('wo-ov-generated');
+  const ovRev    = document.getElementById('wo-ov-revenue');
+  if (ovNosite) ovNosite.textContent = total;
+  if (ovGen)    ovGen.textContent    = counts[1] + counts[2] + counts[3];
+  if (ovRev)    ovRev.textContent    = '$' + (total * 2000).toLocaleString();
+
+  // Revenue panel
+  const revLow  = document.getElementById('wo-rev-low');
+  const revMid  = document.getElementById('wo-rev-mid');
+  const revHigh = document.getElementById('wo-rev-high');
+  if (revLow)  revLow.textContent  = '$' + (total * 500).toLocaleString();
+  if (revMid)  revMid.textContent  = '$' + (total * 2000).toLocaleString();
+  if (revHigh) revHigh.textContent = '$' + (total * 5000).toLocaleString();
+}
+
+function woppRenderTable() {
+  const tbody    = document.getElementById('wo-tbody');
+  if (!tbody) return;
+  const filterSel = document.getElementById('wo-status-filter');
+  const filterVal = filterSel ? filterSel.value : '';
+
+  let list = filterVal !== '' ? woppOpps.filter(o => String(o.status) === filterVal) : woppOpps;
+
+  // Footer
+  const footer = document.getElementById('wo-footer-right');
+  if (footer) footer.textContent = `${woppOpps.length} total opportunities`;
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="6">
+      <div class="empty" style="padding:40px">
+        <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+        <div class="empty-title">No opportunities yet</div>
+        <div class="empty-desc">Run a Discovery search, then click <strong>⚡ Site</strong> on any no-website business to create an opportunity.</div>
+        <button class="btn btn-brand btn-sm" onclick="navigate('discovery')">Go to Discovery →</button>
+      </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(o => {
+    const stars = o.rating
+      ? `<span style="color:var(--amber);font-size:12px">★</span><span style="font-family:var(--fm);font-size:11px;color:var(--text-2);margin-left:2px">${o.rating.toFixed(1)}</span>`
+      : '<span style="color:var(--text-3);font-size:12px">—</span>';
+    const actions = o.html
+      ? `<div style="display:flex;gap:4px">
+           <button class="btn btn-outline btn-xs" onclick="woOpenProject('${o.id}')">Open Project</button>
+           <button class="btn btn-xs" onclick="woQuickDownload('${o.id}')" style="background:var(--blue-dim);border:1px solid var(--blue-mid);color:var(--blue);font-family:var(--fm);font-size:9px;padding:3px 8px;border-radius:3px;cursor:pointer">Export</button>
+         </div>`
+      : `<button class="btn btn-brand btn-xs" onclick="woGenerateFromOpp('${o.id}')">
+           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+           Generate
+         </button>`;
+    return `<tr style="cursor:pointer" onclick="woOpenProject('${o.id}')">
+      <td onclick="event.stopPropagation()">
+        <div style="font-weight:600;font-size:13px">${esc(o.name)}</div>
+        <div style="font-size:11px;color:var(--text-3)">${esc(o.location)}</div>
+      </td>
+      <td style="color:var(--text-2);font-size:13px">${esc(o.industry)}</td>
+      <td style="font-size:12px;color:var(--text-2)">${esc(o.location)}</td>
+      <td>${stars}</td>
+      <td><span class="wo-status-pill wo-status-${o.status}">${WOPP_STATUS_LABELS[o.status]}</span></td>
+      <td onclick="event.stopPropagation()">${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+function woOpenProject(id) {
+  const opp = woppOpps.find(o => o.id === id);
+  if (!opp) return;
+  woppCurrentId = id;
+
+  document.getElementById('wo-project-name').textContent = opp.name;
+  document.getElementById('wo-project-status').value = String(opp.status);
+
+  // Preview
+  const noHtml = document.getElementById('wo-project-nohtml');
+  const preview = document.getElementById('wo-project-preview');
+  const iframe  = document.getElementById('wo-project-iframe');
+  if (opp.html) {
+    noHtml.style.display  = 'none';
+    preview.style.display = '';
+    iframe.srcdoc = opp.html;
+  } else {
+    noHtml.style.display  = '';
+    preview.style.display = 'none';
+  }
+
+  // Activity
+  const log = document.getElementById('wo-activity-log');
+  if (log) {
+    const acts = opp.activity || [];
+    if (!acts.length) {
+      log.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-3);font-size:13px">No activity yet.</div>';
+    } else {
+      const dotClass = { gen:'activity-dot-gen', exp:'activity-dot-exp', sent:'activity-dot-sent', won:'activity-dot-won', info:'activity-dot-info' };
+      log.innerHTML = [...acts].reverse().map(a => `
+        <div class="activity-item">
+          <div class="activity-dot ${dotClass[a.type] || 'activity-dot-info'}"></div>
+          <div class="activity-text">${esc(a.text)}</div>
+          <div class="activity-time">${new Date(a.time).toLocaleString()}</div>
+        </div>`).join('');
+    }
+  }
+
+  pmTab('preview');
+  document.getElementById('wo-project-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function woCloseProject() {
+  document.getElementById('wo-project-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  woppCurrentId = null;
+}
+
+function pmTab(name) {
+  ['preview','export','activity'].forEach(t => {
+    const btn = document.getElementById(`pm-tab-${t}`);
+    const pnl = document.getElementById(`pm-tc-${t}`);
+    if (btn) btn.classList.toggle('active', t === name);
+    if (pnl) pnl.classList.toggle('active', t === name);
+  });
+}
+
+function woUpdateStatus() {
+  if (!woppCurrentId) return;
+  const opp = woppOpps.find(o => o.id === woppCurrentId);
+  if (!opp) return;
+  const newStatus = parseInt(document.getElementById('wo-project-status').value);
+  opp.status = newStatus;
+  const labels = ['set to Not Generated','set to Generated','marked as Sent','marked as Won 🎉'];
+  woppAddActivity(woppCurrentId, ['info','gen','sent','won'][newStatus], `Status ${labels[newStatus]}`);
+  woppSave();
+  woppUpdateStats();
+  woppRenderTable();
+  toast(`Status updated to ${WOPP_STATUS_LABELS[newStatus]}`, 'success');
+}
+
+function woMarkSent() {
+  if (!woppCurrentId) return;
+  const opp = woppOpps.find(o => o.id === woppCurrentId);
+  if (!opp) return;
+  opp.status = 2;
+  document.getElementById('wo-project-status').value = '2';
+  woppAddActivity(woppCurrentId, 'sent', 'Website exported and sent to prospect');
+  woppSave(); woppUpdateStats(); woppRenderTable();
+  toast('Marked as Sent!', 'success');
+}
+
+function woMarkWon() {
+  if (!woppCurrentId) return;
+  const opp = woppOpps.find(o => o.id === woppCurrentId);
+  if (!opp) return;
+  opp.status = 3;
+  document.getElementById('wo-project-status').value = '3';
+  woppAddActivity(woppCurrentId, 'won', 'Deal marked as Won! 🎉');
+  woppSave(); woppUpdateStats(); woppRenderTable();
+  toast('🎉 Deal marked as Won!', 'success');
+}
+
+function woDownload() {
+  const opp = woppOpps.find(o => o.id === woppCurrentId);
+  if (!opp || !opp.html) { toast('No website generated yet.', 'error'); return; }
+  const name = opp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const blob = new Blob([opp.html], { type: 'text/html' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = name + '.html';
+  a.click();
+  woppAddActivity(woppCurrentId, 'exp', 'Website downloaded');
+  woppSave();
+  toast(`Downloaded ${name}.html`, 'success');
+}
+
+function woCopyHtml() {
+  const opp = woppOpps.find(o => o.id === woppCurrentId);
+  if (!opp || !opp.html) { toast('No website generated yet.', 'error'); return; }
+  navigator.clipboard.writeText(opp.html).then(() => {
+    woppAddActivity(woppCurrentId, 'exp', 'HTML copied to clipboard');
+    woppSave();
+    toast('HTML copied!', 'success');
+  }).catch(() => toast('Copy failed.', 'error'));
+}
+
+function woQuickDownload(id) {
+  const opp = woppOpps.find(o => o.id === id);
+  if (!opp || !opp.html) { toast('No website generated yet.', 'error'); return; }
+  const name = opp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const blob = new Blob([opp.html], { type: 'text/html' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = name + '.html';
+  a.click();
+  toast(`Exported ${name}.html`, 'success');
+}
+
+function woGenerateFromOpp(id) {
+  const opp = woppOpps.find(o => o.id === id);
+  if (!opp) return;
+  // Find matching biz in discFiltered if any, or create a synthetic one
+  const synth = { name: opp.name, industry: opp.industry, location: opp.location, rating: opp.rating, review_count: opp.reviewCount, website: null };
+  // Navigate to discovery, or trigger IWG with synth biz
+  iwgCurrentBiz = synth;
+  document.getElementById('iwg-biz-name').textContent     = synth.name;
+  document.getElementById('iwg-biz-industry').textContent = synth.industry;
+  document.getElementById('iwg-biz-location').textContent = synth.location;
+  const ratingEl  = document.getElementById('iwg-biz-rating');
+  const ratingDot = document.getElementById('iwg-meta-dot-rating');
+  if (synth.rating) {
+    ratingEl.textContent = `★ ${synth.rating.toFixed(1)}`;
+    ratingEl.style.display = ''; ratingDot.style.display = '';
+  } else {
+    ratingEl.style.display = 'none'; ratingDot.style.display = 'none';
+  }
+  document.getElementById('iwg-header-sub').textContent = `Generating a landing page for ${synth.name}`;
+  document.getElementById('iwg-btn-regen').style.display = 'none';
+  iwgShowState('idle'); iwgTab('preview');
+  const anchor = document.getElementById('iwg-anchor');
+  anchor.style.display = 'flex';
+  navigate('discovery');
+  setTimeout(() => anchor.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+  toast('Scroll down to use the Website Generator.', 'info');
+}
+
+function woppAddActivity(id, type, text) {
+  const opp = woppOpps.find(o => o.id === id);
+  if (!opp) return;
+  if (!opp.activity) opp.activity = [];
+  opp.activity.push({ type, text, time: new Date().toISOString() });
+}
+
+// Hook into iwgGenerate to create opportunities automatically — handled via iwgShowState patch above
+
+
 initUserBlock();
 initOnboarding();
 checkConnection();
@@ -3578,6 +4363,7 @@ loadLeads();
 loadScoredLeads();
 loadOutreachHistory();
 loadQuota();
+woppInit();
 </script>
 
 </body>
