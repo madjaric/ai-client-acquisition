@@ -133,6 +133,157 @@ app.use("/api/send-email",        requireAuth, sendEmailRouter);
 app.use("/api/discovery",         discoveryRouter);  // requireAuth applied per-endpoint inside
 
 // ─────────────────────────────────────────────
+//  Lead Intelligence — inline route
+//  GET /api/lead-intelligence/:leadId
+// ─────────────────────────────────────────────
+app.get("/api/lead-intelligence/:leadId", requireAuth, (req, res) => {
+  try {
+    const db     = getDb();
+    const leadId = req.params.leadId;
+
+    const lead = db.prepare("SELECT * FROM leads WHERE id = ?").get(leadId);
+    if (!lead) return res.status(404).json({ success: false, message: "Lead not found." });
+
+    // Latest score
+    const scoreRow = db.prepare(
+      "SELECT * FROM lead_scores WHERE lead_id = ? ORDER BY scored_at DESC LIMIT 1"
+    ).get(leadId);
+
+    let score = null;
+    if (scoreRow) {
+      score = {
+        ...scoreRow,
+        red_flags      : (() => { try { return JSON.parse(scoreRow.red_flags); } catch { return []; } })(),
+        score_breakdown: (() => { try { return JSON.parse(scoreRow.score_breakdown || "{}"); } catch { return {}; } })(),
+        score_100      : scoreRow.score !== undefined && scoreRow.score !== null
+                           ? scoreRow.score
+                           : (scoreRow.lead_score ? scoreRow.lead_score * 10 : 0),
+        score_label    : (() => {
+          const s = scoreRow.score !== undefined && scoreRow.score !== null
+            ? scoreRow.score : (scoreRow.lead_score ? scoreRow.lead_score * 10 : 0);
+          if (s >= 90) return "Hot";
+          if (s >= 70) return "Warm";
+          if (s >= 40) return "Mild";
+          return "Cold";
+        })(),
+      };
+    }
+
+    // Latest generated message
+    const msgRow = db.prepare(
+      "SELECT * FROM generated_messages WHERE lead_id = ? ORDER BY created_at DESC LIMIT 1"
+    ).get(leadId);
+
+    const hasWebsite = !!(lead.website && lead.website.trim());
+
+    const revenueProjection = score ? {
+      estimated_value_range  : score.estimated_value_range || "—",
+      website_revenue_potential: score.website_revenue_potential || null,
+      conversion_probability : score.conversion_probability || "medium",
+      model_used             : score.model || (hasWebsite ? "A" : "B"),
+    } : null;
+
+    return res.json({
+      success: true,
+      data: {
+        lead,
+        score,
+        latest_message    : msgRow || null,
+        revenue_projection: revenueProjection,
+        has_website       : hasWebsite,
+        intelligence_summary: {
+          headline   : score
+            ? `${lead.business_name} — ${score.score_label} Lead`
+            : `${lead.business_name} — awaiting AI scoring`,
+          next_action: score?.recommended_action || "Run AI Score to unlock full intelligence",
+          model_type : score?.model === "B" ? "Website Opportunity Lead" : "Lead Gen Services Lead",
+        },
+      },
+    });
+  } catch (err) {
+    console.error("Lead intelligence error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+//  Pipeline Analytics — inline route
+//  GET /api/pipeline/analytics
+// ─────────────────────────────────────────────
+app.get("/api/pipeline/analytics", requireAuth, (req, res) => {
+  try {
+    const db = getDb();
+
+    const statusRows = db.prepare("SELECT status, COUNT(*) as count FROM leads GROUP BY status").all();
+    const dist = { total: 0, new: 0, contacted: 0, replied: 0, qualified: 0, converted: 0 };
+    for (const r of statusRows) { dist[r.status] = r.count; dist.total += r.count; }
+
+    const withSite = db.prepare("SELECT COUNT(*) as n FROM leads WHERE website IS NOT NULL AND website != ''").get().n;
+    const noSite   = dist.total - withSite;
+
+    const rankedScores = db.prepare(`
+      SELECT ls.*, l.business_name, l.industry,
+             COALESCE(ls.score, ls.lead_score * 10, 0) as score_100
+      FROM lead_scores ls
+      INNER JOIN leads l ON l.id = ls.lead_id
+      INNER JOIN (SELECT lead_id, MAX(scored_at) as m FROM lead_scores GROUP BY lead_id) lx
+        ON ls.lead_id = lx.lead_id AND ls.scored_at = lx.m
+      ORDER BY score_100 DESC
+    `).all();
+
+    const highestValue = rankedScores[0] || null;
+    const highestWo    = rankedScores.filter(s => s.website_opportunity_score > 0)
+                           .sort((a,b) => b.website_opportunity_score - a.website_opportunity_score)[0] || null;
+
+    const industryCounts = {};
+    rankedScores.forEach(s => { if (s.industry) industryCounts[s.industry] = (industryCounts[s.industry]||0)+1; });
+    const topIndustry = Object.entries(industryCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+
+    let potentialRevenue = 0;
+    rankedScores.forEach(s => {
+      const m = (s.estimated_value_range||"").match(/\$?([\d,]+)/);
+      if (m) potentialRevenue += parseInt(m[1].replace(/,/g,""))||0;
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        lead_distribution: dist,
+        website_opportunity_metrics: {
+          with_website              : withSite,
+          without_website           : noSite,
+          website_opportunity_score : noSite > 0 ? Math.round((noSite/dist.total)*100) : 0,
+          estimated_website_revenue : noSite * 2500,
+        },
+        ai_insights: {
+          highest_value_lead: highestValue ? {
+            id: highestValue.lead_id, business_name: highestValue.business_name,
+            value_range: highestValue.estimated_value_range, score: highestValue.score_100,
+          } : null,
+          highest_website_opportunity: highestWo ? {
+            id: highestWo.lead_id, business_name: highestWo.business_name,
+            wo_score: highestWo.website_opportunity_score, industry: highestWo.industry,
+          } : null,
+          fastest_conversion: rankedScores.find(s => s.recommended_action) ? {
+            id: rankedScores[0].lead_id, business_name: rankedScores[0].business_name,
+            next_action: rankedScores[0].recommended_action, score: rankedScores[0].score_100,
+          } : null,
+          most_responsive_industry: topIndustry,
+        },
+        revenue_projection: {
+          potential_revenue            : potentialRevenue,
+          monthly_recurring_opportunity: Math.round(potentialRevenue * 0.3),
+          estimated_close_value        : Math.round(potentialRevenue * 0.15),
+        },
+      },
+    });
+  } catch (err) {
+    console.error("Pipeline analytics error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
 //  Gemini proxy — website generator
 //  Reuses the existing GEMINI_API_KEY from .env
 // ─────────────────────────────────────────────
@@ -152,21 +303,16 @@ OUTPUT
 Return ONLY raw HTML starting with <!DOCTYPE html>. No markdown. No code fences. No comments outside code.
 Single file: all CSS in <style>, all JS before </body>.
 Allowed external resources: Google Fonts <link> only.
-
-IMAGES — use https://source.unsplash.com/1600x900/?KEYWORD format. This ALWAYS works.
-  Replace KEYWORD with 2-3 comma-separated terms relevant to the industry. Examples:
-  — Auto repair:   https://source.unsplash.com/1600x900/?mechanic,car,repair
-  — Dental:        https://source.unsplash.com/1600x900/?dentist,dental,smile
-  — Jewelry:       https://source.unsplash.com/1600x900/?jewelry,gold,ring
-  — HVAC:          https://source.unsplash.com/1600x900/?hvac,technician,tools
-  — Restaurant:    https://source.unsplash.com/1600x900/?restaurant,food,dining
-  — Gym:           https://source.unsplash.com/1600x900/?gym,fitness,workout
-  — Landscaping:   https://source.unsplash.com/1600x900/?garden,landscape,lawn
-  — Plumbing:      https://source.unsplash.com/1600x900/?plumber,pipes,tools
-  — Real estate:   https://source.unsplash.com/1600x900/?house,realestate,home
-  — Law firm:      https://source.unsplash.com/1600x900/?law,office,professional
-  For the about section smaller image use 800x600 instead of 1600x900.
-  Use at least 3 DIFFERENT keyword combinations across the page so images look varied.
+Use real Unsplash photos: https://images.unsplash.com/photo-ID?w=1400&q=85&fit=crop
+  — Search for photo IDs that genuinely match the industry. Examples:
+  — Auto repair: 1492144533 (mechanic), 1486262322 (car engine), 1558618666 (garage)
+  — Dental: 3845810 (dental chair), 3279209 (smile), 298611 (clinic)
+  — HVAC: 162568 (tools), 1216589 (technician), 257636 (air unit)
+  — Restaurant: 1640777 (food), 262978 (restaurant interior), 299347 (chef)
+  — Gym: 1954524 (gym), 1552106 (weights), 841130 (fitness)
+  — Landscaping: 1214497 (garden), 296230 (lawn), 273749 (landscape)
+  — Plumbing: 210881 (pipes), 2988232 (plumber), 1029599 (tools)
+  Use at least 3 photos across the page.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DESIGN SYSTEM — follow exactly
@@ -195,15 +341,12 @@ SPACING SCALE — use these exact values for padding/margin:
   4px 8px 12px 16px 24px 32px 48px 64px 80px 96px 120px
 
 TYPOGRAPHY SCALE:
-  .display   { font: 800 clamp(2.2rem,4.5vw,4rem)/1.05 'Syne'; letter-spacing:-0.03em }
-  .h1        { font: 800 clamp(1.8rem,3.5vw,3rem)/1.1 'Syne'; letter-spacing:-0.02em }
-  .h2        { font: 800 clamp(1.5rem,2.5vw,2.4rem)/1.2 'Syne'; letter-spacing:-0.02em }
-  .h3        { font: 700 clamp(1.1rem,1.8vw,1.35rem)/1.3 'Syne' }
+  .display   { font: 800 clamp(3.5rem,8vw,7.5rem)/1.0 'Syne'; letter-spacing:-0.04em }
+  .h1        { font: 800 clamp(2.4rem,5vw,4.5rem)/1.1 'Syne'; letter-spacing:-0.03em }
+  .h2        { font: 800 clamp(1.8rem,3.5vw,3rem)/1.2 'Syne'; letter-spacing:-0.02em }
+  .h3        { font: 700 clamp(1.2rem,2vw,1.5rem)/1.3 'Syne' }
   body text  { font: 400 1.05rem/1.8 'DM Sans'; color: var(--c-text) }
   .overline  { font: 600 .7rem/.85 'DM Sans'; letter-spacing:.12em; text-transform:uppercase; color:var(--c-primary) }
-  
-  IMPORTANT: The hero headline must be SHORT — maximum 5-7 words total, written as 2 lines at most.
-  Do NOT write long sentences as the display headline. Keep it punchy: e.g. "Quality You Can Trust" or "Expert Service, Every Time".
 
 GLOBAL RESET — include this exactly:
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
@@ -233,7 +376,7 @@ SECTIONS — build all of these in order
    - Content centered, max-width 800px, text-align:center, position:relative z-index:1
    - Layout from top to bottom:
      a) Overline badge: display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:99px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); backdrop-filter:blur(8px); font-size:.75rem; letter-spacing:.1em; color:white; text-transform:uppercase; margin-bottom:24px
-     b) Hero headline: .display class, color white, margin-bottom:20px. MAXIMUM 6 WORDS. Write it as one SHORT punchy line or 2 short lines at most. Examples: "Nakit koji Traje Generacije" / "Expert Care, Every Visit" / "Your Trusted Local Plumber". Never write a long sentence — it must fit on 1-2 lines at this font size.
+     b) Giant headline: .display class, color white, margin-bottom:20px. Make it 2-3 lines. Bold claim.
      c) Subheading: font-size:clamp(1rem,2vw,1.25rem); color:rgba(255,255,255,.75); max-width:560px; margin:0 auto 32px; line-height:1.7
      d) Stars row (if rating given): display:flex; gap:4px; justify-content:center; align-items:center; margin-bottom:36px. Gold stars (★) + rating text in white/80%
      e) CTA row: display:flex; gap:12px; justify-content:center; flex-wrap:wrap
