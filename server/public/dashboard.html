@@ -3873,7 +3873,6 @@ document.addEventListener('keydown', e => {
 
 /* ─── Auth: populate sidebar user block ──────── */
 async function initUserBlock() {
-  // If we have a token but no user object, re-fetch from server
   if (window.LF_TOKEN && !window.LF_USER) {
     try {
       const res = await fetch('/api/auth/me', { headers: window.LF_HEADERS });
@@ -3902,7 +3901,6 @@ async function initUserBlock() {
   const upgradeBtn = document.getElementById('sb-upgrade-btn');
 
   if (!user) {
-    // Guest — show Sign In, hide user block and logout
     if (signinBtn)  signinBtn.style.display  = 'flex';
     if (logoutBtn)  logoutBtn.style.display  = 'none';
     if (userBlock)  userBlock.style.display  = 'none';
@@ -3910,7 +3908,6 @@ async function initUserBlock() {
     return;
   }
 
-  // Logged in — hide Sign In, show user info and logout
   if (signinBtn)  signinBtn.style.display  = 'none';
   if (logoutBtn)  logoutBtn.style.display  = 'flex';
   if (userBlock)  userBlock.style.display  = '';
@@ -4869,7 +4866,7 @@ function woppAddActivity(id, type, text) {
 }
 
 // Hook into iwgGenerate to create opportunities automatically — handled via iwgShowState patch above
-
+</script>
 
 <!-- ════════════════════════════════════════
      LEAD INTELLIGENCE SIDE PANEL
@@ -5109,7 +5106,7 @@ async function loadLeadIntelligence(leadId) {
     : `<span style="font-family:var(--fm);font-size:9px;background:var(--amber-dim);color:var(--amber);padding:2px 7px;border-radius:3px;border:1px solid var(--amber-mid)">MODEL B · WEBSITE OPP</span>`;
 
   body.innerHTML = `
-    <!-- Lead summary -->
+    /* Lead summary */
     <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg)">
       <div class="li-score-ring" style="background:${scoreVal ? `conic-gradient(${scoreColor} ${scoreVal}%, var(--bg-3) 0)` : 'var(--bg-3)'}">
         <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-1);display:flex;flex-direction:column;align-items:center;justify-content:center">
@@ -5128,7 +5125,7 @@ async function loadLeadIntelligence(leadId) {
     </div>
 
     ${score ? `
-    <!-- Score reasoning -->
+    /* Score reasoning */
     <div>
       <div class="li-section-title">AI Score Reasoning</div>
       <div style="font-size:12.5px;color:var(--text-2);line-height:1.65;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px">${esc(score.reasoning || 'No reasoning available.')}</div>
