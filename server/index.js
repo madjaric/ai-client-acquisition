@@ -144,20 +144,72 @@ app.post("/api/generate-website", async (req, res) => {
     const { messages } = req.body;
     const userText = (messages || []).map(m => m.content).join("\n\n");
 
-    // Simpler prompt: ask for raw HTML only — no JSON wrapper, no truncation risk
-    const fullPrompt = `You are an expert web developer. Generate a complete, professional, single-file HTML landing page for the following local business.
+    const fullPrompt = `You are a world-class web designer who builds stunning, modern landing pages that win design awards. Generate a complete single-file HTML landing page for the local business below.
 
-REQUIREMENTS:
-- Return ONLY raw HTML. Start with <!DOCTYPE html>. No explanation, no markdown, no code fences.
-- Self-contained: all CSS in <style> tag, all JS inline. No external resources except Google Fonts.
-- Mobile-first responsive. Sections: hero with CTA, about, services grid (2-3 cols), contact with phone/email, footer.
-- Choose a distinctive color palette suited to the industry.
-- Subtle CSS animations: fade-in on load, hover effects on cards and buttons.
-- Clickable phone (tel:) and email (mailto:) links.
-- Professional copy — no Lorem ipsum, no placeholders.
-- Include star rating and review count in hero if provided.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Return ONLY raw HTML starting with <!DOCTYPE html>. Zero explanation. No markdown. No code fences.
+- Everything self-contained: all CSS inside one <style> tag, all JS inline before </body>.
+- Google Fonts allowed via <link>. No other external CSS frameworks.
+- Real Unsplash images via https://images.unsplash.com/photo-XXXXXXXXXX?w=1600&q=80 — pick photos that genuinely match the industry (cars/garage for mechanics, teeth/clinic for dental, tools for HVAC, etc). Use at least 2-3 real photos.
 
-${userText}`;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DESIGN STANDARD — 2025 PREMIUM AGENCY LEVEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HERO SECTION:
+- Full-viewport (100vh) with a real Unsplash photo as background
+- Dark overlay gradient (e.g. linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 100%))
+- Bold display font (e.g. Syne, Playfair Display, Bebas Neue, or Clash Display via Google Fonts)
+- Giant headline (clamp(3rem, 8vw, 7rem)), tight letter-spacing (-0.03em), white text
+- Eyebrow label above headline (e.g. "Phoenix, AZ · Mobile Mechanic") in a pill badge
+- Subheadline in a lighter weight, max 2 lines
+- Star rating badge if rating data provided
+- Two CTA buttons: primary (brand color, filled) + secondary (white outline)
+- Animated entrance: elements slide up and fade in with staggered delays
+
+TYPOGRAPHY:
+- Pair a bold display font for headings with a clean sans-serif for body (e.g. Syne + Inter, or Bebas Neue + DM Sans)
+- Section headings: 2.5-3.5rem, font-weight 800, letter-spacing -0.02em
+- Body: 1.05rem, line-height 1.75, color #4a4a5a on light backgrounds
+
+COLOR:
+- Choose a BOLD, industry-specific palette. NOT generic navy/gray.
+  - Auto/mechanic: deep charcoal (#0f0f0f) + electric orange (#ff5c00) + white
+  - Dental: crisp white + deep teal (#0a7c6e) + warm gold (#f5b731)
+  - HVAC: dark slate (#1a1f2e) + ice blue (#4fc3f7) + white
+  - Restaurant: warm black (#1a1008) + rich amber (#d97706) + cream (#fdf6ec)
+  - Gym/fitness: near-black + neon green (#39ff14) or electric red
+  - Landscaping: deep forest (#1a2e1a) + bright lime (#7dc243)
+  - Plumbing: deep navy (#0d1b2a) + bright cyan (#06b6d4)
+  - Use CSS custom properties (--primary, --accent, --bg-dark, etc.)
+
+LAYOUT & SECTIONS (in order):
+1. STICKY NAV: Transparent on hero, solid dark on scroll (JS scroll listener). Logo left, links right. Clean and minimal.
+2. HERO: As described above.
+3. STATS BAR: Full-width dark band with 3-4 animated count-up numbers (years experience, jobs done, rating, response time). Bold numbers, small labels.
+4. ABOUT: Two-column layout. Left: real Unsplash photo in a stylish frame (border-radius, box-shadow, slight rotation or overlap). Right: heading, 2-3 paragraphs, a list of key differentiators with checkmark icons.
+5. SERVICES: 3-column card grid. Cards have: icon (SVG inline), title, description. On hover: cards lift (translateY(-8px)), border glows with accent color. Use box-shadow and border transitions.
+6. WHY CHOOSE US: Dark background section (--bg-dark). 3-4 feature boxes with large icon, bold stat or keyword, short description.
+7. TESTIMONIAL: If rating/reviews provided, a testimonial quote section with large decorative quotation marks, star icons, and reviewer attribution.
+8. CONTACT: Two-column. Left: address, phone (tel: link), email (mailto: link), hours. Right: a styled "Book Now" or "Get a Quote" form (name, phone, message fields) — styled beautifully, non-functional placeholder.
+9. FOOTER: Dark background, logo, tagline, copyright. Clean and minimal.
+
+EFFECTS & POLISH:
+- CSS scroll-triggered animations: sections fade+slide up as they enter viewport (use IntersectionObserver in JS)
+- Smooth hover transitions everywhere (0.25s ease)
+- Service cards: glass-morphism style OR solid with dramatic box-shadow
+- Gradient accents: subtle gradient overlays on section backgrounds
+- Custom scrollbar styling
+- Mobile: hamburger menu, stacked layout, touch-friendly buttons (min 48px tap targets)
+- NO stock clip-art icons — use clean inline SVG icons
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUSINESS DATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${userText}
+
+Write all copy as if you are the business owner — confident, professional, local. No Lorem ipsum. No placeholder text. Make it feel real and trustworthy.`;
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
