@@ -1858,12 +1858,7 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
                 Email
                 <span id="out-engine-badge" style="display:none;font-family:var(--fm);font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid;margin-left:8px;font-weight:700;letter-spacing:.04em"></span>
               </div>
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-outline btn-xs" onclick="copyText('out-email-body', this)">Copy</button>
-                <button class="btn btn-xs" onclick="sendOutreachEmail()" title="Open in Send Email with this message pre-filled" style="background:var(--brand-dim);border:1px solid var(--brand-mid);color:var(--brand);font-family:var(--fm);font-size:9px;font-weight:700;padding:3px 9px;border-radius:var(--radius);cursor:pointer;letter-spacing:.03em;white-space:nowrap">
-                  → Send Email
-                </button>
-              </div>
+              <button class="btn btn-outline btn-xs" onclick="copyText('out-email-body', this)">Copy</button>
             </div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
               <div>
@@ -2015,7 +2010,7 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
             <textarea id="email-body" style="min-height:140px" placeholder="Email body…"></textarea>
           </div>
           <div class="field">
-            <label>Link to Lead <span style="font-family:var(--fm);font-size:9px;color:var(--text-3);font-weight:400">(tracks this email against a lead in your pipeline)</span></label>
+            <label>Link to Lead</label>
             <select id="email-lead-id">
               <option value="">— none —</option>
             </select>
@@ -2735,25 +2730,8 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
           <div style="background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text-2)">
             <strong style="color:var(--brand)">💡 Pro tip:</strong> Send the downloaded HTML file to the business owner as your outreach opener — showing them their potential site dramatically increases close rates.
           </div>
-
-          <!-- Send Preview Email — key feature -->
-          <div style="background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--radius-lg);padding:14px">
-            <div style="font-family:var(--fm);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--brand);margin-bottom:10px">⚡ Send Website Preview to Business Owner</div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div class="field" style="margin:0">
-                <label style="font-size:10px">Their Email Address *</label>
-                <input id="wo-send-to" type="email" placeholder="owner@business.com" style="padding:8px 11px;font-size:13px" />
-              </div>
-              <button class="btn btn-brand" onclick="woSendPreviewEmail()" id="wo-btn-send-preview">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                Send Preview Email
-              </button>
-              <div id="wo-send-status" style="font-family:var(--fm);font-size:11px;display:none"></div>
-            </div>
-          </div>
-
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-outline" onclick="woDownload()" id="wo-pm-download">
+            <button class="btn btn-brand" onclick="woDownload()" id="wo-pm-download">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download HTML
             </button>
@@ -3049,7 +3027,7 @@ const PAGE_META = {
   wopp:      { title: '⚡ Website Opportunities', sub: 'Generate websites for no-website businesses and close deals' },
 };
 
-function navigate(page, opts) {
+function navigate(page) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(a => a.classList.remove('active'));
 
@@ -3070,19 +3048,7 @@ function navigate(page, opts) {
   if (page === 'leads')     { loadLeads(); refreshSelects(); }
   if (page === 'scoring')   { loadScoredLeads(); refreshSelects(); }
   if (page === 'outreach')  { loadOutreachHistory(); refreshSelects(); }
-  if (page === 'email')     {
-    loadEmailStats(); loadEmailLogs();
-    loadEmailSelects().then(() => {
-      // Auto-prefill if called with opts
-      if (opts) {
-        if (opts.to)      { const el = document.getElementById('email-to');      if (el) el.value = opts.to; }
-        if (opts.subject) { const el = document.getElementById('email-subject'); if (el) el.value = opts.subject; }
-        if (opts.body)    { const el = document.getElementById('email-body');    if (el) el.value = opts.body; }
-        if (opts.leadId)  { const el = document.getElementById('email-lead-id'); if (el) el.value = opts.leadId; }
-        if (opts.msgId)   { const el = document.getElementById('email-from-message'); if (el) el.value = opts.msgId; }
-      }
-    });
-  }
+  if (page === 'email')     { loadEmailStats(); loadEmailLogs(); loadEmailSelects(); }
   if (page === 'discovery') { checkDiscoverySource(); }
   if (page === 'wopp')      { woppSyncFromLeads(); woppSyncFromDisc(); woppUpdateStats(); woppRenderTable(); }
 }
@@ -3153,12 +3119,13 @@ function renderLeads(list) {
         <td>${badgeStatus(l.status)}</td>
         <td>${l.score ? scoreBar(l.score) : `<span style="color:var(--text-3);font-family:var(--fm);font-size:11px">—</span>`}</td>
         <td>
-          <div style="display:flex;gap:4px">
-            <button class="btn btn-outline btn-xs" onclick="openLeadIntelligence('${l.id}')" title="Intelligence panel">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            </button>
+          <div style="display:flex;gap:4px;flex-wrap:nowrap;align-items:center">
+            <button onclick="openLeadIntelligence('${l.id}')" title="Lead Intelligence Panel"
+              style="padding:4px 9px;font-size:11px;font-family:var(--fm);font-weight:700;border-radius:var(--radius);border:1.5px solid var(--blue-mid);background:var(--blue-dim);color:#60a5fa;cursor:pointer;white-space:nowrap;line-height:1">ⓘ Intel</button>
             <button class="btn btn-amber btn-xs" onclick="quickScore('${l.id}')">Score</button>
             <button class="btn btn-blue btn-xs"  onclick="quickOutreach('${l.id}')">Outreach</button>
+            ${(!l.website || !l.website.trim()) ? `<button onclick="generateWebsiteForLead('${l.id}','${esc(l.business_name||l.name)}','${esc(l.industry||'')}','${esc(l.location||'')}' )" title="Generate website"
+              style="padding:4px 9px;font-size:11px;font-family:var(--fm);font-weight:700;border-radius:var(--radius);border:1.5px solid var(--amber-mid);background:var(--amber-dim);color:var(--amber);cursor:pointer;white-space:nowrap;line-height:1">⚡ Site</button>` : ''}
           </div>
         </td>
       </tr>`).join('')}
@@ -3433,35 +3400,6 @@ function setOutreachLead() {
   if (!lastScoredId) return;
   const sel = document.getElementById('out-select');
   if (sel) sel.value = lastScoredId;
-}
-
-function sendOutreachEmail() {
-  // Grab current outreach result and push to Send Email panel with prefill
-  const subject = document.getElementById('out-subject')?.textContent?.trim();
-  const body    = document.getElementById('out-email-body')?.textContent?.trim();
-
-  if (!subject || subject === '—' || !body || body === '—') {
-    toast('Generate an outreach email first.', 'error');
-    return;
-  }
-
-  // Find the currently selected lead to pre-link it
-  const leadId  = document.getElementById('out-select')?.value || '';
-  const lead    = allLeads.find(l => l.id === leadId);
-
-  navigate('email', {
-    subject,
-    body,
-    leadId: leadId || undefined,
-  });
-
-  // Scroll compose into view after panel switches
-  setTimeout(() => {
-    const el = document.getElementById('email-to');
-    if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  }, 200);
-
-  toast('Email pre-filled. Add the recipient address and send.', 'success');
 }
 
 /* ─── Email panel ────────────────────────────── */
@@ -4493,6 +4431,71 @@ function woppOnGenerated(biz, html) {
 }
 
 /** Sync no-website leads from discFiltered into opportunities (without html) */
+// Sync all no-website leads from pipeline into woppOpps
+function woppSyncFromLeads() {
+  if (!allLeads || !allLeads.length) return;
+  let added = 0;
+  allLeads.forEach(l => {
+    if (l.website && l.website.trim()) return;
+    const name     = l.business_name || l.name || '';
+    const location = l.location || '';
+    if (!name) return;
+    const exists = woppOpps.find(o =>
+      o.leadId === l.id ||
+      (o.name === name && o.location === location)
+    );
+    if (!exists) {
+      woppOpps.push({
+        id       : 'wo_lead_' + l.id,
+        leadId   : l.id,
+        name,
+        industry : l.industry || '—',
+        location,
+        rating      : null,
+        reviewCount : null,
+        status      : 0,
+        html        : null,
+        activity    : [{ type:'info', text:'Added from pipeline (no website)', time: new Date().toISOString() }],
+        createdAt   : l.created_at || new Date().toISOString(),
+      });
+      added++;
+    }
+  });
+  if (added) { woppSave(); }
+}
+
+// Open Website Opps for a specific lead — called from pipeline ⚡ Site button
+function generateWebsiteForLead(leadId, name, industry, location) {
+  // Ensure lead is in woppOpps
+  const existing = woppOpps.find(o =>
+    o.leadId === leadId || (o.name === name && o.location === location)
+  );
+  if (!existing) {
+    woppOpps.unshift({
+      id       : 'wo_lead_' + leadId,
+      leadId,
+      name,
+      industry : industry || '—',
+      location : location || '—',
+      rating      : null,
+      reviewCount : null,
+      status      : 0,
+      html        : null,
+      activity    : [{ type:'info', text:'Added from pipeline', time: new Date().toISOString() }],
+      createdAt   : new Date().toISOString(),
+    });
+    woppSave();
+  }
+  const targetId = existing ? existing.id : 'wo_lead_' + leadId;
+  navigate('wopp');
+  setTimeout(() => {
+    woppSyncFromLeads();
+    woppUpdateStats();
+    woppRenderTable();
+    woOpenProject(targetId);
+  }, 250);
+}
+
 function woppSyncFromDisc() {
   if (!discFiltered || !discFiltered.length) return;
   let added = 0;
@@ -4710,76 +4713,6 @@ function woMarkWon() {
   woppAddActivity(woppCurrentId, 'won', 'Deal marked as Won! 🎉');
   woppSave(); woppUpdateStats(); woppRenderTable();
   toast('🎉 Deal marked as Won!', 'success');
-}
-
-async function woSendPreviewEmail() {
-  const opp = woppOpps.find(o => o.id === woppCurrentId);
-  if (!opp) return;
-
-  if (!opp.html) {
-    toast('Generate a website first before sending a preview.', 'error');
-    return;
-  }
-
-  const toEl = document.getElementById('wo-send-to');
-  const to   = toEl?.value?.trim();
-  if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
-    toast('Enter a valid email address first.', 'error');
-    if (toEl) toEl.focus();
-    return;
-  }
-
-  const btn      = document.getElementById('wo-btn-send-preview');
-  const statusEl = document.getElementById('wo-send-status');
-  btn.disabled   = true;
-  btn.innerHTML  = '<span class="spinner"></span> Sending…';
-
-  // Build email subject and body referencing the website preview
-  const subject = `We built a website preview for ${opp.name}`;
-  const body    = `Hi,
-
-We put together a free website preview for ${opp.name} — no strings attached.
-
-We noticed your business doesn't have a website yet, and given your ${opp.rating ? opp.rating + '/5 rating' : 'strong local reputation'}, you're clearly doing great work. We wanted to show you what your online presence could look like.
-
-The preview is ready for you to see. Would you like us to send it over or set up a quick 10-minute call to walk you through it?
-
-Looking forward to hearing from you.`;
-
-  // Find linked lead ID if available
-  const linkedLead = allLeads.find(l =>
-    (l.business_name || l.name) === opp.name ||
-    opp.leadId === l.id
-  );
-
-  const payload = {
-    to,
-    subject,
-    body,
-    source: 'website-preview',
-    lead_id: linkedLead?.id || undefined,
-  };
-
-  const d = await apiFetch('POST', '/api/send-email', payload);
-
-  btn.disabled  = false;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Preview Email';
-
-  if (d.success) {
-    statusEl.style.display = '';
-    statusEl.style.color   = 'var(--brand)';
-    statusEl.textContent   = '✓ Email sent successfully!';
-    opp.status = Math.max(opp.status, 2); // mark as Sent
-    woppAddActivity(woppCurrentId, 'sent', `Preview email sent to ${to}`);
-    woppSave(); woppUpdateStats(); woppRenderTable();
-    toast('Preview email sent!', 'success');
-    if (toEl) toEl.value = '';
-  } else {
-    statusEl.style.display = '';
-    statusEl.style.color   = 'var(--red)';
-    statusEl.textContent   = '✕ ' + (d.message || 'Send failed. Check SMTP settings.');
-    toast(d.message || 'Email send failed.', 'error');
-  }
 }
 
 function woDownload() {
@@ -5213,7 +5146,6 @@ async function loadLeadIntelligence(leadId) {
     : `<span style="font-family:var(--fm);font-size:9px;background:var(--amber-dim);color:var(--amber);padding:2px 7px;border-radius:3px;border:1px solid var(--amber-mid)">MODEL B · WEBSITE OPP</span>`;
 
   body.innerHTML = `
-    /* Lead summary */
     <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg)">
       <div class="li-score-ring" style="background:${scoreVal ? `conic-gradient(${scoreColor} ${scoreVal}%, var(--bg-3) 0)` : 'var(--bg-3)'}">
         <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-1);display:flex;flex-direction:column;align-items:center;justify-content:center">
@@ -5232,7 +5164,6 @@ async function loadLeadIntelligence(leadId) {
     </div>
 
     ${score ? `
-    /* Score reasoning */
     <div>
       <div class="li-section-title">AI Score Reasoning</div>
       <div style="font-size:12.5px;color:var(--text-2);line-height:1.65;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px">${esc(score.reasoning || 'No reasoning available.')}</div>
