@@ -2926,10 +2926,13 @@ async function apiFetch(method, path, body) {
   try {
     const res = await fetch(API_BASE + path, opts);
     if (res.status === 401) {
-      // Only force re-login if user had a token (session expired)
-      if (window.LF_TOKEN) {
-        localStorage.removeItem('lf_token');
-        localStorage.removeItem('lf_user');
+      const hadToken = !!window.LF_TOKEN;
+      localStorage.removeItem('lf_token');
+      localStorage.removeItem('lf_user');
+      window.LF_TOKEN   = null;
+      window.LF_USER    = null;
+      window.LF_HEADERS = { 'Content-Type': 'application/json' };
+      if (hadToken) {
         window.location.replace('/login.html?reason=expired');
       }
       return { success: false, message: 'Please sign in to use this feature.' };
@@ -2949,16 +2952,20 @@ async function apiFetch(method, path, body) {
 async function checkConnection() {
   const dot  = document.getElementById('status-dot');
   const text = document.getElementById('status-text');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    const res = await fetch('/api/health');
+    const res = await fetch('/api/health', { signal: controller.signal });
+    clearTimeout(timer);
     if (!res.ok) throw new Error('not ok');
     const d  = await res.json();
-    const ok = d.status === 'healthy';
+    const ok = d.status === 'healthy' || d.status === 'ok';
     if (dot)  dot.className  = 'status-dot ' + (ok ? 'ok' : 'err');
     if (text) text.textContent = ok ? 'Connected' : 'Degraded';
-  } catch {
+  } catch(err) {
+    clearTimeout(timer);
     if (dot)  dot.className  = 'status-dot err';
-    if (text) text.textContent = 'Offline';
+    if (text) text.textContent = err.name === 'AbortError' ? 'Timeout' : 'Offline';
   }
 }
 const checkHealth = checkConnection;
@@ -3865,7 +3872,29 @@ document.addEventListener('keydown', e => {
 });
 
 /* ─── Auth: populate sidebar user block ──────── */
-function initUserBlock() {
+async function initUserBlock() {
+  // If we have a token but no user object, re-fetch from server
+  if (window.LF_TOKEN && !window.LF_USER) {
+    try {
+      const res = await fetch('/api/auth/me', { headers: window.LF_HEADERS });
+      if (res.ok) {
+        const d = await res.json();
+        if (d.success && d.data) {
+          window.LF_USER = d.data;
+          localStorage.setItem('lf_user', JSON.stringify(d.data));
+        }
+      } else if (res.status === 401) {
+        localStorage.removeItem('lf_token');
+        localStorage.removeItem('lf_user');
+        window.LF_TOKEN   = null;
+        window.LF_USER    = null;
+        window.LF_HEADERS = { 'Content-Type': 'application/json' };
+      }
+    } catch(e) {
+      console.warn('Could not re-fetch user:', e.message);
+    }
+  }
+
   const user       = window.LF_USER;
   const signinBtn  = document.getElementById('sb-signin-btn');
   const logoutBtn  = document.getElementById('sb-logout-btn');
@@ -5148,15 +5177,17 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && _currentLiLeadId) closeLeadIntelligence();
 });
 
-initUserBlock();
-initOnboarding();
-checkConnection();
-setInterval(checkConnection, 30000);
-loadLeads();
-loadScoredLeads();
-loadOutreachHistory();
-loadQuota();
-woppInit();
+(async function boot() {
+  await initUserBlock();
+  initOnboarding();
+  checkConnection();
+  setInterval(checkConnection, 30000);
+  loadLeads();
+  loadScoredLeads();
+  loadOutreachHistory();
+  loadQuota();
+  woppInit();
+})();
 </script>
 
 </body>
