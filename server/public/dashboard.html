@@ -1057,6 +1057,138 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
   .iwg-btn-remove-svc { margin-top: 0; }
 }
 
+/* ═══ PIPELINE ANALYTICS ═══════════════════════ */
+.ana-stat-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  text-align: center;
+}
+.ana-stat-num {
+  font-family: var(--fd);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.ana-stat-lbl {
+  font-family: var(--fm);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+.ana-metric-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}
+.ana-metric-val {
+  font-family: var(--fd);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.ana-metric-lbl {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-top: 2px;
+}
+.ana-insight-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.ana-insight-icon {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ana-insight-val {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ana-insight-badge {
+  font-family: var(--fm);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ═══ LEAD INTELLIGENCE SIDE PANEL ═════════════ */
+.li-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(4px);
+}
+.li-overlay.open { display: block; animation: fadeIn .15s ease; }
+.li-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 420px; max-width: 95vw;
+  background: var(--bg-1);
+  border-left: 1px solid var(--border-2);
+  z-index: 90;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.li-panel.open { transform: translateX(0); }
+.li-panel-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.li-panel-title { font-family: var(--fd); font-size: 16px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.li-panel-close { width: 28px; height: 28px; border-radius: var(--radius); border: 1px solid var(--border); background: transparent; color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: background .12s, color .12s; }
+.li-panel-close:hover { background: var(--red-dim); color: var(--red); }
+.li-panel-body { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.li-section-title { font-family: var(--fm); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-3); margin-bottom: 8px; }
+.li-score-ring {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.li-score-ring-num { font-family: var(--fd); font-size: 22px; font-weight: 800; line-height: 1; }
+.li-score-sub { font-family: var(--fm); font-size: 9px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-top: 2px; }
+.li-field { display: flex; flex-direction: column; gap: 4px; }
+.li-field label { font-family: var(--fm); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
+.li-field .li-val { font-size: 13px; color: var(--text); line-height: 1.5; }
+.li-breakdown-bar { display: flex; flex-direction: column; gap: 5px; }
+.li-bar-row { display: flex; align-items: center; gap: 8px; }
+.li-bar-lbl { font-size: 11px; color: var(--text-2); width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.li-bar-track { flex: 1; height: 4px; background: var(--bg-3); border-radius: 99px; overflow: hidden; }
+.li-bar-fill { height: 100%; border-radius: 99px; background: var(--brand); transition: width .5s ease; }
+.li-bar-val { font-family: var(--fm); font-size: 10px; color: var(--text-3); width: 28px; text-align: right; flex-shrink: 0; }
+.li-followup-tab { display: flex; gap: 4px; margin-bottom: 10px; }
+.li-followup-tab button { flex: 1; padding: 5px 8px; font-size: 11px; font-family: var(--fm); border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-2); color: var(--text-2); cursor: pointer; transition: background .12s, color .12s; }
+.li-followup-tab button.active { background: var(--brand-dim); color: var(--brand); border-color: var(--brand-mid); }
+.li-email-preview { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; font-size: 12.5px; line-height: 1.65; color: var(--text-2); white-space: pre-wrap; font-family: var(--fb); }
+.li-wo-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; background: var(--amber-dim); border: 1px solid var(--amber-mid); font-family: var(--fm); font-size: 10px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: .07em; }
+
 /* ═══ WEBSITE OPPORTUNITIES ════════════════════ */
 .wo-pipeline {
   display: grid;
@@ -1416,71 +1548,147 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
       </div>
     </div>
 
-    <div class="grid-2" style="align-items:start">
-
-      <!-- Add Lead Form -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Add New Lead</div>
+    <!-- ── Analytics & Insights (replaces Add Lead section) ── -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header" style="padding-bottom:14px;border-bottom:1px solid var(--border)">
+        <div class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--brand);margin-right:6px;vertical-align:-2px"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          Analytics &amp; Insights
         </div>
-        <div class="card-body">
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="grid-2">
-              <div class="field">
-                <label>Business Name *</label>
-                <input id="f-name" placeholder="Acme Dental Group" />
-              </div>
-              <div class="field">
-                <label>Industry *</label>
-                <input id="f-industry" placeholder="Healthcare / Dentistry" />
-              </div>
+        <button class="btn btn-outline btn-xs" onclick="loadPipelineAnalytics()" id="btn-refresh-analytics" title="Refresh analytics">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:20px" id="analytics-body">
+
+        <!-- Lead Distribution -->
+        <div>
+          <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Lead Distribution</div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px" id="analytics-distribution">
+            <div class="ana-stat-card"><div class="ana-stat-num" id="ana-total">—</div><div class="ana-stat-lbl">Total</div></div>
+            <div class="ana-stat-card"><div class="ana-stat-num" id="ana-contacted" style="color:#60a5fa">—</div><div class="ana-stat-lbl">Contacted</div></div>
+            <div class="ana-stat-card"><div class="ana-stat-num" id="ana-replied" style="color:var(--amber)">—</div><div class="ana-stat-lbl">Replied</div></div>
+            <div class="ana-stat-card"><div class="ana-stat-num" id="ana-qualified" style="color:#a78bfa">—</div><div class="ana-stat-lbl">Qualified</div></div>
+            <div class="ana-stat-card"><div class="ana-stat-num" id="ana-converted" style="color:var(--brand)">—</div><div class="ana-stat-lbl">Converted</div></div>
+          </div>
+        </div>
+
+        <!-- Website Opportunity Metrics -->
+        <div>
+          <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Website Opportunity Metrics</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div class="ana-metric-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <div><div class="ana-metric-val" id="ana-with-website">—</div><div class="ana-metric-lbl">With Website</div></div>
             </div>
-            <div class="field">
-              <label>Location *</label>
-              <input id="f-location" placeholder="Austin, TX" />
+            <div class="ana-metric-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div><div class="ana-metric-val" id="ana-no-website" style="color:var(--amber)">—</div><div class="ana-metric-lbl">No Website</div></div>
             </div>
-            <div class="field">
-              <label>Website</label>
-              <input id="f-website" placeholder="https://…" type="url" />
+            <div class="ana-metric-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--brand)"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg>
+              <div><div class="ana-metric-val" id="ana-wo-score" style="color:var(--brand)">—</div><div class="ana-metric-lbl">Opp. Score</div></div>
             </div>
-            <div class="field">
-              <label>Notes</label>
-              <textarea id="f-notes" placeholder="Any context about this prospect…"></textarea>
-            </div>
-            <div class="action-row">
-              <button class="btn btn-brand" id="btn-add-lead" onclick="addLead()">+ Add Lead</button>
-              <button class="btn btn-outline btn-sm" onclick="clearForm()">Clear</button>
-              <button class="btn btn-outline btn-sm" onclick="navigate('discovery')" style="margin-left:auto">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                Find leads →
-              </button>
+            <div class="ana-metric-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:#a78bfa"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <div><div class="ana-metric-val" id="ana-wo-revenue" style="color:#a78bfa">—</div><div class="ana-metric-lbl">Est. Revenue</div></div>
             </div>
           </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div>
+          <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">AI Insights</div>
+          <div style="display:flex;flex-direction:column;gap:7px" id="analytics-insights">
+            <div class="ana-insight-row" id="insight-highest-value">
+              <div class="ana-insight-icon" style="background:rgba(34,197,94,.1)">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em">Highest Value Lead</div>
+                <div class="ana-insight-val" id="insight-hv-name">Run scoring to unlock</div>
+              </div>
+              <div class="ana-insight-badge" id="insight-hv-val" style="color:var(--brand)"></div>
+            </div>
+            <div class="ana-insight-row" id="insight-wo-opp">
+              <div class="ana-insight-icon" style="background:rgba(245,158,11,.1)">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em">Best Website Opp.</div>
+                <div class="ana-insight-val" id="insight-wo-name">No website leads scored yet</div>
+              </div>
+              <div class="ana-insight-badge" id="insight-wo-score" style="color:var(--amber)"></div>
+            </div>
+            <div class="ana-insight-row" id="insight-fastest">
+              <div class="ana-insight-icon" style="background:rgba(59,130,246,.1)">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em">Fastest Conversion</div>
+                <div class="ana-insight-val" id="insight-fc-name">—</div>
+              </div>
+              <button class="btn btn-outline btn-xs" id="insight-fc-btn" style="display:none" onclick="openLeadIntelligence(window._fastestConversionId)">View →</button>
+            </div>
+            <div class="ana-insight-row">
+              <div class="ana-insight-icon" style="background:rgba(167,139,250,.1)">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em">Most Responsive Industry</div>
+                <div class="ana-insight-val" id="insight-industry">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revenue Projection -->
+        <div style="background:var(--bg-3);border-radius:var(--radius);padding:14px">
+          <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Revenue Projection</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--text-2)">Potential Revenue</span>
+              <span style="font-family:var(--fm);font-size:13px;font-weight:600;color:var(--brand)" id="rev-potential">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--text-2)">Monthly Recurring Opp.</span>
+              <span style="font-family:var(--fm);font-size:13px;font-weight:600;color:#60a5fa" id="rev-monthly">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--text-2)">Est. Close Value (15%)</span>
+              <span style="font-family:var(--fm);font-size:13px;font-weight:600;color:var(--amber)" id="rev-close">—</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline btn-sm" onclick="navigate('discovery')" style="width:100%">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Discover More Leads →
+        </button>
+      </div>
+    </div>
+
+    <!-- Lead List (full width below analytics) -->
+    <div class="card" style="margin-top:0">
+      <div class="card-header">
+        <div class="card-title">Pipeline</div>
+        <div style="display:flex;gap:6px">
+          <input id="lead-search" placeholder="Search…"
+            style="padding:6px 11px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;width:140px;font-family:var(--fb)"
+            oninput="filterLeads()" />
+          <button class="btn btn-outline btn-icon btn-sm" onclick="loadLeads()" title="Refresh">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
         </div>
       </div>
-
-      <!-- Lead List -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Pipeline</div>
-          <div style="display:flex;gap:6px">
-            <input id="lead-search" placeholder="Search…"
-              style="padding:6px 11px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;width:140px;font-family:var(--fb)"
-              oninput="filterLeads()" />
-            <button class="btn btn-outline btn-icon btn-sm" onclick="loadLeads()" title="Refresh">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            </button>
+      <div id="leads-list">
+        <div class="empty">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
           </div>
-        </div>
-        <div id="leads-list">
-          <div class="empty">
-            <div class="empty-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            </div>
-            <div class="empty-title">No leads yet</div>
-            <div class="empty-desc">Add your first lead manually, or use Discovery to import from Google Maps.</div>
-            <button class="btn btn-brand btn-sm" onclick="navigate('discovery')">Find leads with Discovery →</button>
-          </div>
+          <div class="empty-title">No leads yet</div>
+          <div class="empty-desc">Use Discovery to import leads from Google Maps.</div>
+          <button class="btn btn-brand btn-sm" onclick="navigate('discovery')">Find leads with Discovery →</button>
         </div>
       </div>
     </div>
@@ -1494,7 +1702,7 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border)">
       <div>
         <h1 style="font-family:var(--fd);font-size:24px;font-weight:800;letter-spacing:-.03em">AI Scoring</h1>
-        <p style="color:var(--text-2);font-size:13px;margin-top:4px">Estimate lead value and prioritize your pipeline</p>
+        <p style="color:var(--text-2);font-size:13px;margin-top:4px">Dual AI scoring — <span style="color:var(--blue)">Model A</span> (has website → lead gen) · <span style="color:var(--amber)">Model B</span> (no website → website opp)</p>
       </div>
       <button class="btn btn-outline btn-sm" onclick="loadScoredLeads()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -1648,6 +1856,7 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
               <div class="card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:5px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 Email
+                <span id="out-engine-badge" style="display:none;font-family:var(--fm);font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid;margin-left:8px;font-weight:700;letter-spacing:.04em"></span>
               </div>
               <button class="btn btn-outline btn-xs" onclick="copyText('out-email-body', this)">Copy</button>
             </div>
@@ -1662,11 +1871,38 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
               </div>
             </div>
           </div>
+          <!-- Follow-up Sequence -->
+          <div class="card" id="out-followup-sequence" style="display:none">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:5px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                Follow-up Sequence
+              </div>
+              <span style="font-family:var(--fm);font-size:9px;background:var(--brand-dim);color:var(--brand);padding:2px 7px;border-radius:3px;border:1px solid var(--brand-mid)">3-touch</span>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+              <div>
+                <div class="section-title" style="color:var(--amber)">Day 3 Follow-up</div>
+                <div class="result-block" id="out-seq-day3" style="border-color:var(--amber-mid)">—</div>
+                <button class="btn btn-outline btn-xs" style="margin-top:6px" onclick="copyText('out-seq-day3', this)">Copy</button>
+              </div>
+              <div>
+                <div class="section-title" style="color:#60a5fa">Day 7 Follow-up</div>
+                <div class="result-block" id="out-seq-day7" style="border-color:var(--blue-mid)">—</div>
+                <button class="btn btn-outline btn-xs" style="margin-top:6px" onclick="copyText('out-seq-day7', this)">Copy</button>
+              </div>
+              <div>
+                <div class="section-title" style="color:var(--text-3)">Day 14 Final Touch</div>
+                <div class="result-block" id="out-seq-day14">—</div>
+                <button class="btn btn-outline btn-xs" style="margin-top:6px" onclick="copyText('out-seq-day14', this)">Copy</button>
+              </div>
+            </div>
+          </div>
           <div class="card">
             <div class="card-header">
               <div class="card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Short DM
+                Short DM / CTA
               </div>
               <button class="btn btn-outline btn-xs" onclick="copyText('out-dm', this)">Copy</button>
             </div>
@@ -2849,6 +3085,7 @@ async function loadLeads() {
   refreshSelects();
   const badge = document.getElementById('sb-leads-count');
   if (badge) badge.textContent = allLeads.length || '—';
+  loadPipelineAnalytics();
 }
 
 function updateStats(leads) {
@@ -2874,8 +3111,8 @@ function renderLeads(list) {
     <tbody>${list.map(l => `
       <tr>
         <td>
-          <strong style="font-size:13px">${esc(l.business_name||l.name)}</strong>
-          ${l.website ? `<br><a href="${esc(l.website)}" target="_blank" style="font-size:11px;color:var(--text-3);text-decoration:none">${esc(l.website.replace('https://','').replace('http://','').slice(0,32))}</a>` : ''}
+          <strong style="font-size:13px;cursor:pointer;color:var(--text)" onclick="openLeadIntelligence('${l.id}')" title="Open intelligence panel">${esc(l.business_name||l.name)}</strong>
+          ${l.website ? `<br><a href="${esc(l.website)}" target="_blank" style="font-size:11px;color:var(--text-3);text-decoration:none">${esc(l.website.replace('https://','').replace('http://','').slice(0,32))}</a>` : `<br><span style="font-family:var(--fm);font-size:9px;color:var(--amber);background:var(--amber-dim);padding:1px 5px;border-radius:3px">No website</span>`}
         </td>
         <td style="color:var(--text-2)">${esc(l.industry||'—')}</td>
         <td style="color:var(--text-2)">${esc(l.location||'—')}</td>
@@ -2883,6 +3120,9 @@ function renderLeads(list) {
         <td>${l.score ? scoreBar(l.score) : `<span style="color:var(--text-3);font-family:var(--fm);font-size:11px">—</span>`}</td>
         <td>
           <div style="display:flex;gap:4px">
+            <button class="btn btn-outline btn-xs" onclick="openLeadIntelligence('${l.id}')" title="Intelligence panel">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </button>
             <button class="btn btn-amber btn-xs" onclick="quickScore('${l.id}')">Score</button>
             <button class="btn btn-blue btn-xs"  onclick="quickOutreach('${l.id}')">Outreach</button>
           </div>
@@ -2972,10 +3212,16 @@ function renderScoreResult(s) {
   const panel = document.getElementById('score-result');
   panel.classList.add('visible');
 
-  const col = scoreColor(s.lead_score);
-  document.getElementById('res-score-num').textContent = s.lead_score;
+  // Support both 0-100 (new) and 1-10 (legacy) scores
+  const score100 = s.score !== undefined ? s.score : (s.lead_score ? s.lead_score * 10 : 0);
+  const score10  = s.lead_score || Math.round(score100 / 10);
+  const scoreLabel = s.score_label || getScoreLabelClient ? (typeof getScoreLabelClient !== 'undefined' ? getScoreLabelClient(score100) : '') : '';
+
+  const col = score100 >= 90 ? 'var(--red)' : score100 >= 70 ? 'var(--amber)' : score100 >= 40 ? '#60a5fa' : 'var(--text-3)';
+
+  document.getElementById('res-score-num').textContent = score100 || score10;
   document.getElementById('res-score-num').style.color = col;
-  document.getElementById('res-tier').innerHTML        = tierBadge(s.tier);
+  document.getElementById('res-tier').innerHTML = `${tierBadge(s.tier)} <span style="font-family:var(--fm);font-size:9px;padding:2px 6px;border-radius:3px;background:${s.model === 'B' ? 'var(--amber-dim)' : 'var(--blue-dim)'};color:${s.model === 'B' ? 'var(--amber)' : 'var(--blue)'}">MODEL ${s.model || (s.website ? 'A' : 'B')}</span>`;
   document.getElementById('res-value').textContent     = s.estimated_value_range || '—';
   document.getElementById('res-confidence').innerHTML  = confidenceBadge(s.confidence);
   document.getElementById('res-reasoning').textContent = s.reasoning || '—';
@@ -2990,6 +3236,28 @@ function renderScoreResult(s) {
     flagWrap.style.display = 'block';
   } else {
     flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--brand)">✓ None identified</span>`;
+  }
+
+  // Model B: show website opportunity block if present
+  const existingWoBlock = document.getElementById('score-result-wo-block');
+  if (existingWoBlock) existingWoBlock.remove();
+  if (s.model === 'B' && (s.website_opportunity_score != null || s.recommended_website_type)) {
+    const woBlock = document.createElement('div');
+    woBlock.id = 'score-result-wo-block';
+    woBlock.style.cssText = 'background:var(--amber-dim);border:1px solid var(--amber-mid);border-radius:var(--radius-lg);padding:14px;margin-top:8px';
+    woBlock.innerHTML = `
+      <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:10px">⚡ Website Opportunity Intelligence</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:12px">
+        ${s.website_opportunity_score != null ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Opportunity Score</span><strong style="color:var(--amber)">${s.website_opportunity_score}/100</strong></div>` : ''}
+        ${s.digital_presence_score    != null ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Digital Presence Score</span><strong style="color:var(--text)">${s.digital_presence_score}/100</strong></div>` : ''}
+        ${s.website_revenue_potential  ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Revenue Potential</span><strong style="color:var(--brand)">${esc(s.website_revenue_potential)}</strong></div>` : ''}
+        ${s.recommended_website_type   ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Recommended Site</span><span style="color:var(--text)">${esc(s.recommended_website_type)}</span></div>` : ''}
+        ${s.recommended_pages          ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Pages</span><span style="color:var(--text)">${s.recommended_pages}</span></div>` : ''}
+        ${s.recommended_cta            ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Primary CTA</span><span style="color:var(--text)">${esc(s.recommended_cta)}</span></div>` : ''}
+        ${s.recommended_conversion_strategy ? `<div style="margin-top:4px;color:var(--text-2);line-height:1.5">${esc(s.recommended_conversion_strategy)}</div>` : ''}
+      </div>
+    `;
+    panel.appendChild(woBlock);
   }
 }
 
@@ -3058,8 +3326,37 @@ function renderOutreachResult(msg) {
   panel.classList.add('visible');
   document.getElementById('out-subject').textContent    = msg.subject_line || '—';
   document.getElementById('out-email-body').textContent = msg.email_body   || '—';
-  document.getElementById('out-dm').textContent         = msg.short_dm     || '—';
+  document.getElementById('out-dm').textContent         = msg.short_dm || msg.cta || '—';
   document.getElementById('out-notes').textContent      = msg.personalization_notes || '—';
+
+  // Engine badge
+  const engineBadge = document.getElementById('out-engine-badge');
+  if (engineBadge) {
+    const engine = msg.engine || (msg.model && msg.model.includes('engine-A') ? 'A' : msg.model && msg.model.includes('engine-B') ? 'B' : null);
+    if (engine) {
+      engineBadge.style.display = '';
+      engineBadge.textContent   = engine === 'A' ? 'Engine A · Has Website' : 'Engine B · No Website';
+      engineBadge.style.background = engine === 'A' ? 'var(--blue-dim)' : 'var(--amber-dim)';
+      engineBadge.style.color      = engine === 'A' ? 'var(--blue)' : 'var(--amber)';
+      engineBadge.style.borderColor = engine === 'A' ? 'var(--blue-mid)' : 'var(--amber-mid)';
+    } else {
+      engineBadge.style.display = 'none';
+    }
+  }
+
+  // Follow-up sequence
+  const seqEl = document.getElementById('out-followup-sequence');
+  if (seqEl) {
+    const hasFollowups = msg.follow_up_day3 || msg.follow_up_day7 || msg.follow_up_day14;
+    if (hasFollowups) {
+      seqEl.style.display = '';
+      const d3 = document.getElementById('out-seq-day3');   if (d3) d3.textContent = msg.follow_up_day3  || '—';
+      const d7 = document.getElementById('out-seq-day7');   if (d7) d7.textContent = msg.follow_up_day7  || '—';
+      const d14 = document.getElementById('out-seq-day14'); if (d14) d14.textContent = msg.follow_up_day14 || '—';
+    } else {
+      seqEl.style.display = 'none';
+    }
+  }
 }
 
 async function loadOutreachHistory() {
@@ -4544,6 +4841,312 @@ function woppAddActivity(id, type, text) {
 
 // Hook into iwgGenerate to create opportunities automatically — handled via iwgShowState patch above
 
+
+<!-- ════════════════════════════════════════
+     LEAD INTELLIGENCE SIDE PANEL
+════════════════════════════════════════ -->
+<div class="li-overlay" id="li-overlay" onclick="closeLeadIntelligence()"></div>
+<div class="li-panel" id="li-panel">
+  <div class="li-panel-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div class="li-panel-title" id="li-panel-title">Lead Intelligence</div>
+    <button class="li-panel-close" onclick="closeLeadIntelligence()">×</button>
+  </div>
+  <div class="li-panel-body" id="li-panel-body">
+    <div class="empty" style="padding:40px 0;align-items:center">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="32" height="32"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
+      <div class="empty-title">Select a lead</div>
+      <div class="empty-desc">Click any lead in the pipeline to open intelligence panel.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+   PIPELINE ANALYTICS
+───────────────────────────────────────────────────────────────────────── */
+async function loadPipelineAnalytics() {
+  try {
+    const d = await apiFetch('GET', '/api/pipeline/analytics');
+    if (!d.success) return;
+    const data = d.data;
+
+    // Lead distribution
+    const ld = data.lead_distribution || {};
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('ana-total',     ld.total     || 0);
+    setEl('ana-contacted', ld.contacted || 0);
+    setEl('ana-replied',   ld.replied   || 0);
+    setEl('ana-qualified', ld.qualified || 0);
+    setEl('ana-converted', ld.converted || 0);
+
+    // Website opportunities
+    const wo = data.website_opportunity_metrics || {};
+    setEl('ana-with-website', wo.with_website || 0);
+    setEl('ana-no-website',   wo.without_website || 0);
+    setEl('ana-wo-score',     (wo.website_opportunity_score || 0) + '%');
+    setEl('ana-wo-revenue',   wo.estimated_website_revenue ? '$' + Number(wo.estimated_website_revenue).toLocaleString() : '—');
+
+    // AI Insights
+    const ins = data.ai_insights || {};
+    const hv  = ins.highest_value_lead;
+    if (hv) {
+      setEl('insight-hv-name', hv.business_name || '—');
+      setEl('insight-hv-val',  hv.value_range || '');
+    }
+    const wo2 = ins.highest_website_opportunity;
+    if (wo2) {
+      setEl('insight-wo-name',  wo2.business_name || '—');
+      setEl('insight-wo-score', wo2.wo_score ? wo2.wo_score + '/100' : '');
+    }
+    const fc = ins.fastest_conversion;
+    if (fc) {
+      setEl('insight-fc-name', fc.business_name || '—');
+      window._fastestConversionId = fc.id;
+      const btn = document.getElementById('insight-fc-btn');
+      if (btn && fc.id) btn.style.display = '';
+    }
+    setEl('insight-industry', ins.most_responsive_industry || '—');
+
+    // Revenue Projection
+    const rev = data.revenue_projection || {};
+    setEl('rev-potential', rev.potential_revenue       ? '$' + Number(rev.potential_revenue).toLocaleString()           : '—');
+    setEl('rev-monthly',   rev.monthly_recurring_opportunity ? '$' + Number(rev.monthly_recurring_opportunity).toLocaleString() + '/mo' : '—');
+    setEl('rev-close',     rev.estimated_close_value   ? '$' + Number(rev.estimated_close_value).toLocaleString()      : '—');
+  } catch(e) {
+    console.warn('Analytics load failed:', e.message);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   LEAD INTELLIGENCE PANEL
+───────────────────────────────────────────────────────────────────────── */
+let _currentLiLeadId = null;
+
+function openLeadIntelligence(leadId) {
+  if (!leadId) return;
+  _currentLiLeadId = leadId;
+  document.getElementById('li-overlay').classList.add('open');
+  document.getElementById('li-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  loadLeadIntelligence(leadId);
+}
+
+function closeLeadIntelligence() {
+  document.getElementById('li-overlay').classList.remove('open');
+  document.getElementById('li-panel').classList.remove('open');
+  document.body.style.overflow = '';
+  _currentLiLeadId = null;
+}
+
+async function loadLeadIntelligence(leadId) {
+  const body = document.getElementById('li-panel-body');
+  body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:60px 0;color:var(--text-3)">
+    <span class="spinner"></span>&nbsp;Loading intelligence…
+  </div>`;
+
+  const d = await apiFetch('GET', '/api/lead-intelligence/' + leadId);
+  if (!d.success) {
+    body.innerHTML = `<div class="empty" style="padding:40px 0"><div class="empty-title">Error</div><div class="empty-desc">${esc(d.message || 'Failed to load.')}</div></div>`;
+    return;
+  }
+
+  const { lead, score, latest_message, revenue_projection, has_website } = d.data;
+
+  document.getElementById('li-panel-title').textContent = lead.business_name || 'Lead Intelligence';
+
+  // ── Score color & label ───────────────────────────────────────────────
+  const scoreVal = score ? (score.score !== undefined ? score.score : (score.lead_score ? score.lead_score * 10 : 0)) : 0;
+  const scoreLabel = score ? (score.score_label || getScoreLabelClient(scoreVal)) : 'Unscored';
+  const scoreColor = scoreVal >= 90 ? 'var(--red)' : scoreVal >= 70 ? 'var(--amber)' : scoreVal >= 40 ? '#60a5fa' : 'var(--text-3)';
+
+  // ── Score breakdown bars ──────────────────────────────────────────────
+  const breakdown = score?.score_breakdown || {};
+  const breakdownHtml = Object.entries(breakdown).length ? `
+    <div class="li-section-title">Score Breakdown</div>
+    <div class="li-breakdown-bar">
+      ${Object.entries(breakdown).map(([k, v]) => {
+        const label = k.replace(/_/g, ' ');
+        const maxVal = 20;
+        const pct = Math.min(100, Math.round((Number(v) / maxVal) * 100));
+        return `<div class="li-bar-row">
+          <div class="li-bar-lbl">${esc(label)}</div>
+          <div class="li-bar-track"><div class="li-bar-fill" style="width:${pct}%"></div></div>
+          <div class="li-bar-val">${v}</div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  // ── Website Opportunity Block ─────────────────────────────────────────
+  const woHtml = (!has_website && score) ? `
+    <div style="background:var(--amber-dim);border:1px solid var(--amber-mid);border-radius:var(--radius-lg);padding:14px">
+      <div class="li-section-title" style="color:var(--amber)">⚡ Website Opportunity</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        ${score.website_opportunity_score != null ? `<div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text-2)">Opportunity Score</span><span style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--amber)">${score.website_opportunity_score}/100</span></div>` : ''}
+        ${score.website_revenue_potential  ? `<div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text-2)">Revenue Potential</span><span style="font-family:var(--fm);font-size:12px;font-weight:600;color:var(--brand)">${esc(score.website_revenue_potential)}</span></div>` : ''}
+        ${score.recommended_website_type   ? `<div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text-2)">Recommended Site</span><span style="font-size:12px;color:var(--text)">${esc(score.recommended_website_type)}</span></div>` : ''}
+        ${score.recommended_pages          ? `<div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text-2)">Pages</span><span style="font-family:var(--fm);font-size:12px;color:var(--text)">${score.recommended_pages}</span></div>` : ''}
+        ${score.recommended_cta            ? `<div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text-2)">Primary CTA</span><span style="font-size:12px;color:var(--text)">${esc(score.recommended_cta)}</span></div>` : ''}
+        ${score.recommended_conversion_strategy ? `<div style="margin-top:4px;font-size:12px;color:var(--text-2);line-height:1.5">${esc(score.recommended_conversion_strategy)}</div>` : ''}
+      </div>
+      <button class="btn btn-amber btn-sm" style="margin-top:12px;width:100%" onclick="closeLeadIntelligence();navigate('wopp')">
+        ⚡ Generate Website for this Lead →
+      </button>
+    </div>` : '';
+
+  // ── Email preview ─────────────────────────────────────────────────────
+  const emailHtml = latest_message ? `
+    <div>
+      <div class="li-section-title">Personalized Email Preview</div>
+      <div style="margin-bottom:8px">
+        <div style="font-family:var(--fm);font-size:10px;color:var(--text-3);margin-bottom:4px">SUBJECT</div>
+        <div style="font-size:13px;font-weight:600;color:var(--blue)">${esc(latest_message.subject_line || '—')}</div>
+      </div>
+      <div class="li-followup-tab" id="li-tab-group">
+        <button class="active" onclick="liShowEmail('main', this)">Email</button>
+        <button onclick="liShowEmail('day3', this)">Day 3</button>
+        <button onclick="liShowEmail('day7', this)">Day 7</button>
+        <button onclick="liShowEmail('day14', this)">Day 14</button>
+      </div>
+      <div class="li-email-preview" id="li-email-main">${esc(latest_message.email_body || '—')}</div>
+      <div class="li-email-preview" id="li-email-day3" style="display:none">${esc(latest_message.follow_up_day3 || 'No Day 3 follow-up. Regenerate outreach to get full sequence.')}</div>
+      <div class="li-email-preview" id="li-email-day7" style="display:none">${esc(latest_message.follow_up_day7 || 'No Day 7 follow-up. Regenerate outreach to get full sequence.')}</div>
+      <div class="li-email-preview" id="li-email-day14" style="display:none">${esc(latest_message.follow_up_day14 || 'No Day 14 follow-up. Regenerate outreach to get full sequence.')}</div>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="copyLiEmail()">Copy Email</button>
+    </div>` : `
+    <div>
+      <div class="li-section-title">Personalized Email Preview</div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center">
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:10px">No outreach generated yet</div>
+        <button class="btn btn-brand btn-sm" onclick="closeLeadIntelligence();quickOutreach('${lead.id}')">Generate Outreach →</button>
+      </div>
+    </div>`;
+
+  // ── Red flags ─────────────────────────────────────────────────────────
+  const flags = score?.red_flags || [];
+  const flagsHtml = flags.length ? `
+    <div>
+      <div class="li-section-title">⚠ Red Flags</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${flags.map(f => `<div style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--text-2);background:var(--red-dim);border:1px solid var(--red-mid);border-radius:var(--radius);padding:7px 10px"><span style="color:var(--red);flex-shrink:0">⚠</span>${esc(f)}</div>`).join('')}
+      </div>
+    </div>` : '';
+
+  // ── Revenue projection ────────────────────────────────────────────────
+  const revHtml = revenue_projection ? `
+    <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+      <div class="li-section-title">Revenue Potential</div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:12px;color:var(--text-2)">Est. Value Range</span>
+        <span style="font-family:var(--fm);font-size:12px;font-weight:600;color:var(--brand)">${esc(revenue_projection.estimated_value_range || '—')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:12px;color:var(--text-2)">Conversion Probability</span>
+        <span style="font-family:var(--fm);font-size:12px;font-weight:600;color:var(--amber)">${esc(revenue_projection.conversion_probability || '—')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:12px;color:var(--text-2)">Model Used</span>
+        <span style="font-family:var(--fm);font-size:11px;color:var(--text-3)">Model ${esc(revenue_projection.model_used || '?')} — ${revenue_projection.model_used === 'B' ? 'Website Opp.' : 'Lead Gen'}</span>
+      </div>
+    </div>` : '';
+
+  // ── Recommended action ────────────────────────────────────────────────
+  const actionHtml = score?.recommended_action ? `
+    <div style="background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:12px">
+      <div class="li-section-title" style="color:var(--brand)">Recommended Next Action</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.5;margin-top:6px">${esc(score.recommended_action)}</div>
+    </div>` : '';
+
+  // ── CTA Buttons ───────────────────────────────────────────────────────
+  const ctaHtml = `
+    <div style="display:flex;flex-direction:column;gap:7px;padding-bottom:8px">
+      <button class="btn btn-brand" onclick="closeLeadIntelligence();quickScore('${lead.id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 15l-5 3.4 1.9-5.8L4 9h6.1z"/></svg>
+        ${score ? 'Re-Score with AI' : 'Score with AI'}
+      </button>
+      <button class="btn btn-blue" onclick="closeLeadIntelligence();quickOutreach('${lead.id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        ${latest_message ? 'Regenerate Outreach' : 'Generate Outreach'}
+      </button>
+      ${!has_website ? `<button class="btn btn-amber" onclick="closeLeadIntelligence();navigate('wopp')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        Generate Website
+      </button>` : ''}
+    </div>`;
+
+  // ── Assemble panel ────────────────────────────────────────────────────
+  const modelBadge = has_website
+    ? `<span style="font-family:var(--fm);font-size:9px;background:var(--blue-dim);color:var(--blue);padding:2px 7px;border-radius:3px;border:1px solid var(--blue-mid)">MODEL A · LEAD GEN</span>`
+    : `<span style="font-family:var(--fm);font-size:9px;background:var(--amber-dim);color:var(--amber);padding:2px 7px;border-radius:3px;border:1px solid var(--amber-mid)">MODEL B · WEBSITE OPP</span>`;
+
+  body.innerHTML = `
+    <!-- Lead summary -->
+    <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg)">
+      <div class="li-score-ring" style="background:${scoreVal ? `conic-gradient(${scoreColor} ${scoreVal}%, var(--bg-3) 0)` : 'var(--bg-3)'}">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-1);display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="li-score-ring-num" style="color:${scoreColor}">${scoreVal || '—'}</div>
+          <div class="li-score-sub" style="color:${scoreColor}">${scoreLabel}</div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--fd);font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(lead.business_name)}</div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:2px">${esc(lead.industry || '—')} · ${esc(lead.location || '—')}</div>
+        <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">
+          ${modelBadge}
+          ${badgeStatus(lead.status)}
+        </div>
+      </div>
+    </div>
+
+    ${score ? `
+    <!-- Score reasoning -->
+    <div>
+      <div class="li-section-title">AI Score Reasoning</div>
+      <div style="font-size:12.5px;color:var(--text-2);line-height:1.65;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px">${esc(score.reasoning || 'No reasoning available.')}</div>
+    </div>
+    ` : `
+    <div style="background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:12px;text-align:center">
+      <div style="font-size:12px;color:var(--text-2);margin-bottom:10px">This lead hasn't been AI scored yet</div>
+      <button class="btn btn-brand btn-sm" onclick="closeLeadIntelligence();quickScore('${lead.id}')">Run AI Score →</button>
+    </div>`}
+
+    ${breakdownHtml}
+    ${woHtml}
+    ${flagsHtml}
+    ${revHtml}
+    ${actionHtml}
+    ${emailHtml}
+    ${ctaHtml}
+  `;
+}
+
+function liShowEmail(tab, btn) {
+  ['main','day3','day7','day14'].forEach(t => {
+    const el = document.getElementById('li-email-' + t);
+    if (el) el.style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('#li-tab-group button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function copyLiEmail() {
+  const activeEl = document.querySelector('.li-email-preview:not([style*="display:none"])') ||
+                   document.getElementById('li-email-main');
+  if (!activeEl) return;
+  navigator.clipboard.writeText(activeEl.textContent).then(() => toast('Email copied!', 'success')).catch(() => toast('Copy failed.', 'error'));
+}
+
+function getScoreLabelClient(score) {
+  if (score >= 90) return 'Hot';
+  if (score >= 70) return 'Warm';
+  if (score >= 40) return 'Mild';
+  return 'Cold';
+}
+
+// Close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && _currentLiLeadId) closeLeadIntelligence();
+});
 
 initUserBlock();
 initOnboarding();
