@@ -141,11 +141,23 @@ app.post("/api/generate-website", async (req, res) => {
     return res.status(503).json({ error: { message: "GEMINI_API_KEY not configured on server." } });
   }
   try {
-    const { system, messages } = req.body;
-
-    // Combine system prompt + user message into a single Gemini contents array
+    const { messages } = req.body;
     const userText = (messages || []).map(m => m.content).join("\n\n");
-    const fullPrompt = system ? `${system}\n\n${userText}` : userText;
+
+    // Simpler prompt: ask for raw HTML only — no JSON wrapper, no truncation risk
+    const fullPrompt = `You are an expert web developer. Generate a complete, professional, single-file HTML landing page for the following local business.
+
+REQUIREMENTS:
+- Return ONLY raw HTML. Start with <!DOCTYPE html>. No explanation, no markdown, no code fences.
+- Self-contained: all CSS in <style> tag, all JS inline. No external resources except Google Fonts.
+- Mobile-first responsive. Sections: hero with CTA, about, services grid (2-3 cols), contact with phone/email, footer.
+- Choose a distinctive color palette suited to the industry.
+- Subtle CSS animations: fade-in on load, hover effects on cards and buttons.
+- Clickable phone (tel:) and email (mailto:) links.
+- Professional copy — no Lorem ipsum, no placeholders.
+- Include star rating and review count in hero if provided.
+
+${userText}`;
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
@@ -154,7 +166,7 @@ app.post("/api/generate-website", async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({
         contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
-        generationConfig: { maxOutputTokens: 8192, temperature: 0.7 },
+        generationConfig: { maxOutputTokens: 65536, temperature: 0.7 },
       }),
     });
 
@@ -164,9 +176,36 @@ app.post("/api/generate-website", async (req, res) => {
       return res.status(upstream.status).json({ error: { message: data?.error?.message || "Gemini API error" } });
     }
 
-    // Normalise response to Anthropic-compatible shape so the client code works unchanged
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    res.json({ content: [{ type: "text", text }] });
+    let html = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    // Strip any accidental markdown fences Gemini might add
+    html = html.replace(/^```html\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+
+    if (!html.toLowerCase().includes("<!doctype") && !html.toLowerCase().includes("<html")) {
+      return res.status(500).json({ error: { message: "Gemini did not return valid HTML. Try again." } });
+    }
+
+    // Return in Anthropic-compatible shape — but wrap html in a simple JSON so
+    // the client can distinguish html from error messages
+    res.json({
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          generated_html  : html,
+          editable_content: {
+            hero_title          : "",
+            hero_subtitle       : "",
+            call_to_action      : "",
+            about_title         : "",
+            about_text          : "",
+            services_title      : "",
+            services_list       : [],
+            contact_title       : "",
+            contact_instructions: "",
+          }
+        })
+      }]
+    });
 
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
