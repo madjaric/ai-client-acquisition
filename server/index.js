@@ -133,6 +133,47 @@ app.use("/api/send-email",        requireAuth, sendEmailRouter);
 app.use("/api/discovery",         discoveryRouter);  // requireAuth applied per-endpoint inside
 
 // ─────────────────────────────────────────────
+//  Gemini proxy — website generator
+//  Reuses the existing GEMINI_API_KEY from .env
+// ─────────────────────────────────────────────
+app.post("/api/generate-website", async (req, res) => {
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(503).json({ error: { message: "GEMINI_API_KEY not configured on server." } });
+  }
+  try {
+    const { system, messages } = req.body;
+
+    // Combine system prompt + user message into a single Gemini contents array
+    const userText = (messages || []).map(m => m.content).join("\n\n");
+    const fullPrompt = system ? `${system}\n\n${userText}` : userText;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+    const upstream = await fetch(url, {
+      method : "POST",
+      headers: { "Content-Type": "application/json" },
+      body   : JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
+        generationConfig: { maxOutputTokens: 8192, temperature: 0.7 },
+      }),
+    });
+
+    const data = await upstream.json();
+
+    if (!upstream.ok) {
+      return res.status(upstream.status).json({ error: { message: data?.error?.message || "Gemini API error" } });
+    }
+
+    // Normalise response to Anthropic-compatible shape so the client code works unchanged
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    res.json({ content: [{ type: "text", text }] });
+
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ─────────────────────────────────────────────
 //  Root redirect
 // ─────────────────────────────────────────────
 app.get("/", (req, res) => {

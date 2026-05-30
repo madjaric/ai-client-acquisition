@@ -1250,6 +1250,11 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
       Discovery
       <span class="sb-chip">New</span>
     </button>
+    <button class="sb-item" id="nav-wopp" onclick="navigate('wopp')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      Website Opps
+      <span class="sb-chip">⚡</span>
+    </button>
 
     <div class="sb-div"></div>
     <div class="sb-group-label">AI Tools</div>
@@ -1264,14 +1269,6 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
     <button class="sb-item" id="nav-email" onclick="navigate('email')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       Send Email
-    </button>
-
-    <div class="sb-div"></div>
-    <div class="sb-group-label">Revenue</div>
-    <button class="sb-item" id="nav-wopp" onclick="navigate('wopp')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-      Website Opps
-      <span class="sb-chip">⚡ PRO</span>
     </button>
 
     <div class="sb-div"></div>
@@ -2372,6 +2369,66 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 
 
 </div><!-- .main -->
+
+<!-- ════ WO INLINE GENERATOR MODAL ══════════════════════════════ -->
+<div class="project-modal-overlay" id="wo-gen-modal" onclick="if(event.target===this)woCloseGeneratorModal()">
+  <div class="project-modal" style="max-width:720px">
+    <div class="project-modal-header">
+      <div class="wo-ov-icon" style="width:36px;height:36px;border-radius:8px;flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div style="flex:1">
+        <div class="project-modal-title" id="wo-gen-biz-name">—</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:1px" id="wo-gen-biz-meta"></div>
+      </div>
+      <button class="modal-close" onclick="woCloseGeneratorModal()">✕</button>
+    </div>
+    <div class="project-modal-body" style="padding:0">
+
+      <!-- Idle state -->
+      <div id="wo-gen-state-idle" style="padding:28px;text-align:center">
+        <div style="width:52px;height:52px;border-radius:14px;background:var(--brand-dim);border:1px solid var(--brand-mid);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" style="color:var(--brand)"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        </div>
+        <div style="font-family:var(--fd);font-size:16px;font-weight:700;margin-bottom:8px">Generate Website</div>
+        <div style="font-size:13px;color:var(--text-2);margin-bottom:20px;max-width:360px;margin-left:auto;margin-right:auto;line-height:1.6">AI will build a complete, professional landing page tailored to this business — ready to download and send.</div>
+        <button class="iwg-btn-generate" onclick="woRunGenerate()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Generate Website
+        </button>
+      </div>
+
+      <!-- Loading state -->
+      <div id="wo-gen-state-loading" style="display:none;padding:40px;text-align:center">
+        <div class="iwg-loading-ring" style="margin:0 auto 16px">
+          <div class="iwg-loading-ring-outer"></div>
+          <div class="iwg-loading-ring-inner"></div>
+        </div>
+        <div style="font-family:var(--fd);font-size:15px;font-weight:700;margin-bottom:6px">Building website…</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:16px" id="wo-gen-step">Analyzing business data…</div>
+        <div class="iwg-loading-bar" style="max-width:320px;margin:0 auto">
+          <div class="iwg-loading-bar-fill" id="wo-gen-bar"></div>
+        </div>
+      </div>
+
+      <!-- Result state -->
+      <div id="wo-gen-state-result" style="display:none">
+        <iframe id="wo-gen-iframe" style="width:100%;height:460px;border:none" sandbox="allow-scripts allow-same-origin" title="Generated website preview"></iframe>
+        <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:600;color:var(--brand)">✓ Website generated!</span>
+          <span style="flex:1"></span>
+          <button class="btn btn-brand btn-sm" onclick="woGenDownload()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download HTML
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="woGenOpenProject()">Open Project →</button>
+          <button class="btn btn-outline btn-sm" onclick="woCloseGeneratorModal()">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <!-- ════ PROJECT MODAL (Website Opportunities) ════════════════════ -->
 <div class="project-modal-overlay" id="wo-project-modal" onclick="if(event.target===this)woCloseProject()">
@@ -3784,7 +3841,7 @@ ${Array.isArray(b.photos) && b.photos.length ? 'Photos available: yes (do NOT in
 This business has NO website. Generate a complete, professional landing page that will impress the business owner and convince them to hire a web developer.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/generate-website', {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify({
@@ -4320,29 +4377,123 @@ function woQuickDownload(id) {
 function woGenerateFromOpp(id) {
   const opp = woppOpps.find(o => o.id === id);
   if (!opp) return;
-  // Find matching biz in discFiltered if any, or create a synthetic one
-  const synth = { name: opp.name, industry: opp.industry, location: opp.location, rating: opp.rating, review_count: opp.reviewCount, website: null };
-  // Navigate to discovery, or trigger IWG with synth biz
-  iwgCurrentBiz = synth;
-  document.getElementById('iwg-biz-name').textContent     = synth.name;
-  document.getElementById('iwg-biz-industry').textContent = synth.industry;
-  document.getElementById('iwg-biz-location').textContent = synth.location;
-  const ratingEl  = document.getElementById('iwg-biz-rating');
-  const ratingDot = document.getElementById('iwg-meta-dot-rating');
-  if (synth.rating) {
-    ratingEl.textContent = `★ ${synth.rating.toFixed(1)}`;
-    ratingEl.style.display = ''; ratingDot.style.display = '';
-  } else {
-    ratingEl.style.display = 'none'; ratingDot.style.display = 'none';
+  // Stay on wopp page — open the inline generator modal
+  woOpenGeneratorModal(id);
+}
+
+/* ── Inline generator modal for Website Opportunities ─────────── */
+let woGenCurrentId = null;
+
+function woOpenGeneratorModal(id) {
+  woGenCurrentId = id;
+  const opp = woppOpps.find(o => o.id === id);
+  if (!opp) return;
+
+  document.getElementById('wo-gen-biz-name').textContent     = opp.name;
+  document.getElementById('wo-gen-biz-meta').textContent     = [opp.industry, opp.location].filter(Boolean).join(' · ');
+  document.getElementById('wo-gen-state-idle').style.display    = '';
+  document.getElementById('wo-gen-state-loading').style.display = 'none';
+  document.getElementById('wo-gen-state-result').style.display  = 'none';
+
+  document.getElementById('wo-gen-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function woCloseGeneratorModal() {
+  document.getElementById('wo-gen-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  woGenCurrentId = null;
+}
+
+async function woRunGenerate() {
+  const opp = woppOpps.find(o => o.id === woGenCurrentId);
+  if (!opp) return;
+
+  document.getElementById('wo-gen-state-idle').style.display    = 'none';
+  document.getElementById('wo-gen-state-loading').style.display = '';
+  document.getElementById('wo-gen-state-result').style.display  = 'none';
+
+  const steps = ['Analyzing business data…','Writing professional copy…','Designing color palette…','Building layout & sections…','Generating hero section…','Creating services grid…','Polishing contact section…','Finalizing HTML…'];
+  let stepIdx = 0, pct = 0;
+  const barEl  = document.getElementById('wo-gen-bar');
+  const stepEl = document.getElementById('wo-gen-step');
+  const interval = setInterval(() => {
+    pct = Math.min(pct + 12, 92);
+    if (barEl) barEl.style.width = pct + '%';
+    if (stepEl && stepIdx < steps.length) stepEl.textContent = steps[stepIdx++];
+  }, 800);
+
+  const prompt = `Generate a complete landing page for this local business:
+
+Business Name: ${opp.name}
+Industry / Category: ${opp.industry}
+Location: ${opp.location}
+Rating: ${opp.rating != null ? opp.rating + '/5' : 'not available'}
+Reviews: ${opp.reviewCount != null ? opp.reviewCount.toLocaleString() + ' reviews' : 'not available'}
+Description: Local business serving the ${opp.location} area
+
+This business has NO website. Generate a complete, professional landing page that will impress the business owner and convince them to hire a web developer.`;
+
+  try {
+    const res = await fetch('/api/generate-website', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({
+        model     : 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        system    : IWG_SYSTEM,
+        messages  : [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
+
+    const raw    = (data.content || []).map(c => c.text || '').join('');
+    const clean  = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const parsed = JSON.parse(clean);
+    if (!parsed.generated_html) throw new Error('Incomplete response from AI');
+
+    clearInterval(interval);
+    if (barEl) barEl.style.width = '100%';
+    await new Promise(r => setTimeout(r, 300));
+
+    // Save to opportunity
+    opp.html   = parsed.generated_html;
+    opp.status = Math.max(opp.status, 1);
+    woppAddActivity(woGenCurrentId, 'gen', 'Website generated');
+    woppSave(); woppUpdateStats(); woppRenderTable();
+
+    // Show result in modal
+    const iframe = document.getElementById('wo-gen-iframe');
+    if (iframe) iframe.srcdoc = parsed.generated_html;
+    document.getElementById('wo-gen-state-loading').style.display = 'none';
+    document.getElementById('wo-gen-state-result').style.display  = '';
+
+    toast('Website generated!', 'success');
+
+  } catch(e) {
+    clearInterval(interval);
+    document.getElementById('wo-gen-state-loading').style.display = 'none';
+    document.getElementById('wo-gen-state-idle').style.display    = '';
+    toast('Generation failed: ' + e.message, 'error');
   }
-  document.getElementById('iwg-header-sub').textContent = `Generating a landing page for ${synth.name}`;
-  document.getElementById('iwg-btn-regen').style.display = 'none';
-  iwgShowState('idle'); iwgTab('preview');
-  const anchor = document.getElementById('iwg-anchor');
-  anchor.style.display = 'flex';
-  navigate('discovery');
-  setTimeout(() => anchor.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
-  toast('Scroll down to use the Website Generator.', 'info');
+}
+
+function woGenDownload() {
+  const opp = woppOpps.find(o => o.id === woGenCurrentId);
+  if (!opp || !opp.html) return;
+  const name = opp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const blob = new Blob([opp.html], { type: 'text/html' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name + '.html'; a.click();
+  woppAddActivity(woGenCurrentId, 'exp', 'Website downloaded'); woppSave();
+  toast(`Downloaded ${name}.html`, 'success');
+}
+
+function woGenOpenProject() {
+  const id = woGenCurrentId;
+  woCloseGeneratorModal();
+  setTimeout(() => woOpenProject(id), 100);
 }
 
 function woppAddActivity(id, type, text) {
