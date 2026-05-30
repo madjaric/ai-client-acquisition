@@ -2926,13 +2926,10 @@ async function apiFetch(method, path, body) {
   try {
     const res = await fetch(API_BASE + path, opts);
     if (res.status === 401) {
-      const hadToken = !!window.LF_TOKEN;
-      localStorage.removeItem('lf_token');
-      localStorage.removeItem('lf_user');
-      window.LF_TOKEN   = null;
-      window.LF_USER    = null;
-      window.LF_HEADERS = { 'Content-Type': 'application/json' };
-      if (hadToken) {
+      // Only force re-login if user had a token (session expired)
+      if (window.LF_TOKEN) {
+        localStorage.removeItem('lf_token');
+        localStorage.removeItem('lf_user');
         window.location.replace('/login.html?reason=expired');
       }
       return { success: false, message: 'Please sign in to use this feature.' };
@@ -2952,20 +2949,16 @@ async function apiFetch(method, path, body) {
 async function checkConnection() {
   const dot  = document.getElementById('status-dot');
   const text = document.getElementById('status-text');
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    const res = await fetch('/api/health', { signal: controller.signal });
-    clearTimeout(timer);
+    const res = await fetch('/api/health');
     if (!res.ok) throw new Error('not ok');
     const d  = await res.json();
-    const ok = d.status === 'healthy' || d.status === 'ok';
+    const ok = d.status === 'healthy';
     if (dot)  dot.className  = 'status-dot ' + (ok ? 'ok' : 'err');
     if (text) text.textContent = ok ? 'Connected' : 'Degraded';
-  } catch(err) {
-    clearTimeout(timer);
+  } catch {
     if (dot)  dot.className  = 'status-dot err';
-    if (text) text.textContent = err.name === 'AbortError' ? 'Timeout' : 'Offline';
+    if (text) text.textContent = 'Offline';
   }
 }
 const checkHealth = checkConnection;
@@ -3057,7 +3050,7 @@ function navigate(page) {
   if (page === 'outreach')  { loadOutreachHistory(); refreshSelects(); }
   if (page === 'email')     { loadEmailStats(); loadEmailLogs(); loadEmailSelects(); }
   if (page === 'discovery') { checkDiscoverySource(); }
-  if (page === 'wopp')      { woppSyncFromDisc(); woppUpdateStats(); woppRenderTable(); }
+  if (page === 'wopp')      { woppSyncFromLeads(); woppSyncFromDisc(); woppUpdateStats(); woppRenderTable(); }
 }
 
 /* ─── Mobile sidebar ─────────────────────────── */
@@ -3127,11 +3120,12 @@ function renderLeads(list) {
         <td>${l.score ? scoreBar(l.score) : `<span style="color:var(--text-3);font-family:var(--fm);font-size:11px">—</span>`}</td>
         <td>
           <div style="display:flex;gap:4px">
-            <button class="btn btn-outline btn-xs" onclick="openLeadIntelligence('${l.id}')" title="Intelligence panel">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <button class="btn btn-xs" onclick="openLeadIntelligence('${l.id}')" title="Lead Intelligence" style="background:var(--blue-dim);border:1px solid var(--blue-mid);color:#60a5fa;padding:3px 8px;border-radius:var(--radius);font-size:10px;font-family:var(--fm);font-weight:600;cursor:pointer;transition:background .12s" onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='var(--blue-dim)'">
+              ⓘ
             </button>
             <button class="btn btn-amber btn-xs" onclick="quickScore('${l.id}')">Score</button>
             <button class="btn btn-blue btn-xs"  onclick="quickOutreach('${l.id}')">Outreach</button>
+            ${!l.website ? `<button class="btn btn-xs" onclick="generateWebsiteForLead('${l.id}','${esc(l.business_name||l.name)}','${esc(l.industry||'')}','${esc(l.location||'')}')" title="Generate website" style="background:var(--amber-dim);border:1px solid var(--amber-mid);color:var(--amber);font-family:var(--fm);font-size:9px;font-weight:700;padding:3px 8px;border-radius:var(--radius);cursor:pointer;transition:background .12s;letter-spacing:.03em" onmouseover="this.style.background='rgba(245,158,11,.2)'" onmouseout="this.style.background='var(--amber-dim)'">⚡ Site</button>` : ''}
           </div>
         </td>
       </tr>`).join('')}
@@ -3400,6 +3394,32 @@ async function loadHistoricMessage(id) {
 function quickOutreach(leadId) {
   navigate('outreach');
   setTimeout(() => { const sel = document.getElementById('out-select'); if (sel) sel.value = leadId; }, 120);
+}
+
+function generateWebsiteForLead(leadId, name, industry, location) {
+  // Add to woppOpps if not already there
+  const exists = woppOpps.find(o => o.leadId === leadId || (o.name === name && o.location === location));
+  if (!exists) {
+    const opp = {
+      id: 'wo_lead_' + leadId,
+      leadId,
+      name, industry: industry || '—', location: location || '—',
+      rating: null, reviewCount: null,
+      status: 0, html: null,
+      activity: [{ type:'info', text:'Added from pipeline', time: new Date().toISOString() }],
+      createdAt: new Date().toISOString()
+    };
+    woppOpps.unshift(opp);
+    woppSave();
+  }
+  // Navigate to wopp and open the generator for this entry
+  navigate('wopp');
+  setTimeout(() => {
+    const target = woppOpps.find(o => o.leadId === leadId || (o.name === name && o.location === location));
+    if (target) {
+      woOpenProject(target.id);
+    }
+  }, 200);
 }
 
 function setOutreachLead() {
@@ -3872,28 +3892,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ─── Auth: populate sidebar user block ──────── */
-async function initUserBlock() {
-  if (window.LF_TOKEN && !window.LF_USER) {
-    try {
-      const res = await fetch('/api/auth/me', { headers: window.LF_HEADERS });
-      if (res.ok) {
-        const d = await res.json();
-        if (d.success && d.data) {
-          window.LF_USER = d.data;
-          localStorage.setItem('lf_user', JSON.stringify(d.data));
-        }
-      } else if (res.status === 401) {
-        localStorage.removeItem('lf_token');
-        localStorage.removeItem('lf_user');
-        window.LF_TOKEN   = null;
-        window.LF_USER    = null;
-        window.LF_HEADERS = { 'Content-Type': 'application/json' };
-      }
-    } catch(e) {
-      console.warn('Could not re-fetch user:', e.message);
-    }
-  }
-
+function initUserBlock() {
   const user       = window.LF_USER;
   const signinBtn  = document.getElementById('sb-signin-btn');
   const logoutBtn  = document.getElementById('sb-logout-btn');
@@ -3901,6 +3900,7 @@ async function initUserBlock() {
   const upgradeBtn = document.getElementById('sb-upgrade-btn');
 
   if (!user) {
+    // Guest — show Sign In, hide user block and logout
     if (signinBtn)  signinBtn.style.display  = 'flex';
     if (logoutBtn)  logoutBtn.style.display  = 'none';
     if (userBlock)  userBlock.style.display  = 'none';
@@ -3908,6 +3908,7 @@ async function initUserBlock() {
     return;
   }
 
+  // Logged in — hide Sign In, show user info and logout
   if (signinBtn)  signinBtn.style.display  = 'none';
   if (logoutBtn)  logoutBtn.style.display  = 'flex';
   if (userBlock)  userBlock.style.display  = '';
@@ -4455,6 +4456,32 @@ function woppOnGenerated(biz, html) {
   toast('Opportunity created in Website Opps!', 'success');
 }
 
+/** Sync no-website leads from allLeads (pipeline) into opportunities */
+function woppSyncFromLeads() {
+  if (!allLeads || !allLeads.length) return;
+  let added = 0;
+  allLeads.forEach(l => {
+    if (l.website && l.website.trim()) return; // skip leads with website
+    const name     = l.business_name || l.name || '';
+    const location = l.location || '';
+    const exists   = woppOpps.find(o => o.name === name && o.location === location);
+    if (!exists) {
+      woppOpps.push({
+        id: 'wo_lead_' + l.id,
+        leadId: l.id,
+        name, industry: l.industry || '—', location,
+        rating: null, reviewCount: null,
+        status: 0, html: null,
+        activity: [{ type:'info', text:'From pipeline (no website)', time: new Date().toISOString() }],
+        createdAt: l.created_at || new Date().toISOString()
+      });
+      added++;
+    }
+  });
+  if (added) { woppSave(); }
+  return added;
+}
+
 /** Sync no-website leads from discFiltered into opportunities (without html) */
 function woppSyncFromDisc() {
   if (!discFiltered || !discFiltered.length) return;
@@ -4893,52 +4920,75 @@ function woppAddActivity(id, type, text) {
 ───────────────────────────────────────────────────────────────────────── */
 async function loadPipelineAnalytics() {
   try {
-    const d = await apiFetch('GET', '/api/pipeline/analytics');
-    if (!d.success) return;
-    const data = d.data;
+    // Compute locally from allLeads — no backend route needed
+    const leads = allLeads || [];
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
     // Lead distribution
-    const ld = data.lead_distribution || {};
-    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    setEl('ana-total',     ld.total     || 0);
-    setEl('ana-contacted', ld.contacted || 0);
-    setEl('ana-replied',   ld.replied   || 0);
-    setEl('ana-qualified', ld.qualified || 0);
-    setEl('ana-converted', ld.converted || 0);
+    const count = s => leads.filter(l => l.status === s).length;
+    setEl('ana-total',     leads.length);
+    setEl('ana-contacted', count('contacted'));
+    setEl('ana-replied',   count('replied'));
+    setEl('ana-qualified', count('qualified'));
+    setEl('ana-converted', count('converted'));
 
-    // Website opportunities
-    const wo = data.website_opportunity_metrics || {};
-    setEl('ana-with-website', wo.with_website || 0);
-    setEl('ana-no-website',   wo.without_website || 0);
-    setEl('ana-wo-score',     (wo.website_opportunity_score || 0) + '%');
-    setEl('ana-wo-revenue',   wo.estimated_website_revenue ? '$' + Number(wo.estimated_website_revenue).toLocaleString() : '—');
+    // Website opportunity metrics
+    const withSite = leads.filter(l => l.website && l.website.trim()).length;
+    const noSite   = leads.length - withSite;
+    setEl('ana-with-website', withSite);
+    setEl('ana-no-website',   noSite);
+    setEl('ana-wo-score',     noSite > 0 ? Math.round((noSite / leads.length) * 100) + '%' : '0%');
 
-    // AI Insights
-    const ins = data.ai_insights || {};
-    const hv  = ins.highest_value_lead;
-    if (hv) {
-      setEl('insight-hv-name', hv.business_name || '—');
-      setEl('insight-hv-val',  hv.value_range || '');
+    // Revenue estimate: $2500 avg per no-website lead
+    const estRevenue = noSite * 2500;
+    setEl('ana-wo-revenue', noSite > 0 ? '$' + estRevenue.toLocaleString() : '—');
+
+    // AI Insights — from scored leads
+    const scored = leads.filter(l => l.score && l.score > 0).sort((a, b) => b.score - a.score);
+    if (scored.length) {
+      setEl('insight-hv-name', scored[0].business_name || scored[0].name || '—');
+      const hvVal = document.getElementById('insight-hv-val');
+      if (hvVal) hvVal.textContent = scored[0].score ? scored[0].score + '/10' : '';
+    } else {
+      setEl('insight-hv-name', 'Score leads to unlock');
     }
-    const wo2 = ins.highest_website_opportunity;
-    if (wo2) {
-      setEl('insight-wo-name',  wo2.business_name || '—');
-      setEl('insight-wo-score', wo2.wo_score ? wo2.wo_score + '/100' : '');
+
+    // Best website opportunity: unscored no-website leads
+    const noSiteLeads = leads.filter(l => !l.website || !l.website.trim());
+    if (noSiteLeads.length) {
+      setEl('insight-wo-name', noSiteLeads[0].business_name || noSiteLeads[0].name || '—');
+      const woScore = document.getElementById('insight-wo-score');
+      if (woScore) woScore.textContent = noSiteLeads.length + ' leads';
+    } else {
+      setEl('insight-wo-name', 'No no-website leads');
     }
-    const fc = ins.fastest_conversion;
-    if (fc) {
-      setEl('insight-fc-name', fc.business_name || '—');
-      window._fastestConversionId = fc.id;
+
+    // Fastest conversion: highest scored lead with status new
+    const fastLead = scored.find(l => l.status === 'new') || scored[0];
+    if (fastLead) {
+      setEl('insight-fc-name', fastLead.business_name || fastLead.name || '—');
+      window._fastestConversionId = fastLead.id;
       const btn = document.getElementById('insight-fc-btn');
-      if (btn && fc.id) btn.style.display = '';
+      if (btn) btn.style.display = '';
+    } else {
+      setEl('insight-fc-name', 'Score leads to unlock');
     }
-    setEl('insight-industry', ins.most_responsive_industry || '—');
 
-    // Revenue Projection
-    const rev = data.revenue_projection || {};
-    setEl('rev-potential', rev.potential_revenue       ? '$' + Number(rev.potential_revenue).toLocaleString()           : '—');
-    setEl('rev-monthly',   rev.monthly_recurring_opportunity ? '$' + Number(rev.monthly_recurring_opportunity).toLocaleString() + '/mo' : '—');
-    setEl('rev-close',     rev.estimated_close_value   ? '$' + Number(rev.estimated_close_value).toLocaleString()      : '—');
+    // Most responsive industry
+    const industryCounts = {};
+    leads.forEach(l => { if (l.industry) industryCounts[l.industry] = (industryCounts[l.industry] || 0) + 1; });
+    const topIndustry = Object.entries(industryCounts).sort((a, b) => b[1] - a[1])[0];
+    setEl('insight-industry', topIndustry ? topIndustry[0] : '—');
+
+    // Revenue projection (rough estimate from scores)
+    const avgVal = 1500; // $1500/mo per converted lead estimate
+    const potential  = leads.length * avgVal;
+    const monthly    = Math.round(potential * 0.3);
+    const closeVal   = Math.round(potential * 0.15);
+    setEl('rev-potential', potential > 0 ? '$' + potential.toLocaleString() : '—');
+    setEl('rev-monthly',   monthly   > 0 ? '$' + monthly.toLocaleString() + '/mo' : '—');
+    setEl('rev-close',     closeVal  > 0 ? '$' + closeVal.toLocaleString()  : '—');
+
   } catch(e) {
     console.warn('Analytics load failed:', e.message);
   }
@@ -5174,17 +5224,15 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && _currentLiLeadId) closeLeadIntelligence();
 });
 
-(async function boot() {
-  await initUserBlock();
-  initOnboarding();
-  checkConnection();
-  setInterval(checkConnection, 30000);
-  loadLeads();
-  loadScoredLeads();
-  loadOutreachHistory();
-  loadQuota();
-  woppInit();
-})();
+initUserBlock();
+initOnboarding();
+checkConnection();
+setInterval(checkConnection, 30000);
+loadLeads();
+loadScoredLeads();
+loadOutreachHistory();
+loadQuota();
+woppInit();
 </script>
 
 </body>
