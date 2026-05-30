@@ -634,6 +634,429 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 .pill-sent     { background: var(--brand-dim); color: var(--brand); }
 .pill-failed   { background: var(--red-dim);   color: var(--red); }
 
+/* ═══ INSTANT WEBSITE GENERATOR ════════════════ */
+.iwg-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: fadeIn .25s ease;
+}
+
+/* Gradient accent top border */
+.iwg-card::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand), #60a5fa, var(--brand));
+  background-size: 200% 100%;
+  animation: iwgGradientShift 3s linear infinite;
+}
+@keyframes iwgGradientShift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+.iwg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.iwg-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.iwg-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--brand-dim);
+  border: 1px solid var(--brand-mid);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.iwg-icon svg { color: var(--brand); }
+.iwg-title {
+  font-family: var(--fd);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.iwg-subtitle {
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+.iwg-badge-new {
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, rgba(34,197,94,.2), rgba(59,130,246,.2));
+  border: 1px solid var(--brand-mid);
+  color: var(--brand);
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+/* Idle CTA state */
+.iwg-cta-wrap {
+  padding: 20px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.iwg-business-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.iwg-business-name {
+  font-family: var(--fd);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.iwg-business-meta {
+  font-size: 12px;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.iwg-meta-dot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--text-3);
+  flex-shrink: 0;
+}
+.iwg-noweb-tag {
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-mid);
+  color: var(--amber);
+}
+
+/* Generate button — premium feel */
+.iwg-btn-generate {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  font-family: var(--fd);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #000;
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s, background .12s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.iwg-btn-generate:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(34,197,94,.25);
+}
+.iwg-btn-generate:active { transform: translateY(0); box-shadow: none; }
+.iwg-btn-generate:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+.iwg-btn-generate svg { flex-shrink: 0; }
+
+/* Loading state */
+.iwg-loading {
+  padding: 32px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.iwg-loading-ring {
+  position: relative;
+  width: 44px; height: 44px;
+}
+.iwg-loading-ring-outer {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2.5px solid var(--brand-dim);
+  border-top-color: var(--brand);
+  animation: spin .7s linear infinite;
+  position: absolute; top: 0; left: 0;
+}
+.iwg-loading-ring-inner {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(59,130,246,.2);
+  border-bottom-color: var(--blue);
+  animation: spin 1.1s linear infinite reverse;
+  position: absolute; top: 8px; left: 8px;
+}
+.iwg-loading-step {
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: .04em;
+  min-height: 16px;
+  transition: opacity .3s;
+}
+.iwg-loading-title {
+  font-family: var(--fd);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.iwg-loading-bar {
+  width: 200px;
+  height: 3px;
+  background: var(--bg-3);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.iwg-loading-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand), #60a5fa);
+  border-radius: 99px;
+  transition: width .6s ease;
+  width: 0%;
+}
+
+/* Result tabs */
+.iwg-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  padding: 0 18px;
+}
+.iwg-tab {
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-family: var(--fb);
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color .14s, border-color .14s;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.iwg-tab:hover { color: var(--text-2); }
+.iwg-tab.active { color: var(--text); border-bottom-color: var(--brand); }
+.iwg-tab svg { flex-shrink: 0; }
+
+.iwg-tab-content { display: none; }
+.iwg-tab-content.active { display: block; }
+
+/* Browser chrome mockup */
+.iwg-browser {
+  background: var(--bg);
+  margin: 0;
+}
+.iwg-browser-chrome {
+  padding: 8px 14px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.iwg-chrome-dots { display: flex; gap: 5px; }
+.iwg-chrome-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--bg-3);
+}
+.iwg-chrome-dot.r { background: #ef4444; opacity: .7; }
+.iwg-chrome-dot.y { background: #eab308; opacity: .7; }
+.iwg-chrome-dot.g { background: var(--brand); opacity: .7; }
+.iwg-chrome-url {
+  flex: 1;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 12px;
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iwg-chrome-url-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+  flex-shrink: 0;
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.iwg-iframe {
+  width: 100%;
+  height: 480px;
+  border: none;
+  display: block;
+  background: #fff;
+}
+
+/* Content edit tab */
+.iwg-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 18px;
+}
+.iwg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.iwg-field.span-2 { grid-column: 1 / -1; }
+.iwg-field label {
+  font-family: var(--fm);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.iwg-field input,
+.iwg-field textarea {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 11px;
+  font-family: var(--fb);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .14s;
+  width: 100%;
+}
+.iwg-field input:focus,
+.iwg-field textarea:focus { border-color: rgba(34,197,94,.4); }
+.iwg-field textarea { resize: vertical; min-height: 68px; line-height: 1.55; }
+
+.iwg-services-list {
+  padding: 0 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.iwg-service-row {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr auto;
+  gap: 8px;
+  align-items: start;
+}
+.iwg-btn-remove-svc {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 22px;
+  transition: background .12s, color .12s;
+  flex-shrink: 0;
+}
+.iwg-btn-remove-svc:hover { background: var(--red-dim); color: var(--red); border-color: var(--red-mid); }
+.iwg-btn-add-svc {
+  margin: 0 18px 18px;
+  padding: 8px;
+  width: calc(100% - 36px);
+  border: 1px dashed var(--border-2);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-3);
+  font-size: 12.5px;
+  font-family: var(--fb);
+  cursor: pointer;
+  transition: border-color .14s, color .14s;
+}
+.iwg-btn-add-svc:hover { border-color: var(--brand-mid); color: var(--brand); }
+
+.iwg-content-actions {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  background: var(--bg-2);
+}
+
+/* Export tab */
+.iwg-export-wrap {
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.iwg-export-item {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.iwg-export-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.iwg-export-icon.dl { background: var(--brand-dim); border: 1px solid var(--brand-mid); color: var(--brand); }
+.iwg-export-icon.cp { background: var(--blue-dim); border: 1px solid var(--blue-mid); color: var(--blue); }
+.iwg-export-info { flex: 1; }
+.iwg-export-title { font-weight: 600; font-size: 13px; color: var(--text); }
+.iwg-export-desc  { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+/* Regen button */
+.iwg-btn-regen {
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background .14s, color .14s;
+  font-family: var(--fb);
+}
+.iwg-btn-regen:hover { background: var(--bg-3); color: var(--text-2); }
+
+@media (max-width: 768px) {
+  .iwg-content-grid { grid-template-columns: 1fr; }
+  .iwg-service-row { grid-template-columns: 1fr; }
+  .iwg-btn-remove-svc { margin-top: 0; }
+}
+
 /* ═══ RESPONSIVE ════════════════════════════ */
 @media (max-width: 900px) {
   .grid-4 { grid-template-columns: 1fr 1fr; }
@@ -1404,8 +1827,218 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 
   </div><!-- panel-discovery -->
 
+  <!-- ════════════════════════════════════════
+       INSTANT WEBSITE GENERATOR CARD
+       Injected below discovery results when
+       a no-website business row is triggered
+  ════════════════════════════════════════ -->
+  <div id="iwg-anchor" style="display:none;flex-direction:column;gap:0;margin-top:0">
+    <!-- Spacer so it feels connected -->
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 0 10px">
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border-2))"></div>
+      <span style="font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Instant Website Generator</span>
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,var(--border-2),transparent)"></div>
+    </div>
 
-  </div><!-- .content -->
+    <div class="iwg-card" id="iwg-card">
+
+      <!-- Header -->
+      <div class="iwg-header">
+        <div class="iwg-header-left">
+          <div class="iwg-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          </div>
+          <div>
+            <div class="iwg-title">Instant Website Generator</div>
+            <div class="iwg-subtitle" id="iwg-header-sub">Build a landing page in one click</div>
+          </div>
+          <span class="iwg-badge-new">AI</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="iwg-btn-regen" id="iwg-btn-regen" style="display:none" onclick="iwgRegen()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Regenerate
+          </button>
+          <button onclick="iwgClose()" style="width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-3);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .12s,color .12s" title="Close"
+            onmouseover="this.style.background='var(--red-dim)';this.style.color='var(--red)'"
+            onmouseout="this.style.background='transparent';this.style.color='var(--text-3)'">×</button>
+        </div>
+      </div>
+
+      <!-- STATE: Idle / CTA -->
+      <div id="iwg-state-idle">
+        <div class="iwg-cta-wrap">
+          <div class="iwg-business-preview">
+            <div class="iwg-business-name" id="iwg-biz-name">—</div>
+            <div class="iwg-business-meta">
+              <span id="iwg-biz-industry">—</span>
+              <div class="iwg-meta-dot"></div>
+              <span id="iwg-biz-location">—</span>
+              <div class="iwg-meta-dot" id="iwg-meta-dot-rating" style="display:none"></div>
+              <span id="iwg-biz-rating" style="color:var(--amber)"></span>
+              <span class="iwg-noweb-tag">No website</span>
+            </div>
+          </div>
+          <button class="iwg-btn-generate" id="iwg-btn-gen" onclick="iwgGenerate()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Generate Website
+          </button>
+        </div>
+      </div>
+
+      <!-- STATE: Loading -->
+      <div id="iwg-state-loading" style="display:none">
+        <div class="iwg-loading">
+          <div class="iwg-loading-ring">
+            <div class="iwg-loading-ring-outer"></div>
+            <div class="iwg-loading-ring-inner"></div>
+          </div>
+          <div>
+            <div class="iwg-loading-title">Building your website…</div>
+            <div class="iwg-loading-step" id="iwg-loading-step">Analyzing business data…</div>
+          </div>
+          <div class="iwg-loading-bar">
+            <div class="iwg-loading-bar-fill" id="iwg-loading-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE: Result -->
+      <div id="iwg-state-result" style="display:none">
+
+        <!-- Tabs -->
+        <div class="iwg-tabs">
+          <button class="iwg-tab active" onclick="iwgTab('preview')" id="iwg-tab-preview">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Preview
+          </button>
+          <button class="iwg-tab" onclick="iwgTab('content')" id="iwg-tab-content">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Content
+          </button>
+          <button class="iwg-tab" onclick="iwgTab('export')" id="iwg-tab-export">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+        </div>
+
+        <!-- Tab: Preview -->
+        <div class="iwg-tab-content active" id="iwg-tc-preview">
+          <div class="iwg-browser">
+            <div class="iwg-browser-chrome">
+              <div class="iwg-chrome-dots">
+                <div class="iwg-chrome-dot r"></div>
+                <div class="iwg-chrome-dot y"></div>
+                <div class="iwg-chrome-dot g"></div>
+              </div>
+              <div class="iwg-chrome-url">
+                <span class="iwg-chrome-url-dot"></span>
+                <span id="iwg-chrome-url-text">generated-website.html</span>
+              </div>
+            </div>
+            <iframe id="iwg-iframe" class="iwg-iframe" sandbox="allow-scripts allow-same-origin" title="Generated website preview"></iframe>
+          </div>
+        </div>
+
+        <!-- Tab: Edit Content -->
+        <div class="iwg-tab-content" id="iwg-tc-content">
+          <div class="iwg-content-grid">
+            <div class="iwg-field span-2">
+              <label>Hero Title</label>
+              <input id="iwge-hero-title" oninput="iwgMarkDirty()" placeholder="Your compelling headline" />
+            </div>
+            <div class="iwg-field span-2">
+              <label>Hero Subtitle</label>
+              <input id="iwge-hero-subtitle" oninput="iwgMarkDirty()" placeholder="Supporting tagline" />
+            </div>
+            <div class="iwg-field">
+              <label>Call to Action</label>
+              <input id="iwge-cta" oninput="iwgMarkDirty()" placeholder="Get a Free Quote" />
+            </div>
+            <div class="iwg-field">
+              <label>About Title</label>
+              <input id="iwge-about-title" oninput="iwgMarkDirty()" placeholder="About Us" />
+            </div>
+            <div class="iwg-field span-2">
+              <label>About Text</label>
+              <textarea id="iwge-about-text" oninput="iwgMarkDirty()" style="min-height:80px"></textarea>
+            </div>
+            <div class="iwg-field">
+              <label>Services Section Title</label>
+              <input id="iwge-services-title" oninput="iwgMarkDirty()" />
+            </div>
+            <div class="iwg-field">
+              <label>Contact Title</label>
+              <input id="iwge-contact-title" oninput="iwgMarkDirty()" />
+            </div>
+            <div class="iwg-field span-2">
+              <label>Contact Instructions</label>
+              <textarea id="iwge-contact-instructions" oninput="iwgMarkDirty()" style="min-height:60px"></textarea>
+            </div>
+          </div>
+
+          <div style="padding:0 18px 4px">
+            <div style="font-family:var(--fm);font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Services</div>
+          </div>
+          <div class="iwg-services-list" id="iwge-services-list"></div>
+          <button class="iwg-btn-add-svc" onclick="iwgAddEditService()">+ Add service</button>
+
+          <div class="iwg-content-actions">
+            <button class="btn btn-brand btn-sm" onclick="iwgApplyEdits()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Apply &amp; Preview
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="iwgResetEdits()" id="iwg-btn-reset-edits" style="display:none">Reset changes</button>
+          </div>
+        </div>
+
+        <!-- Tab: Export -->
+        <div class="iwg-tab-content" id="iwg-tc-export">
+          <div class="iwg-export-wrap">
+            <div style="font-size:12.5px;color:var(--text-2);line-height:1.6">
+              Your website is ready. Download the self-contained HTML file and host it anywhere — no server required.
+            </div>
+
+            <div class="iwg-export-item">
+              <div class="iwg-export-icon dl">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </div>
+              <div class="iwg-export-info">
+                <div class="iwg-export-title">Download HTML file</div>
+                <div class="iwg-export-desc">Complete single-file website · works offline · host on any server</div>
+              </div>
+              <button class="btn btn-brand btn-sm" onclick="iwgDownload()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download .html
+              </button>
+            </div>
+
+            <div class="iwg-export-item">
+              <div class="iwg-export-icon cp">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </div>
+              <div class="iwg-export-info">
+                <div class="iwg-export-title">Copy HTML to clipboard</div>
+                <div class="iwg-export-desc">Paste into any CMS, code editor, or send to client</div>
+              </div>
+              <button class="btn btn-blue btn-sm" id="iwg-btn-copy" onclick="iwgCopyHtml()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy HTML
+              </button>
+            </div>
+
+            <div style="background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text-2);line-height:1.6">
+              <strong style="color:var(--brand)">💡 Pro tip:</strong> Send this website preview link to the business owner as your outreach opener — showing them what their site <em>could</em> look like dramatically increases response rates.
+            </div>
+          </div>
+        </div>
+
+      </div><!-- iwg-state-result -->
+
+    </div><!-- iwg-card -->
+  </div><!-- iwg-anchor -->
+
+
 </div><!-- .main -->
 
 <!-- ════ UPGRADE MODAL ══════════════════════════════════════════════════ -->
@@ -2270,7 +2903,10 @@ function discRenderTable(list) {
       <td><span style="font-size:12px;color:var(--text-2)">${esc(b.industry)}</span> ${srcTag}</td>
       <td>${imp
         ? `<span style="font-family:var(--fm);font-size:10px;color:var(--brand);background:var(--brand-dim);border:1px solid var(--brand-mid);padding:2px 7px;border-radius:3px">✓ Imported</span>`
-        : `<button class="btn btn-outline btn-xs" onclick="discImportOne(${i})" id="disc-btn-row-${i}">↓ Import</button>`
+        : `<div style="display:flex;gap:4px;align-items:center">
+             <button class="btn btn-outline btn-xs" onclick="discImportOne(${i})" id="disc-btn-row-${i}">↓ Import</button>
+             ${!b.website ? `<button class="btn btn-xs" onclick="iwgTrigger(${i})" title="Generate website for this business" style="background:var(--brand-dim);border:1px solid var(--brand-mid);color:var(--brand);font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:background .12s" onmouseover="this.style.background='rgba(34,197,94,.2)'" onmouseout="this.style.background='var(--brand-dim)'">⚡ Site</button>` : ''}
+           </div>`
       }</td>
     </tr>`;
   }).join('');
@@ -2572,6 +3208,366 @@ async function handleUpgradeClick(plan) {
     toast('Could not start checkout. Please try again.', 'error');
     if (btn) { btn.disabled = false; btn.textContent = labels[plan] || 'Upgrade'; }
   }
+}
+
+
+/* ═══════════════════════════════════════════════════
+   INSTANT WEBSITE GENERATOR — IWG
+═══════════════════════════════════════════════════ */
+
+const IWG_SYSTEM = `You are an AI that generates complete, production-ready HTML landing pages for local businesses.
+
+Return ONLY a valid JSON object. No markdown. No backticks. No explanation. Just raw JSON.
+
+{
+  "editable_content": {
+    "hero_title": "string",
+    "hero_subtitle": "string",
+    "call_to_action": "string",
+    "about_title": "string",
+    "about_text": "string",
+    "services_title": "string",
+    "services_list": [{"name":"string","description":"string"}],
+    "contact_title": "string",
+    "contact_instructions": "string"
+  },
+  "generated_html": "<!DOCTYPE html>...complete HTML..."
+}
+
+HTML requirements:
+- Single self-contained file. All CSS inside <style> tag. No external resources, no CDN, no Google Fonts.
+- System font stack only: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif
+- Mobile-first responsive. Sections: hero (full-height with CTA button), about, services grid (2–3 columns), contact with phone/email, footer.
+- Choose a DISTINCTIVE color palette based on the industry (plumbers = deep blue+white, dentists = clean teal+white, electricians = yellow+dark, gyms = bold red+black, landscaping = forest green, etc.)
+- Include subtle CSS animations: fade-in on load, hover effects on cards and buttons
+- All phone numbers and emails must be clickable links (tel:, mailto:)
+- Stars rating and review count displayed in hero if provided
+- Professional and conversion-focused. No Lorem ipsum. No placeholder text.
+- Services displayed in a responsive card grid with icons (use Unicode symbols or SVG inline)
+
+Writing rules: credible, high-quality, industry-appropriate. Sound like the business wrote it themselves.`;
+
+let iwgCurrentBiz   = null;   // raw discovery object
+let iwgGeneratedHtml = null;  // final HTML string
+let iwgEditable      = null;  // editable_content object
+let iwgOriginalHtml  = null;  // for reset
+let iwgOrigEditable  = null;  // for reset
+let iwgDirty         = false;
+let iwgLoadInterval  = null;
+let iwgLoadPct       = 0;
+
+const IWG_STEPS = [
+  'Analyzing business data…',
+  'Writing professional copy…',
+  'Designing color palette…',
+  'Building layout & sections…',
+  'Generating hero section…',
+  'Creating services grid…',
+  'Polishing contact section…',
+  'Finalizing HTML…',
+];
+
+function iwgShowState(name) {
+  ['idle','loading','result'].forEach(s => {
+    const el = document.getElementById(`iwg-state-${s}`);
+    if (el) el.style.display = s === name ? '' : 'none';
+  });
+}
+
+/* Called from the ⚡ Site button in discovery table rows */
+function iwgTrigger(idx) {
+  const b = discFiltered[idx];
+  if (!b) return;
+  if (b.website) { toast('This business already has a website.', 'info'); return; }
+
+  iwgCurrentBiz = b;
+  iwgGeneratedHtml = null;
+  iwgEditable      = null;
+  iwgOriginalHtml  = null;
+  iwgOrigEditable  = null;
+  iwgDirty         = false;
+
+  // Populate header
+  document.getElementById('iwg-biz-name').textContent     = b.name     || 'Business';
+  document.getElementById('iwg-biz-industry').textContent = b.industry || '—';
+  document.getElementById('iwg-biz-location').textContent = b.location || '—';
+
+  const ratingEl  = document.getElementById('iwg-biz-rating');
+  const ratingDot = document.getElementById('iwg-meta-dot-rating');
+  if (b.rating) {
+    ratingEl.textContent        = `★ ${b.rating.toFixed(1)}${b.review_count ? ` (${b.review_count.toLocaleString()} reviews)` : ''}`;
+    ratingEl.style.display      = '';
+    ratingDot.style.display     = '';
+  } else {
+    ratingEl.style.display      = 'none';
+    ratingDot.style.display     = 'none';
+  }
+
+  document.getElementById('iwg-header-sub').textContent =
+    `Generating a landing page for ${b.name}`;
+
+  // Show regen btn only if we already have a result
+  document.getElementById('iwg-btn-regen').style.display = 'none';
+
+  // Switch to idle state, show the anchor
+  iwgShowState('idle');
+  iwgTab('preview');
+
+  const anchor = document.getElementById('iwg-anchor');
+  anchor.style.display = 'flex';
+  setTimeout(() => anchor.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+}
+
+function iwgClose() {
+  document.getElementById('iwg-anchor').style.display = 'none';
+  iwgCurrentBiz    = null;
+  iwgGeneratedHtml = null;
+  iwgEditable      = null;
+  clearInterval(iwgLoadInterval);
+}
+
+async function iwgGenerate() {
+  if (!iwgCurrentBiz) return;
+  const b = iwgCurrentBiz;
+
+  iwgShowState('loading');
+  document.getElementById('iwg-btn-gen').disabled = true;
+
+  // Progress bar + step messages
+  iwgLoadPct = 0;
+  let stepIdx = 0;
+  const barEl  = document.getElementById('iwg-loading-bar');
+  const stepEl = document.getElementById('iwg-loading-step');
+  clearInterval(iwgLoadInterval);
+  iwgLoadInterval = setInterval(() => {
+    iwgLoadPct = Math.min(iwgLoadPct + (100 / (IWG_STEPS.length * 2.5)), 92);
+    if (barEl) barEl.style.width = iwgLoadPct + '%';
+    if (stepEl && stepIdx < IWG_STEPS.length) {
+      stepEl.textContent = IWG_STEPS[stepIdx++];
+    }
+  }, 800);
+
+  // Build rich prompt from discovery data
+  const prompt = `Generate a complete landing page for this local business:
+
+Business Name: ${b.name}
+Industry / Category: ${b.industry}
+Location: ${b.location}
+Phone: ${b.phone || 'not provided'}
+Rating: ${b.rating != null ? b.rating + '/5' : 'not available'}
+Reviews: ${b.review_count != null ? b.review_count.toLocaleString() + ' reviews' : 'not available'}
+Description: ${b.description || 'Local business serving the ' + b.location + ' area'}
+${Array.isArray(b.services) && b.services.length ? 'Services: ' + b.services.join(', ') : ''}
+${Array.isArray(b.photos) && b.photos.length ? 'Photos available: yes (do NOT include img tags, use CSS gradients as placeholders instead)' : ''}
+
+This business has NO website. Generate a complete, professional landing page that will impress the business owner and convince them to hire a web developer.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({
+        model     : 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        system    : IWG_SYSTEM,
+        messages  : [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
+
+    const raw    = (data.content || []).map(c => c.text || '').join('');
+    const clean  = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    if (!parsed.generated_html || !parsed.editable_content) throw new Error('Incomplete response from AI');
+
+    clearInterval(iwgLoadInterval);
+    if (barEl) barEl.style.width = '100%';
+    await new Promise(r => setTimeout(r, 300));
+
+    iwgGeneratedHtml = parsed.generated_html;
+    iwgEditable      = JSON.parse(JSON.stringify(parsed.editable_content));
+    iwgOriginalHtml  = parsed.generated_html;
+    iwgOrigEditable  = JSON.parse(JSON.stringify(parsed.editable_content));
+    iwgDirty         = false;
+
+    // Populate iframe
+    const iframe = document.getElementById('iwg-iframe');
+    if (iframe) iframe.srcdoc = iwgGeneratedHtml;
+
+    // URL bar
+    const urlName = (b.name || 'website').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const urlEl   = document.getElementById('iwg-chrome-url-text');
+    if (urlEl) urlEl.textContent = urlName + '.html';
+
+    // Populate edit fields
+    iwgPopulateEditFields();
+
+    iwgShowState('result');
+    document.getElementById('iwg-btn-regen').style.display = '';
+    document.getElementById('iwg-btn-gen').disabled = false;
+    toast('Website generated!', 'success');
+    iwgTab('preview');
+
+  } catch(e) {
+    clearInterval(iwgLoadInterval);
+    iwgShowState('idle');
+    document.getElementById('iwg-btn-gen').disabled = false;
+    toast('Generation failed: ' + e.message, 'error');
+  }
+}
+
+function iwgRegen() {
+  iwgShowState('idle');
+  document.getElementById('iwg-btn-regen').style.display = 'none';
+}
+
+function iwgPopulateEditFields() {
+  const ec = iwgEditable;
+  if (!ec) return;
+  document.getElementById('iwge-hero-title').value           = ec.hero_title            || '';
+  document.getElementById('iwge-hero-subtitle').value        = ec.hero_subtitle         || '';
+  document.getElementById('iwge-cta').value                  = ec.call_to_action        || '';
+  document.getElementById('iwge-about-title').value          = ec.about_title           || '';
+  document.getElementById('iwge-about-text').value           = ec.about_text            || '';
+  document.getElementById('iwge-services-title').value       = ec.services_title        || '';
+  document.getElementById('iwge-contact-title').value        = ec.contact_title         || '';
+  document.getElementById('iwge-contact-instructions').value = ec.contact_instructions  || '';
+  iwgRenderEditServices();
+  document.getElementById('iwg-btn-reset-edits').style.display = 'none';
+  iwgDirty = false;
+}
+
+function iwgRenderEditServices() {
+  const el = document.getElementById('iwge-services-list');
+  if (!el || !iwgEditable) return;
+  const list = iwgEditable.services_list || [];
+  el.innerHTML = list.map((s, i) => `
+    <div class="iwg-service-row">
+      <div class="iwg-field">
+        ${i === 0 ? '<label>Name</label>' : ''}
+        <input oninput="iwgEditable.services_list[${i}].name=this.value;iwgMarkDirty()"
+          value="${esc(s.name)}" placeholder="Service name" />
+      </div>
+      <div class="iwg-field">
+        ${i === 0 ? '<label>Description</label>' : ''}
+        <input oninput="iwgEditable.services_list[${i}].description=this.value;iwgMarkDirty()"
+          value="${esc(s.description)}" placeholder="Brief description" />
+      </div>
+      <button class="iwg-btn-remove-svc" onclick="iwgRemoveEditSvc(${i})" title="Remove">×</button>
+    </div>
+  `).join('');
+}
+
+function iwgAddEditService() {
+  if (!iwgEditable) return;
+  iwgEditable.services_list.push({ name: '', description: '' });
+  iwgRenderEditServices();
+  iwgMarkDirty();
+}
+
+function iwgRemoveEditSvc(i) {
+  if (!iwgEditable) return;
+  iwgEditable.services_list.splice(i, 1);
+  iwgRenderEditServices();
+  iwgMarkDirty();
+}
+
+function iwgMarkDirty() {
+  iwgDirty = true;
+  document.getElementById('iwg-btn-reset-edits').style.display = '';
+}
+
+function iwgApplyEdits() {
+  if (!iwgEditable || !iwgOriginalHtml) return;
+
+  // Sync text fields to editable object
+  iwgEditable.hero_title           = document.getElementById('iwge-hero-title').value;
+  iwgEditable.hero_subtitle        = document.getElementById('iwge-hero-subtitle').value;
+  iwgEditable.call_to_action       = document.getElementById('iwge-cta').value;
+  iwgEditable.about_title          = document.getElementById('iwge-about-title').value;
+  iwgEditable.about_text           = document.getElementById('iwge-about-text').value;
+  iwgEditable.services_title       = document.getElementById('iwge-services-title').value;
+  iwgEditable.contact_title        = document.getElementById('iwge-contact-title').value;
+  iwgEditable.contact_instructions = document.getElementById('iwge-contact-instructions').value;
+
+  // String-replace changed values in the HTML
+  let html = iwgOriginalHtml;
+  const orig = iwgOrigEditable;
+  const curr = iwgEditable;
+
+  const pairs = [
+    [orig.hero_title,           curr.hero_title],
+    [orig.hero_subtitle,        curr.hero_subtitle],
+    [orig.call_to_action,       curr.call_to_action],
+    [orig.about_title,          curr.about_title],
+    [orig.about_text,           curr.about_text],
+    [orig.services_title,       curr.services_title],
+    [orig.contact_title,        curr.contact_title],
+    [orig.contact_instructions, curr.contact_instructions],
+  ];
+  for (const [from, to] of pairs) {
+    if (from && to && from !== to) {
+      html = html.split(from).join(to);
+    }
+  }
+  iwgGeneratedHtml = html;
+
+  const iframe = document.getElementById('iwg-iframe');
+  if (iframe) iframe.srcdoc = html;
+
+  iwgDirty = false;
+  document.getElementById('iwg-btn-reset-edits').style.display = 'none';
+  iwgTab('preview');
+  toast('Changes applied!', 'success');
+}
+
+function iwgResetEdits() {
+  if (!iwgOrigEditable) return;
+  iwgEditable      = JSON.parse(JSON.stringify(iwgOrigEditable));
+  iwgGeneratedHtml = iwgOriginalHtml;
+  iwgPopulateEditFields();
+  const iframe = document.getElementById('iwg-iframe');
+  if (iframe) iframe.srcdoc = iwgOriginalHtml;
+  iwgDirty = false;
+  toast('Reset to original.', 'info');
+}
+
+function iwgTab(name) {
+  ['preview','content','export'].forEach(t => {
+    const btn = document.getElementById(`iwg-tab-${t}`);
+    const pnl = document.getElementById(`iwg-tc-${t}`);
+    const act = t === name;
+    if (btn) btn.classList.toggle('active', act);
+    if (pnl) pnl.classList.toggle('active', act);
+  });
+}
+
+function iwgDownload() {
+  if (!iwgGeneratedHtml) return;
+  const name = (iwgCurrentBiz?.name || 'website').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const blob = new Blob([iwgGeneratedHtml], { type: 'text/html' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = name + '.html';
+  a.click();
+  toast(`Downloaded ${name}.html`, 'success');
+}
+
+function iwgCopyHtml() {
+  if (!iwgGeneratedHtml) return;
+  navigator.clipboard.writeText(iwgGeneratedHtml).then(() => {
+    const btn = document.getElementById('iwg-btn-copy');
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+    }
+    toast('HTML copied to clipboard.', 'success');
+  }).catch(() => toast('Copy failed. Try downloading instead.', 'error'));
 }
 
 initUserBlock();
