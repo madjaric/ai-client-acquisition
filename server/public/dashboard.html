@@ -1730,11 +1730,13 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 
         <!-- Score result -->
         <div class="ai-result-panel" id="score-result" style="margin-top:16px">
+
+          <!-- Score header -->
           <div class="score-display">
             <div>
               <div class="score-meta-label">Lead Score</div>
               <div class="score-big" id="res-score-num">—</div>
-              <div style="font-family:var(--fm);font-size:11px;color:var(--text-3);margin-top:2px">/10</div>
+              <div id="res-score-label" style="font-family:var(--fm);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:2px">—</div>
             </div>
             <div class="score-meta">
               <div style="margin-bottom:12px">
@@ -1747,8 +1749,9 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
               </div>
             </div>
             <div style="text-align:right">
-              <div class="score-meta-label" style="margin-bottom:6px">Confidence</div>
-              <div id="res-confidence"></div>
+              <div class="score-meta-label" style="margin-bottom:4px">Revenue Potential</div>
+              <div id="res-revenue-potential" style="font-family:var(--fm);font-size:13px;font-weight:700">—</div>
+              <div id="res-revenue-reason" style="font-size:11px;color:var(--text-3);margin-top:4px;max-width:160px;line-height:1.4;text-align:right"></div>
             </div>
           </div>
 
@@ -1763,41 +1766,74 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button id="res-btn-gen-site" onclick="scoreToWebsiteAndOutreach()"
-                style="flex:1;min-width:160px;padding:10px 16px;background:var(--amber);border:none;border-radius:var(--radius);color:#000;font-family:var(--fm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s">
+                style="flex:1;min-width:160px;padding:10px 16px;background:var(--amber);border:none;border-radius:var(--radius);color:#000;font-family:var(--fm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
                 Generate Website Preview
               </button>
-              <button id="res-btn-gen-outreach" onclick="scoreToOutreachWithPreview()" style="display:none;flex:1;min-width:160px;padding:10px 16px;background:var(--brand);border:none;border-radius:var(--radius);color:#000;font-family:var(--fm);font-size:12px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:6px;transition:opacity .15s">
+              <button id="res-btn-gen-outreach" onclick="scoreToOutreachWithPreview()"
+                style="display:none;flex:1;min-width:160px;padding:10px 16px;background:var(--brand);border:none;border-radius:var(--radius);color:#000;font-family:var(--fm);font-size:12px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;gap:6px">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 Generate Outreach with Preview
               </button>
             </div>
-            <!-- Preview generated indicator -->
             <div id="res-preview-ready" style="display:none;margin-top:10px;padding:8px 12px;background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);font-size:12px;color:var(--brand);font-family:var(--fm);font-weight:600">
               ✓ Website preview ready — outreach will reference it
             </div>
           </div>
 
+          <!-- Intelligence card -->
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Analysis</div>
-              <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">
-                → Generate Outreach
-              </button>
+              <div class="card-title">Sales Intelligence</div>
+              <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">→ Generate Outreach</button>
             </div>
-            <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+            <div class="card-body" style="display:flex;flex-direction:column;gap:18px">
+
+              <!-- Opportunity Summary -->
               <div>
-                <div class="section-title">Reasoning</div>
-                <p class="reasoning" id="res-reasoning">—</p>
+                <div class="section-title">Opportunity Summary</div>
+                <p class="reasoning" id="res-reasoning" style="line-height:1.7">—</p>
               </div>
+
+              <!-- Digital Presence Audit -->
+              <div id="res-audit-wrap">
+                <div class="section-title">Digital Presence Audit</div>
+                <div id="res-audit" style="display:flex;flex-direction:column;gap:3px;margin-top:6px"></div>
+              </div>
+
+              <!-- Website Opportunity -->
+              <div id="res-wo-wrap" style="display:none">
+                <div class="section-title">Website Opportunity</div>
+                <p id="res-website-opportunity" style="font-size:12.5px;color:var(--text-2);line-height:1.65;background:var(--amber-dim);border:1px solid var(--amber-mid);border-radius:var(--radius);padding:11px 13px;margin:0">—</p>
+              </div>
+
+              <!-- Outreach Angle -->
+              <div id="res-angle-wrap" style="display:none">
+                <div class="section-title">Outreach Angle</div>
+                <p id="res-outreach-angle" style="font-size:12.5px;font-weight:600;color:var(--brand);line-height:1.55;background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:11px 13px;margin:0">—</p>
+              </div>
+
+              <!-- AI Outreach Message -->
+              <div id="res-msg-wrap" style="display:none">
+                <div class="section-title" style="display:flex;align-items:center;justify-content:space-between">
+                  AI Outreach Message
+                  <button class="btn btn-outline btn-xs" onclick="copyText('res-outreach-message', this)">Copy</button>
+                </div>
+                <div class="result-block" id="res-outreach-message" style="margin-top:6px;white-space:pre-wrap">—</div>
+              </div>
+
+              <!-- Red Flags -->
               <div id="res-red-flags-wrap">
                 <div class="section-title">Red Flags</div>
                 <div class="red-flags" id="res-red-flags"></div>
               </div>
+
+              <!-- Recommended Action -->
               <div>
-                <div class="section-title">Recommended Action</div>
-                <p id="res-action" style="font-size:13px;font-weight:600;color:var(--text)">—</p>
+                <div class="section-title">Recommended Next Action</div>
+                <p id="res-action" style="font-size:13px;font-weight:600;color:var(--text);background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;margin:0">—</p>
               </div>
+
             </div>
           </div>
         </div>
@@ -3240,27 +3276,87 @@ function renderScoreResult(s) {
 
   const score100 = s.score !== undefined ? s.score : (s.lead_score ? s.lead_score * 10 : 0);
   const score10  = s.lead_score || Math.round(score100 / 10);
-  const col = score100 >= 90 ? 'var(--red)' : score100 >= 70 ? 'var(--amber)' : score100 >= 40 ? '#60a5fa' : 'var(--text-3)';
+  const label    = s.score_label || (score100 >= 80 ? 'Hot' : score100 >= 60 ? 'Warm' : score100 >= 40 ? 'Mild' : 'Cold');
+  const col      = score100 >= 80 ? 'var(--red)' : score100 >= 60 ? 'var(--amber)' : score100 >= 40 ? '#60a5fa' : 'var(--text-3)';
 
+  const setEl   = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const showEl  = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
+
+  // Score header
   document.getElementById('res-score-num').textContent = score100 || score10;
   document.getElementById('res-score-num').style.color = col;
-  document.getElementById('res-tier').innerHTML        = tierBadge(s.tier);
-  document.getElementById('res-value').textContent     = s.estimated_value_range || '—';
-  document.getElementById('res-confidence').innerHTML  = confidenceBadge(s.confidence);
-  document.getElementById('res-reasoning').textContent = s.reasoning || s.opportunity_summary || '—';
-  document.getElementById('res-action').textContent    = s.recommended_action || '—';
+  const labelEl = document.getElementById('res-score-label');
+  if (labelEl) { labelEl.textContent = label; labelEl.style.color = col; }
+  document.getElementById('res-tier').innerHTML = tierBadge(s.tier);
+  setEl('res-value', s.estimated_value_range || '—');
 
-  const flags = Array.isArray(s.red_flags) ? s.red_flags
-    : (typeof s.red_flags === 'string' ? (() => { try { return JSON.parse(s.red_flags); } catch { return []; } })() : []);
-  const flagWrap = document.getElementById('res-red-flags-wrap');
-  if (flags.length) {
-    document.getElementById('res-red-flags').innerHTML = flags.map(f => `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
-    flagWrap.style.display = 'block';
-  } else {
-    flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--brand)">✓ None identified</span>`;
+  // Revenue potential
+  const potEl = document.getElementById('res-revenue-potential');
+  if (potEl) {
+    potEl.textContent = s.revenue_potential || '—';
+    potEl.style.color = s.revenue_potential === 'High' ? 'var(--brand)' : s.revenue_potential === 'Medium' ? 'var(--amber)' : 'var(--text-3)';
+  }
+  setEl('res-revenue-reason', s.revenue_potential_reason || '');
+
+  // Opportunity summary (replaces generic "reasoning")
+  setEl('res-reasoning', s.opportunity_summary || s.reasoning || '—');
+
+  // Digital Presence Audit
+  const auditEl = document.getElementById('res-audit');
+  if (auditEl) {
+    const audit = s.digital_presence_audit || [];
+    if (audit.length) {
+      auditEl.innerHTML = audit.map(line => {
+        const isGood = line.startsWith('✅');
+        const isBad  = line.startsWith('❌');
+        const color  = isGood ? 'var(--brand)' : isBad ? 'var(--red)' : 'var(--text-3)';
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px;line-height:1.4">
+          <span style="color:${color};flex-shrink:0">${line.slice(0,2)}</span>
+          <span style="color:var(--text-2)">${esc(line.slice(2).trim())}</span>
+        </div>`;
+      }).join('');
+    } else {
+      auditEl.innerHTML = '<div style="font-size:12px;color:var(--text-3)">No audit data available.</div>';
+    }
   }
 
-  // Show ⚡ Website + Outreach CTA for no-website leads
+  // Website Opportunity
+  const woEl = document.getElementById('res-website-opportunity');
+  if (woEl && s.website_opportunity) {
+    woEl.textContent = s.website_opportunity;
+    showEl('res-wo-wrap', true);
+  } else { showEl('res-wo-wrap', false); }
+
+  // Outreach Angle
+  const angleEl = document.getElementById('res-outreach-angle');
+  if (angleEl && s.outreach_angle) {
+    angleEl.textContent = '"' + s.outreach_angle + '"';
+    showEl('res-angle-wrap', true);
+  } else { showEl('res-angle-wrap', false); }
+
+  // AI Outreach Message
+  const msgEl = document.getElementById('res-outreach-message');
+  if (msgEl && s.outreach_message) {
+    msgEl.textContent = s.outreach_message;
+    showEl('res-msg-wrap', true);
+  } else { showEl('res-msg-wrap', false); }
+
+  // Red Flags
+  const flags   = Array.isArray(s.red_flags) ? s.red_flags
+    : (typeof s.red_flags === 'string' ? (() => { try { return JSON.parse(s.red_flags); } catch { return []; } })() : []);
+  const flagWrap = document.getElementById('res-red-flags-wrap');
+  if (flagWrap) {
+    if (flags.length) {
+      document.getElementById('res-red-flags').innerHTML = flags.map(f => `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
+    } else {
+      flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--brand)">✓ None identified</span>`;
+    }
+  }
+
+  // Recommended Action
+  setEl('res-action', s.recommended_action || '—');
+
+  // ⚡ Website + Outreach CTA for no-website leads
   const lead       = allLeads.find(l => l.id === lastScoredId);
   const hasWebsite = !!(lead?.website && lead.website.trim());
   const ctaBlock   = document.getElementById('res-wo-cta');
@@ -3274,17 +3370,14 @@ function renderScoreResult(s) {
       ctaBlock.dataset.rating   = lead.rating || '';
       ctaBlock.dataset.reviews  = lead.review_count || '';
     }
-    // Reset preview state each time a new lead is scored
-    const previewReady = document.getElementById('res-preview-ready');
-    const outreachBtn  = document.getElementById('res-btn-gen-outreach');
-    if (previewReady) previewReady.style.display = 'none';
-    if (outreachBtn)  outreachBtn.style.display  = 'none';
+    showEl('res-preview-ready', false);
+    showEl('res-btn-gen-outreach', false);
     window._scoredLeadPreviewHtml = null;
   }
 }
 
 
-// ── Step 1: Generate Website from score panel ──────────────────────────────
+// ── Generate Website from Score Panel ─────────────────────────────────────
 function scoreToWebsiteAndOutreach() {
   const cta = document.getElementById('res-wo-cta');
   if (!cta) return;
@@ -3296,29 +3389,47 @@ function scoreToWebsiteAndOutreach() {
     website: null,
   };
   if (!biz.name) { toast('No lead selected.', 'error'); return; }
-  window._scoreToOutreachPending = { leadId: biz.id, bizName: biz.name,
+  window._scoreToOutreachPending = {
+    leadId: biz.id, bizName: biz.name,
     industry: biz.industry, location: biz.location,
-    rating: biz.rating, reviews: biz.review_count };
-  iwgTriggerFromLead(biz);
-}
-
-function iwgTriggerFromLead(biz) {
+  };
+  // Navigate to wopp and auto-open IWG pre-filled for this lead
   navigate('wopp');
   setTimeout(() => {
+    // Make sure lead is in woppOpps
+    const exists = woppOpps.find(o =>
+      o.leadId === biz.id || (o.name === biz.name && o.location === biz.location)
+    );
+    let targetId;
+    if (!exists) {
+      targetId = 'wo_lead_' + biz.id;
+      woppOpps.unshift({
+        id: targetId, leadId: biz.id, name: biz.name,
+        industry: biz.industry || '—', location: biz.location || '—',
+        rating: biz.rating, reviewCount: biz.review_count,
+        status: 0, html: null,
+        activity: [{ type:'info', text:'Added from AI Scoring', time: new Date().toISOString() }],
+        createdAt: new Date().toISOString(),
+      });
+      woppSave();
+    } else {
+      targetId = exists.id;
+    }
+    woppUpdateStats();
+    woppRenderTable();
+    // Auto-open the project modal for this specific lead
+    woOpenProject(targetId);
+    // Pre-fill IWG business info
+    window.iwgCurrentBiz = biz;
     const nameEl = document.getElementById('iwg-biz-name');
     const indEl  = document.getElementById('iwg-biz-industry');
-    if (nameEl) nameEl.textContent = biz.name     || 'Business';
+    if (nameEl) nameEl.textContent = biz.name;
     if (indEl)  indEl.textContent  = biz.industry || '';
-    window.iwgCurrentBiz    = biz;
-    window.iwgGeneratedHtml = null;
-    iwgShowState('idle');
-    const iwgEl = document.querySelector('.iwg-wrap') || document.getElementById('iwg-container');
-    if (iwgEl) iwgEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast('IWG ready — click Generate Website to create the preview.', 'success');
+    toast('Ready to generate website for ' + biz.name, 'success');
   }, 300);
 }
 
-// ── Step 2: Generate Outreach with website preview reference ───────────────
+// ── Generate Outreach after website preview is ready ──────────────────────
 async function scoreToOutreachWithPreview() {
   const pending = window._scoreToOutreachPending;
   const html    = window._scoredLeadPreviewHtml;
@@ -3331,7 +3442,7 @@ async function scoreToOutreachWithPreview() {
     websitePreviewExists: true,
   });
   if (btn) { btn.disabled = false; btn.style.display = 'flex'; }
-  if (!d.success) { toast(d.message || 'Outreach failed.', 'error'); return; }
+  if (!d.success) { toast(d.message || 'Outreach generation failed.', 'error'); return; }
   navigate('outreach');
   setTimeout(() => {
     const sel = document.getElementById('out-select');
@@ -3341,23 +3452,26 @@ async function scoreToOutreachWithPreview() {
   }, 200);
 }
 
-// ── Hook: after woppOnGenerated fires, update score panel state ───────────
-const _origWoppOnGenerated = typeof woppOnGenerated === 'function' ? woppOnGenerated : null;
-function woppOnGenerated(biz, html) {
-  if (_origWoppOnGenerated) _origWoppOnGenerated(biz, html);
-  const pending = window._scoreToOutreachPending;
-  if (!pending) return;
-  if (biz.id !== pending.leadId && biz.name !== pending.bizName) return;
-  window._scoredLeadPreviewHtml = html;
-  const previewReady = document.getElementById('res-preview-ready');
-  const outreachBtn  = document.getElementById('res-btn-gen-outreach');
-  const genBtn       = document.getElementById('res-btn-gen-site');
-  if (previewReady) previewReady.style.display = '';
-  if (outreachBtn)  outreachBtn.style.display = 'flex';
-  if (genBtn)       genBtn.textContent = '✓ Website Generated';
-  navigate('scoring');
-  setTimeout(() => document.getElementById('score-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 200);
-}
+// ── Hook woppOnGenerated to detect when IWG completes for scored lead ─────
+(function() {
+  const _orig = typeof woppOnGenerated === 'function' ? woppOnGenerated : null;
+  window.woppOnGenerated = function(biz, html) {
+    if (_orig) _orig(biz, html);
+    const pending = window._scoreToOutreachPending;
+    if (!pending) return;
+    if (biz.id !== pending.leadId && biz.name !== pending.bizName) return;
+    window._scoredLeadPreviewHtml = html;
+    const previewReady = document.getElementById('res-preview-ready');
+    const outreachBtn  = document.getElementById('res-btn-gen-outreach');
+    const genBtn       = document.getElementById('res-btn-gen-site');
+    if (previewReady) previewReady.style.display = '';
+    if (outreachBtn)  outreachBtn.style.display = 'flex';
+    if (genBtn)       genBtn.textContent = '✓ Website Generated';
+    navigate('scoring');
+    setTimeout(() => document.getElementById('score-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 200);
+    toast('Website generated! Now click "Generate Outreach with Preview".', 'success');
+  };
+})();
 
 async function loadScoredLeads() {
   const tier = document.getElementById('tier-filter')?.value || '';
