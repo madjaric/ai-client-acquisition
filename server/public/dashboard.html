@@ -1730,12 +1730,11 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 
         <!-- Score result -->
         <div class="ai-result-panel" id="score-result" style="margin-top:16px">
-          <!-- Score header -->
           <div class="score-display">
             <div>
               <div class="score-meta-label">Lead Score</div>
               <div class="score-big" id="res-score-num">—</div>
-              <div id="res-score-label" style="font-family:var(--fm);font-size:11px;font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:.06em">—</div>
+              <div style="font-family:var(--fm);font-size:11px;color:var(--text-3);margin-top:2px">/10</div>
             </div>
             <div class="score-meta">
               <div style="margin-bottom:12px">
@@ -1743,73 +1742,62 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
                 <div id="res-tier"></div>
               </div>
               <div>
-                <div class="score-meta-label">Est. Value</div>
+                <div class="score-meta-label">Estimated Value</div>
                 <div class="score-meta-value value-range" id="res-value">—</div>
               </div>
             </div>
             <div style="text-align:right">
-              <div class="score-meta-label" style="margin-bottom:6px">Revenue Potential</div>
-              <div id="res-revenue-potential" style="font-family:var(--fm);font-size:13px;font-weight:700">—</div>
-              <div id="res-revenue-reason" style="font-size:11px;color:var(--text-3);margin-top:4px;max-width:160px;line-height:1.4;text-align:right">—</div>
+              <div class="score-meta-label" style="margin-bottom:6px">Confidence</div>
+              <div id="res-confidence"></div>
             </div>
           </div>
 
-          <!-- Intelligence card -->
+          <!-- ⚡ Website + Outreach CTA — shown only for no-website leads -->
+          <div id="res-wo-cta" style="display:none;background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(34,197,94,.06));border:1.5px solid var(--amber-mid);border-radius:var(--radius-lg);padding:16px 18px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">⚡</div>
+              <div>
+                <div style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--text)">No website detected — high opportunity</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:2px">Generate a website preview and outreach email referencing it</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button id="res-btn-gen-site" onclick="scoreToWebsiteAndOutreach()"
+                style="flex:1;min-width:160px;padding:10px 16px;background:var(--amber);border:none;border-radius:var(--radius);color:#000;font-family:var(--fm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                Generate Website Preview
+              </button>
+              <button id="res-btn-gen-outreach" onclick="scoreToOutreachWithPreview()" style="display:none;flex:1;min-width:160px;padding:10px 16px;background:var(--brand);border:none;border-radius:var(--radius);color:#000;font-family:var(--fm);font-size:12px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:6px;transition:opacity .15s">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Generate Outreach with Preview
+              </button>
+            </div>
+            <!-- Preview generated indicator -->
+            <div id="res-preview-ready" style="display:none;margin-top:10px;padding:8px 12px;background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);font-size:12px;color:var(--brand);font-family:var(--fm);font-weight:600">
+              ✓ Website preview ready — outreach will reference it
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-header">
-              <div class="card-title">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:5px;color:var(--brand)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                Sales Intelligence
-              </div>
-              <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">→ Generate Outreach</button>
+              <div class="card-title">Analysis</div>
+              <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">
+                → Generate Outreach
+              </button>
             </div>
-            <div class="card-body" style="display:flex;flex-direction:column;gap:18px">
-
-              <!-- Opportunity Summary -->
+            <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
               <div>
-                <div class="section-title">Opportunity Summary</div>
-                <p class="reasoning" id="res-reasoning" style="line-height:1.7">—</p>
+                <div class="section-title">Reasoning</div>
+                <p class="reasoning" id="res-reasoning">—</p>
               </div>
-
-              <!-- Digital Presence Audit -->
-              <div id="res-audit-wrap">
-                <div class="section-title">Digital Presence Audit</div>
-                <div id="res-audit" style="display:flex;flex-direction:column;gap:5px;margin-top:6px"></div>
-              </div>
-
-              <!-- Website Opportunity -->
-              <div id="res-wo-wrap">
-                <div class="section-title">Website Opportunity</div>
-                <p id="res-website-opportunity" style="font-size:12.5px;color:var(--text-2);line-height:1.65;background:var(--amber-dim);border:1px solid var(--amber-mid);border-radius:var(--radius);padding:11px 13px">—</p>
-              </div>
-
-              <!-- Outreach Angle -->
-              <div id="res-angle-wrap">
-                <div class="section-title">Outreach Angle</div>
-                <p id="res-outreach-angle" style="font-size:12.5px;font-weight:600;color:var(--brand);line-height:1.55;background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:11px 13px">—</p>
-              </div>
-
-              <!-- AI Outreach Message -->
-              <div id="res-msg-wrap">
-                <div class="section-title" style="display:flex;align-items:center;justify-content:space-between">
-                  AI Outreach Message
-                  <button class="btn btn-outline btn-xs" onclick="copyText('res-outreach-message', this)">Copy</button>
-                </div>
-                <div class="result-block" id="res-outreach-message" style="margin-top:6px;white-space:pre-wrap">—</div>
-              </div>
-
-              <!-- Red Flags -->
               <div id="res-red-flags-wrap">
                 <div class="section-title">Red Flags</div>
                 <div class="red-flags" id="res-red-flags"></div>
               </div>
-
-              <!-- Recommended Action -->
               <div>
-                <div class="section-title">Recommended Next Action</div>
-                <p id="res-action" style="font-size:13px;font-weight:600;color:var(--text);background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px">—</p>
+                <div class="section-title">Recommended Action</div>
+                <p id="res-action" style="font-size:13px;font-weight:600;color:var(--text)">—</p>
               </div>
-
             </div>
           </div>
         </div>
@@ -3239,9 +3227,7 @@ async function scoreLead() {
   lastScoredId = leadId;
   renderScoreResult(s);
   loadLeads(); loadScoredLeads();
-  const scoreDisplay = s.score || (s.lead_score ? s.lead_score * 10 : '?');
-  const label = s.score_label || s.tier || '';
-  toast(`Scored: ${label} ${scoreDisplay}/100 — Tier ${s.tier}`, 'success');
+  toast(`Scored: Tier ${s.tier} · ${s.lead_score}/10`, 'success');
 
   // Mark onboarding step 2 done
   const s2 = document.getElementById('obs-2');
@@ -3252,115 +3238,125 @@ function renderScoreResult(s) {
   const panel = document.getElementById('score-result');
   panel.classList.add('visible');
 
-  // Score — support both 0-100 (new) and 1-10 (legacy)
   const score100 = s.score !== undefined ? s.score : (s.lead_score ? s.lead_score * 10 : 0);
-  const label    = s.score_label || (score100 >= 80 ? 'Hot' : score100 >= 60 ? 'Warm' : score100 >= 40 ? 'Mild' : 'Cold');
-  const col      = score100 >= 80 ? 'var(--red)' : score100 >= 60 ? 'var(--amber)' : score100 >= 40 ? '#60a5fa' : 'var(--text-3)';
+  const score10  = s.lead_score || Math.round(score100 / 10);
+  const col = score100 >= 90 ? 'var(--red)' : score100 >= 70 ? 'var(--amber)' : score100 >= 40 ? '#60a5fa' : 'var(--text-3)';
 
-  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
-
-  // Header
-  document.getElementById('res-score-num').textContent = score100 || '—';
+  document.getElementById('res-score-num').textContent = score100 || score10;
   document.getElementById('res-score-num').style.color = col;
-  setEl('res-score-label', label);
-  document.getElementById('res-score-label').style.color = col;
-  document.getElementById('res-tier').innerHTML = `${tierBadge(s.tier)} <span style="font-family:var(--fm);font-size:9px;padding:2px 6px;border-radius:3px;background:${s.model === 'B' ? 'var(--amber-dim)' : 'var(--blue-dim)'};color:${s.model === 'B' ? 'var(--amber)' : 'var(--blue)'}">MODEL ${s.model || (s.website ? 'A' : 'B')}</span>`;
-  setEl('res-value', s.estimated_value_range || '—');
+  document.getElementById('res-tier').innerHTML        = tierBadge(s.tier);
+  document.getElementById('res-value').textContent     = s.estimated_value_range || '—';
+  document.getElementById('res-confidence').innerHTML  = confidenceBadge(s.confidence);
+  document.getElementById('res-reasoning').textContent = s.reasoning || s.opportunity_summary || '—';
+  document.getElementById('res-action').textContent    = s.recommended_action || '—';
 
-  // Revenue potential
-  const potCol = s.revenue_potential === 'High' ? 'var(--brand)' : s.revenue_potential === 'Medium' ? 'var(--amber)' : 'var(--text-3)';
-  const potEl  = document.getElementById('res-revenue-potential');
-  if (potEl) { potEl.textContent = s.revenue_potential || '—'; potEl.style.color = potCol; }
-  setEl('res-revenue-reason', s.revenue_potential_reason || '');
-
-  // Opportunity summary
-  setEl('res-reasoning', s.opportunity_summary || s.reasoning || '—');
-
-  // Digital presence audit
-  const auditEl = document.getElementById('res-audit');
-  const audit   = s.digital_presence_audit || [];
-  if (auditEl) {
-    if (audit.length) {
-      auditEl.innerHTML = audit.map(line => {
-        const isGood = line.startsWith('✅');
-        const isBad  = line.startsWith('❌');
-        const color  = isGood ? 'var(--brand)' : isBad ? 'var(--red)' : 'var(--text-2)';
-        return `<div style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.4">
-          <span style="color:${color};flex-shrink:0;font-size:13px">${line.slice(0,2)}</span>
-          <span style="color:var(--text-2)">${esc(line.slice(2).trim())}</span>
-        </div>`;
-      }).join('');
-    } else {
-      auditEl.innerHTML = `<div style="font-size:12px;color:var(--text-3)">No audit data — score this lead to generate.</div>`;
-    }
-  }
-
-  // Website opportunity
-  const woEl = document.getElementById('res-website-opportunity');
-  if (woEl) {
-    if (s.website_opportunity) {
-      woEl.textContent = s.website_opportunity;
-      document.getElementById('res-wo-wrap').style.display = '';
-    } else {
-      document.getElementById('res-wo-wrap').style.display = 'none';
-    }
-  }
-
-  // Outreach angle
-  const angleEl = document.getElementById('res-outreach-angle');
-  if (angleEl) {
-    if (s.outreach_angle) {
-      angleEl.textContent = '"' + s.outreach_angle + '"';
-      document.getElementById('res-angle-wrap').style.display = '';
-    } else {
-      document.getElementById('res-angle-wrap').style.display = 'none';
-    }
-  }
-
-  // AI Outreach message
-  const msgEl = document.getElementById('res-outreach-message');
-  if (msgEl) {
-    if (s.outreach_message) {
-      msgEl.textContent = s.outreach_message;
-      document.getElementById('res-msg-wrap').style.display = '';
-    } else {
-      document.getElementById('res-msg-wrap').style.display = 'none';
-    }
-  }
-
-  // Red flags
-  const flags   = Array.isArray(s.red_flags) ? s.red_flags
+  const flags = Array.isArray(s.red_flags) ? s.red_flags
     : (typeof s.red_flags === 'string' ? (() => { try { return JSON.parse(s.red_flags); } catch { return []; } })() : []);
   const flagWrap = document.getElementById('res-red-flags-wrap');
-  if (flagWrap) {
-    if (flags.length) {
-      document.getElementById('res-red-flags').innerHTML = flags.map(f =>
-        `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
-      flagWrap.style.display = '';
-    } else {
-      flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--brand)">✓ None identified</span>`;
+  if (flags.length) {
+    document.getElementById('res-red-flags').innerHTML = flags.map(f => `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
+    flagWrap.style.display = 'block';
+  } else {
+    flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--brand)">✓ None identified</span>`;
+  }
+
+  // Show ⚡ Website + Outreach CTA for no-website leads
+  const lead       = allLeads.find(l => l.id === lastScoredId);
+  const hasWebsite = !!(lead?.website && lead.website.trim());
+  const ctaBlock   = document.getElementById('res-wo-cta');
+  if (ctaBlock) {
+    ctaBlock.style.display = hasWebsite ? 'none' : '';
+    if (!hasWebsite && lead) {
+      ctaBlock.dataset.leadId   = lead.id;
+      ctaBlock.dataset.leadName = lead.business_name || lead.name || '';
+      ctaBlock.dataset.industry = lead.industry || '';
+      ctaBlock.dataset.location = lead.location || '';
+      ctaBlock.dataset.rating   = lead.rating || '';
+      ctaBlock.dataset.reviews  = lead.review_count || '';
     }
+    // Reset preview state each time a new lead is scored
+    const previewReady = document.getElementById('res-preview-ready');
+    const outreachBtn  = document.getElementById('res-btn-gen-outreach');
+    if (previewReady) previewReady.style.display = 'none';
+    if (outreachBtn)  outreachBtn.style.display  = 'none';
+    window._scoredLeadPreviewHtml = null;
   }
+}
 
-  // Recommended action
-  setEl('res-action', s.recommended_action || '—');
 
-  // Model B: Website opportunity block (legacy support)
-  const existingWoBlock = document.getElementById('score-result-wo-block');
-  if (existingWoBlock) existingWoBlock.remove();
-  if (s.model === 'B' && (s.website_opportunity_score != null || s.recommended_website_type)) {
-    const woBlock = document.createElement('div');
-    woBlock.id = 'score-result-wo-block';
-    woBlock.style.cssText = 'background:var(--amber-dim);border:1px solid var(--amber-mid);border-radius:var(--radius-lg);padding:14px;margin-top:8px';
-    woBlock.innerHTML = `
-      <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:10px">⚡ Website Opportunity Intelligence</div>
-      <div style="display:flex;flex-direction:column;gap:7px;font-size:12px">
-        ${s.website_opportunity_score != null ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Opportunity Score</span><strong style="color:var(--amber)">${s.website_opportunity_score}/100</strong></div>` : ''}
-        ${s.recommended_website_type ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Recommended Site</span><span>${esc(s.recommended_website_type)}</span></div>` : ''}
-      </div>`;
-    panel.appendChild(woBlock);
-  }
+// ── Step 1: Generate Website from score panel ──────────────────────────────
+function scoreToWebsiteAndOutreach() {
+  const cta = document.getElementById('res-wo-cta');
+  if (!cta) return;
+  const biz = {
+    id: cta.dataset.leadId, name: cta.dataset.leadName,
+    industry: cta.dataset.industry, location: cta.dataset.location,
+    rating: parseFloat(cta.dataset.rating) || null,
+    review_count: parseInt(cta.dataset.reviews) || null,
+    website: null,
+  };
+  if (!biz.name) { toast('No lead selected.', 'error'); return; }
+  window._scoreToOutreachPending = { leadId: biz.id, bizName: biz.name,
+    industry: biz.industry, location: biz.location,
+    rating: biz.rating, reviews: biz.review_count };
+  iwgTriggerFromLead(biz);
+}
+
+function iwgTriggerFromLead(biz) {
+  navigate('wopp');
+  setTimeout(() => {
+    const nameEl = document.getElementById('iwg-biz-name');
+    const indEl  = document.getElementById('iwg-biz-industry');
+    if (nameEl) nameEl.textContent = biz.name     || 'Business';
+    if (indEl)  indEl.textContent  = biz.industry || '';
+    window.iwgCurrentBiz    = biz;
+    window.iwgGeneratedHtml = null;
+    iwgShowState('idle');
+    const iwgEl = document.querySelector('.iwg-wrap') || document.getElementById('iwg-container');
+    if (iwgEl) iwgEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast('IWG ready — click Generate Website to create the preview.', 'success');
+  }, 300);
+}
+
+// ── Step 2: Generate Outreach with website preview reference ───────────────
+async function scoreToOutreachWithPreview() {
+  const pending = window._scoreToOutreachPending;
+  const html    = window._scoredLeadPreviewHtml;
+  if (!pending || !html) { toast('Generate the website preview first.', 'error'); return; }
+  const btn = document.getElementById('res-btn-gen-outreach');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+  const d = await apiFetch('POST', '/api/generate-outreach', {
+    lead_id: pending.leadId,
+    tone_override: 'website-preview',
+    websitePreviewExists: true,
+  });
+  if (btn) { btn.disabled = false; btn.style.display = 'flex'; }
+  if (!d.success) { toast(d.message || 'Outreach failed.', 'error'); return; }
+  navigate('outreach');
+  setTimeout(() => {
+    const sel = document.getElementById('out-select');
+    if (sel && pending.leadId) sel.value = pending.leadId;
+    loadOutreachHistory();
+    toast('Outreach generated with website preview reference!', 'success');
+  }, 200);
+}
+
+// ── Hook: after woppOnGenerated fires, update score panel state ───────────
+const _origWoppOnGenerated = typeof woppOnGenerated === 'function' ? woppOnGenerated : null;
+function woppOnGenerated(biz, html) {
+  if (_origWoppOnGenerated) _origWoppOnGenerated(biz, html);
+  const pending = window._scoreToOutreachPending;
+  if (!pending) return;
+  if (biz.id !== pending.leadId && biz.name !== pending.bizName) return;
+  window._scoredLeadPreviewHtml = html;
+  const previewReady = document.getElementById('res-preview-ready');
+  const outreachBtn  = document.getElementById('res-btn-gen-outreach');
+  const genBtn       = document.getElementById('res-btn-gen-site');
+  if (previewReady) previewReady.style.display = '';
+  if (outreachBtn)  outreachBtn.style.display = 'flex';
+  if (genBtn)       genBtn.textContent = '✓ Website Generated';
+  navigate('scoring');
+  setTimeout(() => document.getElementById('score-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 200);
 }
 
 async function loadScoredLeads() {

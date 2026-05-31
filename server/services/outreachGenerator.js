@@ -113,6 +113,8 @@ function buildPrompt(input) {
     : lead_score >= 4 ? "C (lukewarm - brief & soft)"
     : "D (low priority - no hard ask)";
 
+  const websitePreviewExists = input.websitePreviewExists || false;
+
   return `
 Generate outreach messages:
 
@@ -121,10 +123,18 @@ Industry: ${industry}
 Location: ${location}
 Lead Score: ${lead_score}/10 - Tier ${tier}
 Estimated Value: ${estimated_value || "unknown"}
-Website: ${website || "not provided"}
+Website: ${website || "NOT FOUND — this business has no website"}
 Notes: ${notes || "none"}
 Tone Override: ${tone_override || "default"}
-
+${websitePreviewExists ? `
+IMPORTANT — WEBSITE PREVIEW CONTEXT:
+A custom website preview has been built for this business.
+The subject line and email opening MUST reference this.
+Example subject: "Built something for [Business Name]"
+Example opening: "We put together a free website preview for [Business Name] — wanted to show you what your online presence could look like."
+Do NOT pitch the price. Lead with the preview as a gift/curiosity hook.
+The email_body must reference the preview in the first sentence.
+` : ""}
 Follow ALL rules from system prompt.
 Return ONLY JSON.
 `.trim();
@@ -290,6 +300,7 @@ async function generateOutreach(input) {
     website,
     notes,
     tone_override,
+    websitePreviewExists = false,
     leadId,
     campaignId,
     saveToDb = true,
@@ -312,6 +323,7 @@ async function generateOutreach(input) {
     website,
     notes,
     tone_override,
+    websitePreviewExists,
   });
 
   const raw = await callGemini(userPrompt);
