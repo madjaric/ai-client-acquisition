@@ -1,82 +1,82 @@
 /**
  * services/aiScoring.js
- *
- * PREMIUM SALES INTELLIGENCE ENGINE
- * Transforms lead data into actionable business development insights.
- * Analyzes only verified data — never invents signals.
  */
 
 "use strict";
 
-const MODEL = "gemini-2.5-flash";
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-const MAX_TOKENS = 1800;
+console.log("🔥 LOADED AI SCORING FILE");
+console.log("🔥 GEMINI SCORING ACTIVE");
+
+// STABLE GEMINI MODEL
+const MODEL = "gemini-2.5-flash-lite";
+
+const GEMINI_API_URL =
+  `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+
+const MAX_TOKENS = 3000;
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  SYSTEM PROMPT — Premium Sales Intelligence
+//  SYSTEM PROMPT
 // ─────────────────────────────────────────────────────────────────────────────
 const SCORING_SYSTEM_PROMPT = `
 You are a senior business development consultant and digital agency sales strategist.
-Your job is to analyze a local business lead and produce premium sales intelligence
-that a salesperson can immediately act on.
+Analyze local business leads and produce premium sales intelligence a salesperson can act on immediately.
 
-CRITICAL RULES — follow these absolutely:
+CRITICAL RULES:
 1. NEVER invent facts. Only use data explicitly provided.
-2. NEVER assume social media presence, website tech, ads, or CRM unless stated in the data.
-3. If a field is "Not provided" or empty — treat it as unknown, not negative.
-4. Write like a sharp human consultant, not a marketing bot.
-5. Avoid filler phrases: "great opportunity", "leverage", "synergy", "seamless", "cutting-edge".
-6. Be specific. Reference actual numbers and facts from the input.
-7. Keep each section concise and high-signal. No padding.
+2. NEVER assume social media, ads, CRM, or website tech unless stated in the input.
+3. If a field says "Not provided" — treat as unknown, not negative.
+4. Write like a sharp human consultant. No filler, no buzzwords.
+5. Be specific — reference actual numbers from the input.
+6. Keep each field concise and high-signal.
 
-SCORING LOGIC:
-- Score 80-100 (Hot): No website + strong reviews + local service business + high-intent industry
-- Score 60-79 (Warm): Weak/missing website + decent reviews + clear opportunity
-- Score 40-59 (Mild): Has website but with obvious gaps, limited signals
-- Score 0-39 (Cold): Strong digital infrastructure, limited opportunity detected
+SCORING LOGIC (0-100):
+- 80-100 Hot:  No website + strong reviews + local service + high-intent industry
+- 60-79 Warm:  Weak/missing digital presence + clear opportunity
+- 40-59 Mild:  Has website but obvious gaps
+- 0-39  Cold:  Strong digital infrastructure, limited opportunity
 
-HIGH-INTENT INDUSTRIES (score higher for these):
+HIGH-INTENT INDUSTRIES (score higher):
 plumbing, hvac, roofing, electrical, dental, medical, legal, accounting,
 auto repair, landscaping, pest control, cleaning, moving, construction,
 cosmetic, tattoo, physiotherapy, veterinary, real estate
 
-WEBSITE OPPORTUNITY by industry category:
+WEBSITE OPPORTUNITY by industry:
 - Automotive/Repair: service showcase, quote requests, booking, trust-building
-- Medical/Dental/Health: appointment booking, service pages, patient trust, FAQs
-- Legal/Accounting: consultation booking, case types, credentials, trust signals
-- Restaurants/Food: menu visibility, reservations, hours, delivery info
-- Contractors/Trades: project gallery, lead capture forms, service areas, quotes
-- Beauty/Personal care: booking system, portfolio, pricing, reviews showcase
-- Retail/Local shops: product showcase, hours, directions, online presence
+- Medical/Dental: appointment booking, service pages, patient trust, FAQs
+- Legal/Accounting: consultation booking, credentials, trust signals
+- Restaurants: menu, reservations, hours, delivery info
+- Contractors/Trades: project gallery, lead capture, service areas, quotes
+- Beauty/Personal care: booking, portfolio, pricing, reviews showcase
 
-OUTPUT FORMAT — return ONLY valid JSON, no markdown, no backticks:
+Return ONLY valid JSON — no markdown, no backticks, no explanation.
+Keep ALL string values short enough to fit within the token limit.
+outreach_message must be 50-80 words maximum.
 
 {
   "lead_score": 0-100,
   "tier": "A|B|C|D",
   "confidence": "high|medium|low",
-  "estimated_value_range": "e.g. $1,500–$3,000 one-time + $200/mo",
+  "estimated_value_range": "e.g. $2,500 one-time + $200/mo",
   "revenue_potential": "High|Medium|Low",
-  "revenue_potential_reason": "One sentence explaining why, referencing actual data",
-  "opportunity_summary": "2-3 sentences. What was found, why it matters, why contact this lead now. Be specific — reference their actual review count, rating, location, industry.",
+  "revenue_potential_reason": "One sentence max referencing actual data",
+  "opportunity_summary": "2-3 sentences. What was found, why it matters, why contact now. Reference actual review count and rating.",
   "digital_presence_audit": [
     "✅ Google Business Profile detected",
     "✅ 4.9/5 rating from 43 reviews",
-    "✅ Phone number available",
     "❌ Website not detected",
-    "❌ Online booking system not detected",
-    "❌ Lead capture form not detected"
+    "❌ Online booking not detected"
   ],
-  "website_opportunity": "2-3 sentences specific to this industry explaining exactly how a website would help THIS business. Reference their category and situation.",
-  "outreach_angle": "One punchy sentence a salesperson could use as their opening hook. Reference the actual gap found.",
-  "outreach_message": "50-100 word cold outreach message. Professional, specific, references the actual opportunity. No generic marketing language. Write as if from a real person.",
+  "website_opportunity": "2 sentences specific to this industry and situation.",
+  "outreach_angle": "One sentence hook a salesperson can use immediately.",
+  "outreach_message": "50-80 word cold outreach. Professional, specific, references actual opportunity. No generic marketing.",
   "red_flags": [],
-  "recommended_action": "One specific next action. Not 'schedule a call' — be precise about what to say or send."
+  "recommended_action": "One specific next action — not just schedule a call."
 }
 `.trim();
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  USER PROMPT BUILDER
+// USER PROMPT
 // ─────────────────────────────────────────────────────────────────────────────
 function buildUserPrompt({ business_name, industry, location, website, notes, rating, review_count, phone }) {
   const hasWebsite = website && website.trim() && website !== "Not provided";
@@ -86,7 +86,7 @@ function buildUserPrompt({ business_name, industry, location, website, notes, ra
   return `
 Analyze this business lead and produce premium sales intelligence:
 
-BUSINESS DATA (only use what is provided):
+BUSINESS DATA (only use what is explicitly provided):
   Business Name   : ${business_name}
   Industry        : ${industry}
   Location        : ${location}
@@ -96,29 +96,48 @@ BUSINESS DATA (only use what is provided):
   Google Reviews  : ${hasReviews ? review_count + " reviews" : "Not available"}
   Additional Notes: ${notes || "None"}
 
-CONTEXT:
+SUMMARY OF SIGNALS:
   - Has website: ${hasWebsite ? "YES — " + website : "NO"}
-  - Review signals: ${hasRating && hasReviews ? `${review_count} reviews at ${rating}/5` : "Limited or none"}
+  - Review signals: ${hasRating && hasReviews ? review_count + " reviews at " + rating + "/5" : "Not available"}
 
-Score this lead 0-100 and generate full sales intelligence.
-Return ONLY valid JSON.
+Score 0-100 and produce full sales intelligence. Return ONLY valid JSON.
 `.trim();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  GEMINI API CALL
+// GEMINI API CALL
 // ─────────────────────────────────────────────────────────────────────────────
-async function callGemini(userPrompt) {
+async function callClaude(userPrompt) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured.");
+
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY is not configured in environment variables."
+    );
+  }
 
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
+
     body: JSON.stringify({
-      contents: [{ parts: [{ text: SCORING_SYSTEM_PROMPT + "\n\n" + userPrompt }] }],
+      contents: [
+        {
+          parts: [
+            {
+              text:
+                SCORING_SYSTEM_PROMPT +
+                "\n\n" +
+                userPrompt,
+            },
+          ],
+        },
+      ],
+
       generationConfig: {
-        temperature: 0.3,
+        temperature: 0.2,
         maxOutputTokens: MAX_TOKENS,
         responseMimeType: "application/json",
       },
@@ -127,30 +146,42 @@ async function callGemini(userPrompt) {
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Gemini API error [${response.status}]: ${body}`);
+    throw new Error(
+      `Gemini API error [${response.status}]: ${body}`
+    );
   }
 
   const data = await response.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+  return (
+    data?.candidates?.[0]?.content?.parts?.[0]?.text || ""
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  RESPONSE PARSER
+// RESPONSE PARSER
 // ─────────────────────────────────────────────────────────────────────────────
 function parseScoreResponse(raw) {
   const cleaned = raw.replace(/```json/gi, "").replace(/```/gi, "").trim();
 
   let parsed;
+
+  // ── Attempt 1: clean parse ──
   try {
     parsed = JSON.parse(cleaned);
-  } catch (err) {
-    console.error("RAW AI RESPONSE:", raw);
-    throw new Error(`AI returned non-JSON response: ${raw.slice(0, 200)}`);
+  } catch (_) {
+    // ── Attempt 2: truncated JSON — close open braces/brackets and retry ──
+    try {
+      const repaired = repairTruncatedJson(cleaned);
+      parsed = JSON.parse(repaired);
+      console.warn("[aiScoring] JSON was truncated — repaired successfully.");
+    } catch (err) {
+      console.error("RAW AI RESPONSE:", raw.slice(0, 400));
+      throw new Error(`AI returned non-JSON response: ${raw.slice(0, 200)}`);
+    }
   }
 
   const score = Math.max(0, Math.min(100, Number(parsed.lead_score) || 0));
-
-  // Backwards-compatible lead_score (1-10) for DB
   const lead_score = Math.max(1, Math.min(10, Math.round(score / 10)));
 
   const VALID_TIERS      = ["A", "B", "C", "D"];
@@ -158,33 +189,71 @@ function parseScoreResponse(raw) {
   const VALID_POTENTIAL  = ["High", "Medium", "Low"];
 
   return {
-    // New 0-100 score
     score,
     score_label: getScoreLabel(score),
-
-    // Legacy 1-10 for DB compatibility
     lead_score,
-
     tier: VALID_TIERS.includes(parsed.tier) ? parsed.tier : deriveTier(score),
     confidence: VALID_CONFIDENCE.includes(parsed.confidence) ? parsed.confidence : "medium",
     estimated_value_range: String(parsed.estimated_value_range || "Unknown"),
-
-    // New premium fields
     revenue_potential: VALID_POTENTIAL.includes(parsed.revenue_potential)
       ? parsed.revenue_potential : "Medium",
     revenue_potential_reason: String(parsed.revenue_potential_reason || ""),
-    opportunity_summary: String(parsed.opportunity_summary || ""),
+    opportunity_summary: String(parsed.opportunity_summary || parsed.reasoning || ""),
     digital_presence_audit: Array.isArray(parsed.digital_presence_audit)
       ? parsed.digital_presence_audit.map(String) : [],
     website_opportunity: String(parsed.website_opportunity || ""),
     outreach_angle: String(parsed.outreach_angle || ""),
     outreach_message: String(parsed.outreach_message || ""),
-
-    // Legacy fields for backwards compat
     reasoning: String(parsed.opportunity_summary || parsed.reasoning || ""),
     red_flags: Array.isArray(parsed.red_flags) ? parsed.red_flags.map(String) : [],
     recommended_action: String(parsed.recommended_action || ""),
   };
+}
+
+/**
+ * Attempt to repair truncated JSON by closing any open strings,
+ * arrays, and objects so JSON.parse can succeed.
+ */
+function repairTruncatedJson(str) {
+  let s = str.trimEnd();
+
+  // Remove trailing comma before closing
+  s = s.replace(/,\s*$/, "");
+
+  // If we're mid-string value, close the string
+  // Count unescaped quotes to detect open string
+  let inString = false;
+  let i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (ch === '\\' && inString) { i += 2; continue; }
+    if (ch === '"') inString = !inString;
+    i++;
+  }
+  if (inString) s += '"';
+
+  // Remove trailing comma again after closing string
+  s = s.replace(/,\s*$/, "");
+
+  // Count open braces and brackets, close them
+  let braces = 0, brackets = 0;
+  inString = false;
+  for (let j = 0; j < s.length; j++) {
+    const ch = s[j];
+    if (ch === '\\' && inString) { j++; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') braces++;
+    else if (ch === '}') braces--;
+    else if (ch === '[') brackets++;
+    else if (ch === ']') brackets--;
+  }
+
+  // Close in reverse order — brackets first, then braces
+  for (let k = 0; k < brackets; k++) s += ']';
+  for (let k = 0; k < braces;   k++) s += '}';
+
+  return s;
 }
 
 function getScoreLabel(score) {
@@ -202,7 +271,7 @@ function deriveTier(score) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  PUBLIC API
+// PUBLIC API
 // ─────────────────────────────────────────────────────────────────────────────
 async function scoreLead(lead) {
   const { business_name, industry, location, website, notes, rating, review_count, phone } = lead;
@@ -216,7 +285,7 @@ async function scoreLead(lead) {
     rating, review_count, phone,
   });
 
-  const raw    = await callGemini(userPrompt);
+  const raw    = await callClaude(userPrompt);
   const result = parseScoreResponse(raw);
 
   return {
