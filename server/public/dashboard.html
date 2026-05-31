@@ -4173,6 +4173,14 @@ function iwgShowState(name) {
   if (name === 'result') {
     setTimeout(() => {
       if (iwgCurrentBiz && iwgGeneratedHtml && typeof woppOnGenerated === 'function') {
+        // Resolve DB lead id if missing (Discovery objects have no .id)
+        if (!iwgCurrentBiz.id && !iwgCurrentBiz.leadId) {
+          const matched = (allLeads || []).find(l =>
+            (l.business_name || l.name || '').toLowerCase() === (iwgCurrentBiz.name || '').toLowerCase() &&
+            (l.location || '').toLowerCase() === (iwgCurrentBiz.location || '').toLowerCase()
+          );
+          if (matched) iwgCurrentBiz = { ...iwgCurrentBiz, id: matched.id, leadId: matched.id };
+        }
         woppOnGenerated(iwgCurrentBiz, iwgGeneratedHtml);
       }
     }, 600);
@@ -4544,7 +4552,17 @@ function woppOnGenerated(biz, html) {
   woppRenderTable();
 
   // ── Upload HTML to server → get real URL → persist to lead ───────────────
-  const leadId = biz.id || biz.leadId;
+  // Resolve leadId: biz.id (from pipeline) OR biz.leadId OR look up by name+location in allLeads
+  let leadId = biz.id || biz.leadId || null;
+  if (!leadId || leadId === 'undefined') {
+    // Discovery objects don't have .id — find the imported lead by name+location
+    const matched = (allLeads || []).find(l =>
+      (l.business_name || l.name || '').toLowerCase() === (biz.name || '').toLowerCase() &&
+      (l.location || '').toLowerCase() === (biz.location || '').toLowerCase()
+    );
+    if (matched) leadId = matched.id;
+  }
+
   if (leadId && leadId !== 'undefined') {
     window._leadPreviewReady = window._leadPreviewReady || {};
     window._leadPreviewUrls  = window._leadPreviewUrls  || {};
@@ -5088,6 +5106,19 @@ This business has NO website. Generate a complete, professional landing page tha
     opp.status = Math.max(opp.status, 1);
     woppAddActivity(woGenCurrentId, 'gen', 'Website generated');
     woppSave(); woppUpdateStats(); woppRenderTable();
+
+    // ── Trigger upload to server + preview URL creation ──────────────────
+    // Build a biz object with the leadId so woppOnGenerated can save the URL
+    const bizForUpload = {
+      id     : opp.leadId || null,
+      leadId : opp.leadId || null,
+      name   : opp.name,
+      industry: opp.industry,
+      location: opp.location,
+    };
+    if (typeof woppOnGenerated === 'function') {
+      woppOnGenerated(bizForUpload, parsed.generated_html);
+    }
 
     // Show result in modal
     const iframe = document.getElementById('wo-gen-iframe');
