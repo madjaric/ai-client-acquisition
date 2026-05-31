@@ -6,6 +6,7 @@
 require("dotenv").config();
 
 const path         = require("path");
+const fs           = require("fs");
 const express      = require("express");
 const helmet       = require("helmet");
 const cors         = require("cors");
@@ -281,6 +282,61 @@ app.get("/api/pipeline/analytics", requireAuth, (req, res) => {
     console.error("Pipeline analytics error:", err);
     return res.status(500).json({ success: false, message: err.message });
   }
+});
+
+// ─────────────────────────────────────────────
+//  Website Preview — save HTML to disk + serve
+//  POST /api/preview/save   → saves HTML, returns public URL
+//  GET  /api/preview/:leadId → serves the saved HTML file
+// ─────────────────────────────────────────────
+const PREVIEW_DIR = path.join(PUBLIC_DIR, "previews");
+if (!fs.existsSync(PREVIEW_DIR)) fs.mkdirSync(PREVIEW_DIR, { recursive: true });
+
+app.post("/api/preview/save", requireAuth, (req, res) => {
+  try {
+    const { lead_id, html } = req.body;
+    if (!lead_id || !html) {
+      return res.status(400).json({ success: false, message: "lead_id and html are required." });
+    }
+
+    const safe = lead_id.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const file = path.join(PREVIEW_DIR, `${safe}.html`);
+    fs.writeFileSync(file, html, "utf8");
+
+    const db   = getDb();
+    const lead = db.prepare("SELECT * FROM leads WHERE id = ?").get(lead_id);
+    if (lead) {
+      const baseUrl    = process.env.APP_URL || `http://localhost:${PORT}`;
+      const previewUrl = `${baseUrl}/previews/${safe}.html`;
+
+      // Build updated notes: replace old preview markers, add new ones
+      const notesBase = (lead.notes || "")
+        .replace(/\[WEBSITE_PREVIEW_GENERATED\]/g, "")
+        .replace(/\[PREVIEW_URL:[^\]]*\]/g, "")
+        .trim();
+      const newNotes = (notesBase ? notesBase + "\n" : "") +
+        "[WEBSITE_PREVIEW_GENERATED]\n" +
+        `[PREVIEW_URL:${previewUrl}]`;
+
+      db.prepare("UPDATE leads SET notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .run(newNotes, lead_id);
+
+      return res.json({ success: true, preview_url: previewUrl });
+    }
+
+    return res.json({ success: true, preview_url: null });
+  } catch (err) {
+    console.error("Preview save error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.get("/api/preview/:leadId", (req, res) => {
+  const safe = req.params.leadId.replace(/[^a-zA-Z0-9_-]/g, "_");
+  const file = path.join(PREVIEW_DIR, `${safe}.html`);
+  if (!fs.existsSync(file)) return res.status(404).send("Preview not found.");
+  res.setHeader("Content-Type", "text/html");
+  res.sendFile(file);
 });
 
 // ─────────────────────────────────────────────

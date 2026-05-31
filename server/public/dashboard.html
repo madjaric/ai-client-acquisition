@@ -3136,7 +3136,7 @@ async function loadLeads() {
   const badge = document.getElementById('sb-leads-count');
   if (badge) badge.textContent = allLeads.length || '—';
   loadPipelineAnalytics();
-  // Restore preview state from lead notes (persists across page reloads)
+  // Restore preview state from lead notes on every page load
   window._leadPreviewReady = window._leadPreviewReady || {};
   window._leadPreviewUrls  = window._leadPreviewUrls  || {};
   allLeads.forEach(l => {
@@ -3144,10 +3144,8 @@ async function loadLeads() {
     if (notes.includes('[WEBSITE_PREVIEW_GENERATED]')) {
       window._leadPreviewReady[l.id] = true;
     }
-    const urlMatch = notes.match(/\[PREVIEW_URL:([^\]]+)\]/);
-    if (urlMatch) {
-      window._leadPreviewUrls[l.id] = urlMatch[1];
-    }
+    const m = notes.match(/\[PREVIEW_URL:([^\]]+)\]/);
+    if (m) window._leadPreviewUrls[l.id] = m[1];
   });
 }
 
@@ -3428,6 +3426,8 @@ async function generateOutreach() {
   loadOutreachHistory();
   if (hasPreview && previewUrl) {
     toast('Email generated — website preview URL included!', 'success');
+  } else if (hasPreview) {
+    toast('Email generated with website preview reference!', 'success');
   } else {
     toast('Email + DM generated and saved.', 'success');
   }
@@ -4543,31 +4543,27 @@ function woppOnGenerated(biz, html) {
   woppUpdateStats();
   woppRenderTable();
 
-  // ── Upload HTML to server, get a real URL, persist to lead notes ──────────
+  // ── Upload HTML to server → get real URL → persist to lead ───────────────
   const leadId = biz.id || biz.leadId;
   if (leadId && leadId !== 'undefined') {
     window._leadPreviewReady = window._leadPreviewReady || {};
+    window._leadPreviewUrls  = window._leadPreviewUrls  || {};
     window._leadPreviewReady[leadId] = true;
 
-    // POST HTML to server — server saves file and returns preview_url
     apiFetch('POST', '/api/preview/save', { lead_id: leadId, html })
       .then(d => {
-        if (d.success && d.preview_url) {
-          // Store URL in memory for this session
-          window._leadPreviewUrls = window._leadPreviewUrls || {};
+        if (d && d.success && d.preview_url) {
           window._leadPreviewUrls[leadId] = d.preview_url;
-          toast(`Preview ready! URL: ${d.preview_url}`, 'success');
+          toast('Website preview ready! URL saved to lead.', 'success');
         } else {
-          // Fallback: at least mark the preview as generated in notes
+          // Fallback: mark in notes without URL
           apiFetch('PATCH', `/api/leads/${leadId}`, {
-            notes: (biz.notes ? biz.notes + '\n' : '') + '[WEBSITE_PREVIEW_GENERATED]'
+            notes: '[WEBSITE_PREVIEW_GENERATED]'
           }).catch(() => {});
           toast('Website preview generated!', 'success');
         }
       })
       .catch(() => {
-        // Non-critical fallback
-        window._leadPreviewReady[leadId] = true;
         toast('Website preview generated!', 'success');
       });
   } else {
@@ -4681,14 +4677,23 @@ function scoreToWebsiteAndOutreach() {
 
 // ── Generate Outreach after preview ready ────────────────────────────────
 async function scoreToOutreachWithPreview() {
-  const pending = window._scoreToOutreachPending;
-  const html    = window._scoredLeadPreviewHtml;
+  const pending    = window._scoreToOutreachPending;
+  const html       = window._scoredLeadPreviewHtml;
   if (!pending || !html) { toast('Generate the website preview first.', 'error'); return; }
   const btn = document.getElementById('res-btn-gen-outreach');
   if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
-  const d = await apiFetch('POST', '/api/generate-outreach', {
-    lead_id: pending.leadId, tone_override: 'website-preview', websitePreviewExists: true,
-  });
+
+  // Get the real server URL if available, otherwise fall back to flag only
+  const previewUrl = window._leadPreviewUrls?.[pending.leadId] || null;
+
+  const payload = {
+    lead_id             : pending.leadId,
+    tone_override       : 'website-preview',
+    websitePreviewExists: true,
+  };
+  if (previewUrl) payload.preview_url = previewUrl;
+
+  const d = await apiFetch('POST', '/api/generate-outreach', payload);
   if (btn) { btn.disabled = false; btn.style.display = 'flex'; }
   if (!d.success) { toast(d.message || 'Failed.', 'error'); return; }
   navigate('outreach');
@@ -4696,7 +4701,10 @@ async function scoreToOutreachWithPreview() {
     const sel = document.getElementById('out-select');
     if (sel && pending.leadId) sel.value = pending.leadId;
     loadOutreachHistory();
-    toast('Outreach generated with website preview reference!', 'success');
+    const msg = previewUrl
+      ? 'Outreach generated — preview URL included in email!'
+      : 'Outreach generated with website preview reference!';
+    toast(msg, 'success');
   }, 200);
 }
 
@@ -4712,12 +4720,27 @@ async function scoreToOutreachWithPreview() {
     const previewReady = document.getElementById('res-preview-ready');
     const outreachBtn  = document.getElementById('res-btn-gen-outreach');
     const genBtn       = document.getElementById('res-btn-gen-site');
-    if (previewReady) previewReady.style.display = '';
-    if (outreachBtn)  outreachBtn.style.display = 'flex';
-    if (genBtn)       genBtn.textContent = '✓ Website Generated';
-    navigate('scoring');
-    setTimeout(() => document.getElementById('score-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 200);
-    toast('Website generated! Now click "Generate Outreach with Preview".', 'success');
+    if (genBtn) genBtn.textContent = '✓ Website Generated';
+
+    // Wait for /api/preview/save to complete (fired in woppOnGenerated above)
+    // Poll _leadPreviewUrls for up to 5 seconds
+    let attempts = 0;
+    const check = setInterval(() => {
+      attempts++;
+      const url = window._leadPreviewUrls?.[pending.leadId];
+      if (url || attempts >= 10) {
+        clearInterval(check);
+        if (previewReady) {
+          previewReady.style.display = '';
+          previewReady.textContent = url
+            ? `✓ Preview ready — URL will be included in outreach email`
+            : '✓ Website preview ready — outreach will reference it';
+        }
+        if (outreachBtn) outreachBtn.style.display = 'flex';
+        navigate('scoring');
+        setTimeout(() => document.getElementById('score-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 200);
+      }
+    }, 500);
   };
 })();
 
