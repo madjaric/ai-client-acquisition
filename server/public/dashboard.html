@@ -4173,14 +4173,6 @@ function iwgShowState(name) {
   if (name === 'result') {
     setTimeout(() => {
       if (iwgCurrentBiz && iwgGeneratedHtml && typeof woppOnGenerated === 'function') {
-        // Resolve DB lead id if missing (Discovery objects have no .id)
-        if (!iwgCurrentBiz.id && !iwgCurrentBiz.leadId) {
-          const matched = (allLeads || []).find(l =>
-            (l.business_name || l.name || '').toLowerCase() === (iwgCurrentBiz.name || '').toLowerCase() &&
-            (l.location || '').toLowerCase() === (iwgCurrentBiz.location || '').toLowerCase()
-          );
-          if (matched) iwgCurrentBiz = { ...iwgCurrentBiz, id: matched.id, leadId: matched.id };
-        }
         woppOnGenerated(iwgCurrentBiz, iwgGeneratedHtml);
       }
     }, 600);
@@ -4552,17 +4544,7 @@ function woppOnGenerated(biz, html) {
   woppRenderTable();
 
   // ── Upload HTML to server → get real URL → persist to lead ───────────────
-  // Resolve leadId: biz.id (from pipeline) OR biz.leadId OR look up by name+location in allLeads
-  let leadId = biz.id || biz.leadId || null;
-  if (!leadId || leadId === 'undefined') {
-    // Discovery objects don't have .id — find the imported lead by name+location
-    const matched = (allLeads || []).find(l =>
-      (l.business_name || l.name || '').toLowerCase() === (biz.name || '').toLowerCase() &&
-      (l.location || '').toLowerCase() === (biz.location || '').toLowerCase()
-    );
-    if (matched) leadId = matched.id;
-  }
-
+  const leadId = biz.id || biz.leadId;
   if (leadId && leadId !== 'undefined') {
     window._leadPreviewReady = window._leadPreviewReady || {};
     window._leadPreviewUrls  = window._leadPreviewUrls  || {};
@@ -4630,7 +4612,11 @@ function generateWebsiteForLead(leadId, name, industry, location) {
   } else { targetId = existing.id; }
   window._scoreToOutreachPending = { leadId, bizName: name, industry, location };
   navigate('wopp');
-  setTimeout(() => { woppUpdateStats(); woppRenderTable(); woOpenProject(targetId); }, 250);
+  setTimeout(() => {
+    woppUpdateStats();
+    woppRenderTable();
+    autoGenerateWebsite(targetId);
+  }, 300);
 }
 
 // ── Generate Website from project modal empty state ───────────────────────
@@ -4638,23 +4624,8 @@ function woGenerateFromModal() {
   if (!woppCurrentId) return;
   const opp = woppOpps.find(o => o.id === woppCurrentId);
   if (!opp) return;
-  woGenCurrentId = woppCurrentId;
-  window.iwgCurrentBiz = {
-    id: opp.leadId || opp.id, name: opp.name,
-    industry: opp.industry, location: opp.location,
-    rating: opp.rating, review_count: opp.reviewCount,
-  };
   woCloseProject();
-  setTimeout(() => {
-    const nameEl = document.getElementById('iwg-biz-name');
-    const indEl  = document.getElementById('iwg-biz-industry');
-    if (nameEl) nameEl.textContent = opp.name;
-    if (indEl)  indEl.textContent  = opp.industry || '';
-    iwgShowState('idle');
-    const iwgEl = document.querySelector('.iwg-wrap') || document.querySelector('#iwg-state-idle');
-    if (iwgEl) iwgEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast('Ready — click Generate Website below.', 'success');
-  }, 250);
+  setTimeout(() => autoGenerateWebsite(opp.id), 150);
 }
 
 // ── Generate Website from AI Score panel ─────────────────────────────────
@@ -4683,13 +4654,11 @@ function scoreToWebsiteAndOutreach() {
   } else { targetId = existing.id; }
   navigate('wopp');
   setTimeout(() => {
-    woppUpdateStats(); woppRenderTable();
-    woOpenProject(targetId);
+    woppUpdateStats();
+    woppRenderTable();
+    // Set iwgCurrentBiz so woppOnGenerated can resolve the leadId
     window.iwgCurrentBiz = biz;
-    const nameEl = document.getElementById('iwg-biz-name');
-    const indEl  = document.getElementById('iwg-biz-industry');
-    if (nameEl) nameEl.textContent = biz.name;
-    if (indEl)  indEl.textContent  = biz.industry || '';
+    autoGenerateWebsite(targetId);
   }, 300);
 }
 
@@ -5027,6 +4996,32 @@ function woGenerateFromOpp(id) {
 /* ── Inline generator modal for Website Opportunities ─────────── */
 let woGenCurrentId = null;
 
+/**
+ * autoGenerateWebsite(targetId)
+ * Sets woGenCurrentId, opens the generator modal, and immediately
+ * triggers woRunGenerate() without any extra user click.
+ * Used by all "Generate Website" entry points.
+ */
+function autoGenerateWebsite(targetId) {
+  const opp = woppOpps.find(o => o.id === targetId);
+  if (!opp) { toast('Lead not found in opportunities.', 'error'); return; }
+
+  // If already has HTML, just open project preview instead
+  if (opp.html) {
+    woOpenProject(targetId);
+    return;
+  }
+
+  // Set the ID so woRunGenerate() can find it
+  woGenCurrentId = targetId;
+
+  // Open generator modal UI
+  woOpenGeneratorModal(targetId);
+
+  // Immediately start generating — no extra click needed
+  woRunGenerate();
+}
+
 function woOpenGeneratorModal(id) {
   woGenCurrentId = id;
   const opp = woppOpps.find(o => o.id === id);
@@ -5107,8 +5102,7 @@ This business has NO website. Generate a complete, professional landing page tha
     woppAddActivity(woGenCurrentId, 'gen', 'Website generated');
     woppSave(); woppUpdateStats(); woppRenderTable();
 
-    // ── Trigger upload to server + preview URL creation ──────────────────
-    // Build a biz object with the leadId so woppOnGenerated can save the URL
+    // Upload HTML to server and save preview URL to lead
     const bizForUpload = {
       id     : opp.leadId || null,
       leadId : opp.leadId || null,
