@@ -3136,6 +3136,13 @@ async function loadLeads() {
   const badge = document.getElementById('sb-leads-count');
   if (badge) badge.textContent = allLeads.length || '—';
   loadPipelineAnalytics();
+  // Restore preview state from lead notes (persists across page reloads)
+  window._leadPreviewReady = window._leadPreviewReady || {};
+  allLeads.forEach(l => {
+    if ((l.notes || '').includes('[WEBSITE_PREVIEW_GENERATED]')) {
+      window._leadPreviewReady[l.id] = true;
+    }
+  });
 }
 
 function updateStats(leads) {
@@ -3396,9 +3403,13 @@ async function generateOutreach() {
   const tone   = document.getElementById('out-tone').value;
   if (!leadId) { toast('Select a lead first.', 'error'); return; }
 
+  // Auto-detect if a website preview was generated for this lead
+  const hasPreview = !!(window._leadPreviewReady?.[leadId]);
+
   setBtn('btn-generate', true, 'Generating…');
   const body = { lead_id: leadId };
   if (tone) body.tone_override = tone;
+  if (hasPreview) body.websitePreviewExists = true;
   const d = await apiFetch('POST', '/api/generate-outreach', body);
   setBtn('btn-generate', false, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate All Formats`);
 
@@ -3407,7 +3418,11 @@ async function generateOutreach() {
   const msg = d.data?.message || d.data || {};
   renderOutreachResult(msg);
   loadOutreachHistory();
-  toast('Email + DM generated and saved.', 'success');
+  if (hasPreview) {
+    toast('Email generated with website preview reference!', 'success');
+  } else {
+    toast('Email + DM generated and saved.', 'success');
+  }
 
   // Mark onboarding step 3 done
   const s3 = document.getElementById('obs-3');
@@ -4519,7 +4534,19 @@ function woppOnGenerated(biz, html) {
   woppSave();
   woppUpdateStats();
   woppRenderTable();
-  toast('Opportunity created in Website Opps!', 'success');
+
+  // Mark lead as having a preview so outreach generator knows
+  const leadId = biz.id || biz.leadId;
+  if (leadId && leadId !== 'undefined') {
+    window._leadPreviewReady = window._leadPreviewReady || {};
+    window._leadPreviewReady[leadId] = true;
+    // Persist to lead notes so server-side outreach generator detects it
+    apiFetch('PATCH', `/api/leads/${leadId}`, {
+      notes: (biz.notes ? biz.notes + '\n' : '') + '[WEBSITE_PREVIEW_GENERATED]'
+    }).catch(() => {});
+  }
+
+  toast('Website preview generated! Now generate outreach to reference it.', 'success');
 }
 
 /** Sync no-website leads from discFiltered into opportunities (without html) */

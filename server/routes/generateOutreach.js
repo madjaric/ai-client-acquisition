@@ -1,20 +1,26 @@
 /**
  * routes/generateOutreach.js
  *
- * POST /api/generate-outreach
+ * POST /api/generate-outreach        — generate and save outreach
+ * GET  /api/generate-outreach        — list generated messages (history)
+ * GET  /api/generate-outreach/:id    — get single message
  *
- * Accepts lead_id + optional overrides.
- * Supports websitePreviewExists flag — when true, the outreach message
- * will reference a generated website preview as the hook.
+ * Preview detection (two ways):
+ *   1. Request body:  websitePreviewExists: true
+ *   2. Lead notes contain:  [WEBSITE_PREVIEW_GENERATED]
  */
 
 "use strict";
 
 const express  = require("express");
 const router   = express.Router();
-const { getDb }          = require("../db/connection");
-const { generateOutreach } = require("../services/outreachGenerator");
+const { getDb }              = require("../db/connection");
+const { generateOutreach,
+        getAllMessages }      = require("../services/outreachGenerator");
 
+// ─────────────────────────────────────────────
+//  POST /api/generate-outreach
+// ─────────────────────────────────────────────
 router.post("/", async (req, res) => {
   try {
     const {
@@ -34,12 +40,15 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ success: false, message: "Lead not found." });
     }
 
-    // Get latest score for this lead (for lead_score field)
     const latestScore = db.prepare(
       "SELECT * FROM lead_scores WHERE lead_id = ? ORDER BY scored_at DESC LIMIT 1"
     ).get(lead_id);
 
     const lead_score = latestScore?.lead_score || 5;
+
+    // Detect preview from request body OR from lead notes marker
+    const hasPreview = !!websitePreviewExists ||
+      ((lead.notes || "").includes("[WEBSITE_PREVIEW_GENERATED]"));
 
     const result = await generateOutreach({
       business_name       : lead.business_name || lead.name,
@@ -50,7 +59,7 @@ router.post("/", async (req, res) => {
       website             : lead.website || null,
       notes               : lead.notes   || null,
       tone_override       : tone_override || null,
-      websitePreviewExists: !!websitePreviewExists,
+      websitePreviewExists: hasPreview,
       leadId              : lead_id,
       campaignId          : campaign_id || null,
       saveToDb            : true,
@@ -60,6 +69,36 @@ router.post("/", async (req, res) => {
 
   } catch (err) {
     console.error("Generate outreach error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+//  GET /api/generate-outreach  (history list)
+// ─────────────────────────────────────────────
+router.get("/", (req, res) => {
+  try {
+    const { messages, total } = getAllMessages({
+      limit : Number(req.query.limit)  || 50,
+      offset: Number(req.query.offset) || 0,
+    });
+    return res.json({ success: true, data: messages, total });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+//  GET /api/generate-outreach/:id
+// ─────────────────────────────────────────────
+router.get("/:id", (req, res) => {
+  try {
+    const msg = getDb()
+      .prepare("SELECT * FROM generated_messages WHERE id = ?")
+      .get(req.params.id);
+    if (!msg) return res.status(404).json({ success: false, message: "Message not found." });
+    return res.json({ success: true, data: msg });
+  } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
 });
