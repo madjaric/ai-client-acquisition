@@ -114,6 +114,24 @@ function buildPrompt(input) {
     : "D (low priority - no hard ask)";
 
   const websitePreviewExists = input.websitePreviewExists || false;
+  const preview_url          = input.preview_url || null;
+
+  const previewBlock = websitePreviewExists ? `
+CRITICAL — WEBSITE PREVIEW EXISTS:
+A custom website preview has already been built for ${business_name}.
+${preview_url
+  ? `The preview URL is: ${preview_url}
+This URL MUST appear verbatim in the email_body. Include it as a clickable link like:
+"Here is your free website preview: ${preview_url}"
+The recipient must be able to click this link to see their site.`
+  : `Reference that a preview has been created but do not invent a URL.
+Say something like: "We put together a free website preview for you — reply to this email and we'll send it over."`
+}
+Rules:
+- Subject line MUST reference the preview (e.g. "Built something for ${business_name}")
+- Opening MUST mention the preview in the first sentence
+- Do NOT pitch price. Lead with the preview as a gift/curiosity hook.
+` : "";
 
   return `
 Generate outreach messages:
@@ -124,17 +142,9 @@ Location: ${location}
 Lead Score: ${lead_score}/10 - Tier ${tier}
 Estimated Value: ${estimated_value || "unknown"}
 Website: ${website || "NOT FOUND — this business has no website"}
-Notes: ${notes || "none"}
+Notes: ${notes ? notes.replace(/\[WEBSITE_PREVIEW_GENERATED\]/g, "").replace(/\[PREVIEW_URL:[^\]]*\]/g, "").trim() : "none"}
 Tone Override: ${tone_override || "default"}
-${websitePreviewExists ? `
-IMPORTANT — WEBSITE PREVIEW CONTEXT:
-A custom website preview has been built for this business.
-The subject line and email opening MUST reference this.
-Example subject: "Built something for [Business Name]"
-Example opening: "We put together a free website preview for [Business Name] — wanted to show you what your online presence could look like."
-Do NOT pitch the price. Lead with the preview as a gift/curiosity hook.
-The email_body must reference the preview in the first sentence.
-` : ""}
+${previewBlock}
 Follow ALL rules from system prompt.
 Return ONLY JSON.
 `.trim();
@@ -301,6 +311,7 @@ async function generateOutreach(input) {
     notes,
     tone_override,
     websitePreviewExists = false,
+    preview_url = null,
     leadId,
     campaignId,
     saveToDb = true,
@@ -324,6 +335,7 @@ async function generateOutreach(input) {
     notes,
     tone_override,
     websitePreviewExists,
+    preview_url,
   });
 
   const raw = await callGemini(userPrompt);

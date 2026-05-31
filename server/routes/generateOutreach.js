@@ -6,8 +6,8 @@
  * GET  /api/generate-outreach/:id    — get single message
  *
  * Preview detection (two ways):
- *   1. Request body:  websitePreviewExists: true
- *   2. Lead notes contain:  [WEBSITE_PREVIEW_GENERATED]
+ *   1. Request body:  websitePreviewExists: true, preview_url: "https://..."
+ *   2. Lead notes contain:  [WEBSITE_PREVIEW_GENERATED] and [PREVIEW_URL:https://...]
  */
 
 "use strict";
@@ -28,6 +28,7 @@ router.post("/", async (req, res) => {
       tone_override,
       campaign_id,
       websitePreviewExists = false,
+      preview_url,
     } = req.body;
 
     if (!lead_id) {
@@ -50,6 +51,10 @@ router.post("/", async (req, res) => {
     const hasPreview = !!websitePreviewExists ||
       ((lead.notes || "").includes("[WEBSITE_PREVIEW_GENERATED]"));
 
+    // Resolve preview URL: request body takes precedence, then parse from notes
+    const notesUrlMatch = (lead.notes || "").match(/\[PREVIEW_URL:([^\]]+)\]/);
+    const resolvedPreviewUrl = preview_url || (notesUrlMatch ? notesUrlMatch[1] : null);
+
     const result = await generateOutreach({
       business_name       : lead.business_name || lead.name,
       industry            : lead.industry,
@@ -60,6 +65,7 @@ router.post("/", async (req, res) => {
       notes               : lead.notes   || null,
       tone_override       : tone_override || null,
       websitePreviewExists: hasPreview,
+      preview_url         : resolvedPreviewUrl,
       leadId              : lead_id,
       campaignId          : campaign_id || null,
       saveToDb            : true,

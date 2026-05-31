@@ -3138,9 +3138,15 @@ async function loadLeads() {
   loadPipelineAnalytics();
   // Restore preview state from lead notes (persists across page reloads)
   window._leadPreviewReady = window._leadPreviewReady || {};
+  window._leadPreviewUrls  = window._leadPreviewUrls  || {};
   allLeads.forEach(l => {
-    if ((l.notes || '').includes('[WEBSITE_PREVIEW_GENERATED]')) {
+    const notes = l.notes || '';
+    if (notes.includes('[WEBSITE_PREVIEW_GENERATED]')) {
       window._leadPreviewReady[l.id] = true;
+    }
+    const urlMatch = notes.match(/\[PREVIEW_URL:([^\]]+)\]/);
+    if (urlMatch) {
+      window._leadPreviewUrls[l.id] = urlMatch[1];
     }
   });
 }
@@ -3403,13 +3409,15 @@ async function generateOutreach() {
   const tone   = document.getElementById('out-tone').value;
   if (!leadId) { toast('Select a lead first.', 'error'); return; }
 
-  // Auto-detect if a website preview was generated for this lead
+  // Auto-detect preview state for this lead
   const hasPreview = !!(window._leadPreviewReady?.[leadId]);
+  const previewUrl = window._leadPreviewUrls?.[leadId] || null;
 
   setBtn('btn-generate', true, 'Generating…');
   const body = { lead_id: leadId };
-  if (tone) body.tone_override = tone;
-  if (hasPreview) body.websitePreviewExists = true;
+  if (tone)        body.tone_override        = tone;
+  if (hasPreview)  body.websitePreviewExists  = true;
+  if (previewUrl)  body.preview_url           = previewUrl;
   const d = await apiFetch('POST', '/api/generate-outreach', body);
   setBtn('btn-generate', false, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate All Formats`);
 
@@ -3418,8 +3426,8 @@ async function generateOutreach() {
   const msg = d.data?.message || d.data || {};
   renderOutreachResult(msg);
   loadOutreachHistory();
-  if (hasPreview) {
-    toast('Email generated with website preview reference!', 'success');
+  if (hasPreview && previewUrl) {
+    toast('Email generated — website preview URL included!', 'success');
   } else {
     toast('Email + DM generated and saved.', 'success');
   }
@@ -4535,18 +4543,36 @@ function woppOnGenerated(biz, html) {
   woppUpdateStats();
   woppRenderTable();
 
-  // Mark lead as having a preview so outreach generator knows
+  // ── Upload HTML to server, get a real URL, persist to lead notes ──────────
   const leadId = biz.id || biz.leadId;
   if (leadId && leadId !== 'undefined') {
     window._leadPreviewReady = window._leadPreviewReady || {};
     window._leadPreviewReady[leadId] = true;
-    // Persist to lead notes so server-side outreach generator detects it
-    apiFetch('PATCH', `/api/leads/${leadId}`, {
-      notes: (biz.notes ? biz.notes + '\n' : '') + '[WEBSITE_PREVIEW_GENERATED]'
-    }).catch(() => {});
-  }
 
-  toast('Website preview generated! Now generate outreach to reference it.', 'success');
+    // POST HTML to server — server saves file and returns preview_url
+    apiFetch('POST', '/api/preview/save', { lead_id: leadId, html })
+      .then(d => {
+        if (d.success && d.preview_url) {
+          // Store URL in memory for this session
+          window._leadPreviewUrls = window._leadPreviewUrls || {};
+          window._leadPreviewUrls[leadId] = d.preview_url;
+          toast(`Preview ready! URL: ${d.preview_url}`, 'success');
+        } else {
+          // Fallback: at least mark the preview as generated in notes
+          apiFetch('PATCH', `/api/leads/${leadId}`, {
+            notes: (biz.notes ? biz.notes + '\n' : '') + '[WEBSITE_PREVIEW_GENERATED]'
+          }).catch(() => {});
+          toast('Website preview generated!', 'success');
+        }
+      })
+      .catch(() => {
+        // Non-critical fallback
+        window._leadPreviewReady[leadId] = true;
+        toast('Website preview generated!', 'success');
+      });
+  } else {
+    toast('Website preview generated!', 'success');
+  }
 }
 
 /** Sync no-website leads from discFiltered into opportunities (without html) */
