@@ -306,7 +306,7 @@ app.post("/api/preview/save", requireAuth, (req, res) => {
     const db   = getDb();
     const lead = db.prepare("SELECT * FROM leads WHERE id = ?").get(lead_id);
     if (lead) {
-      const baseUrl    = process.env.APP_URL || `http://localhost:${PORT}`;
+      const baseUrl    = (process.env.APP_URL || `http://localhost:${PORT}`).replace(/\/$/, "");
       const previewUrl = `${baseUrl}/previews/${safe}.html`;
 
       // Build updated notes: replace old preview markers, add new ones
