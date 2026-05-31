@@ -1,189 +1,126 @@
 /**
  * services/aiScoring.js
  *
- * DUAL AI SCORING SYSTEM
- * ─────────────────────────────────────────────────────────────────────────────
- *
- * MODEL A — Businesses WITH websites
- *   Scores: website quality, SEO, reviews, social activity, industry competitiveness
- *   Purpose: Probability of purchasing lead generation / digital marketing services
- *
- * MODEL B — Businesses WITHOUT websites
- *   Scores: review presence, business age, industry demand, location demand, social presence
- *   Purpose: Probability of purchasing a website + online presence package
- *   Extra outputs: website_opportunity_score, website_revenue_potential, digital_presence_score
- *
- * Score labels: 90-100 = Hot | 70-89 = Warm | 40-69 = Mild | 0-39 = Cold
+ * PREMIUM SALES INTELLIGENCE ENGINE
+ * Transforms lead data into actionable business development insights.
+ * Analyzes only verified data — never invents signals.
  */
 
 "use strict";
 
-console.log("🔥 LOADED DUAL AI SCORING ENGINE");
-
-const MODEL          = "gemini-2.5-flash-lite";
+const MODEL = "gemini-2.5-flash";
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-const MAX_TOKENS     = 1200;
+const MAX_TOKENS = 1800;
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  SCORE LABEL HELPER
+//  SYSTEM PROMPT — Premium Sales Intelligence
 // ─────────────────────────────────────────────────────────────────────────────
-function getScoreLabel(score) {
-  if (score >= 90) return "Hot";
-  if (score >= 70) return "Warm";
-  if (score >= 40) return "Mild";
-  return "Cold";
-}
+const SCORING_SYSTEM_PROMPT = `
+You are a senior business development consultant and digital agency sales strategist.
+Your job is to analyze a local business lead and produce premium sales intelligence
+that a salesperson can immediately act on.
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  MODEL A — SYSTEM PROMPT (Has Website → Sell Lead Gen / Digital Marketing)
-// ─────────────────────────────────────────────────────────────────────────────
-const MODEL_A_SYSTEM_PROMPT = `
-You are a senior B2B client acquisition analyst specialising in digital agency sales.
-Your task: evaluate a business that HAS a website and score their probability of purchasing
-lead generation services, conversion optimisation, SEO, or digital marketing automation.
+CRITICAL RULES — follow these absolutely:
+1. NEVER invent facts. Only use data explicitly provided.
+2. NEVER assume social media presence, website tech, ads, or CRM unless stated in the data.
+3. If a field is "Not provided" or empty — treat it as unknown, not negative.
+4. Write like a sharp human consultant, not a marketing bot.
+5. Avoid filler phrases: "great opportunity", "leverage", "synergy", "seamless", "cutting-edge".
+6. Be specific. Reference actual numbers and facts from the input.
+7. Keep each section concise and high-signal. No padding.
 
-Score on a 0–100 scale. Consider these weighted factors:
-  - Website quality & professionalism (visible from URL/notes)
-  - SEO presence & organic visibility signals
-  - Google review count & rating (social proof baseline)
-  - Social media activity signals
-  - Industry competitiveness (how hard is it for them to get leads organically?)
-  - Contact availability (phone, email, booking form)
-  - Estimated monthly ad spend / growth appetite implied by size
+SCORING LOGIC:
+- Score 80-100 (Hot): No website + strong reviews + local service business + high-intent industry
+- Score 60-79 (Warm): Weak/missing website + decent reviews + clear opportunity
+- Score 40-59 (Mild): Has website but with obvious gaps, limited signals
+- Score 0-39 (Cold): Strong digital infrastructure, limited opportunity detected
 
-Return ONLY valid JSON. No markdown. No backticks.
+HIGH-INTENT INDUSTRIES (score higher for these):
+plumbing, hvac, roofing, electrical, dental, medical, legal, accounting,
+auto repair, landscaping, pest control, cleaning, moving, construction,
+cosmetic, tattoo, physiotherapy, veterinary, real estate
+
+WEBSITE OPPORTUNITY by industry category:
+- Automotive/Repair: service showcase, quote requests, booking, trust-building
+- Medical/Dental/Health: appointment booking, service pages, patient trust, FAQs
+- Legal/Accounting: consultation booking, case types, credentials, trust signals
+- Restaurants/Food: menu visibility, reservations, hours, delivery info
+- Contractors/Trades: project gallery, lead capture forms, service areas, quotes
+- Beauty/Personal care: booking system, portfolio, pricing, reviews showcase
+- Retail/Local shops: product showcase, hours, directions, online presence
+
+OUTPUT FORMAT — return ONLY valid JSON, no markdown, no backticks:
 
 {
-  "score": 0-100,
-  "score_label": "Hot|Warm|Mild|Cold",
+  "lead_score": 0-100,
   "tier": "A|B|C|D",
-  "model": "A",
-  "estimated_value_range": "$X–$Y/month",
   "confidence": "high|medium|low",
-  "reasoning": "2-4 sentences explaining the score",
-  "score_breakdown": {
-    "website_quality": 0-20,
-    "seo_quality": 0-20,
-    "review_signals": 0-15,
-    "social_activity": 0-15,
-    "industry_competitiveness": 0-15,
-    "contact_availability": 0-15
-  },
+  "estimated_value_range": "e.g. $1,500–$3,000 one-time + $200/mo",
+  "revenue_potential": "High|Medium|Low",
+  "revenue_potential_reason": "One sentence explaining why, referencing actual data",
+  "opportunity_summary": "2-3 sentences. What was found, why it matters, why contact this lead now. Be specific — reference their actual review count, rating, location, industry.",
+  "digital_presence_audit": [
+    "✅ Google Business Profile detected",
+    "✅ 4.9/5 rating from 43 reviews",
+    "✅ Phone number available",
+    "❌ Website not detected",
+    "❌ Online booking system not detected",
+    "❌ Lead capture form not detected"
+  ],
+  "website_opportunity": "2-3 sentences specific to this industry explaining exactly how a website would help THIS business. Reference their category and situation.",
+  "outreach_angle": "One punchy sentence a salesperson could use as their opening hook. Reference the actual gap found.",
+  "outreach_message": "50-100 word cold outreach message. Professional, specific, references the actual opportunity. No generic marketing language. Write as if from a real person.",
   "red_flags": [],
-  "recommended_action": "specific next action",
-  "conversion_probability": "high|medium|low",
-  "best_service_angle": "what to pitch first"
+  "recommended_action": "One specific next action. Not 'schedule a call' — be precise about what to say or send."
 }
 `.trim();
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  MODEL B — SYSTEM PROMPT (No Website → Sell Website / Online Presence)
+//  USER PROMPT BUILDER
 // ─────────────────────────────────────────────────────────────────────────────
-const MODEL_B_SYSTEM_PROMPT = `
-You are a senior digital sales analyst specialising in selling websites to local businesses
-that currently have NO online presence.
+function buildUserPrompt({ business_name, industry, location, website, notes, rating, review_count, phone }) {
+  const hasWebsite = website && website.trim() && website !== "Not provided";
+  const hasRating  = rating  && Number(rating) > 0;
+  const hasReviews = review_count && Number(review_count) > 0;
 
-Your task: evaluate a business WITHOUT a website and score their probability of purchasing
-a website + online presence package.
-
-Score on a 0–100 scale. Consider these weighted factors:
-  - Google review count (proves real customers exist)
-  - Google rating (proves business quality)
-  - Business age implied by review history
-  - Industry demand for websites (plumbers/dentists/restaurants need sites urgently)
-  - Location demand (urban vs rural, competitive market)
-  - Social presence (if any Instagram/Facebook signals in notes)
-  - Pain of having no website in 2025 for this industry
-
-Also generate:
-  - website_opportunity_score (0-100): urgency of the website opportunity
-  - website_revenue_potential: estimated one-time + monthly value of a site deal
-  - digital_presence_score (0-100): current digital footprint strength
-  - recommended_website_type: what kind of site to pitch
-  - recommended_pages: number of pages
-  - recommended_cta: primary call-to-action for the website
-  - recommended_conversion_strategy: how the website will get them more business
-
-Return ONLY valid JSON. No markdown. No backticks.
-
-{
-  "score": 0-100,
-  "score_label": "Hot|Warm|Mild|Cold",
-  "tier": "A|B|C|D",
-  "model": "B",
-  "estimated_value_range": "$X one-time + $Y/month",
-  "confidence": "high|medium|low",
-  "reasoning": "2-4 sentences explaining the score",
-  "score_breakdown": {
-    "review_presence": 0-20,
-    "review_quality": 0-15,
-    "industry_demand": 0-20,
-    "location_demand": 0-15,
-    "social_presence": 0-15,
-    "no_website_urgency": 0-15
-  },
-  "red_flags": [],
-  "recommended_action": "specific next action",
-  "conversion_probability": "high|medium|low",
-  "website_opportunity_score": 0-100,
-  "website_revenue_potential": "$X one-time / $Y/mo maintenance",
-  "digital_presence_score": 0-100,
-  "recommended_website_type": "e.g. Lead Gen Landing Page | Appointment Booking Site | Menu + Reservation Site",
-  "recommended_pages": 3,
-  "recommended_cta": "e.g. Call Now | Book Appointment | Get a Free Quote",
-  "recommended_conversion_strategy": "short description of the conversion approach"
-}
-`.trim();
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  PROMPT BUILDERS
-// ─────────────────────────────────────────────────────────────────────────────
-function buildModelAPrompt({ business_name, industry, location, website, notes }) {
   return `
-Score this lead (HAS website) for likelihood of purchasing digital marketing / lead gen services:
+Analyze this business lead and produce premium sales intelligence:
 
-Business Name : ${business_name}
-Industry      : ${industry}
-Location      : ${location}
-Website       : ${website}
-Notes         : ${notes || "None"}
+BUSINESS DATA (only use what is provided):
+  Business Name   : ${business_name}
+  Industry        : ${industry}
+  Location        : ${location}
+  Website         : ${hasWebsite ? website : "NOT DETECTED — no website found"}
+  Phone           : ${phone || "Not provided"}
+  Google Rating   : ${hasRating ? rating + "/5" : "Not available"}
+  Google Reviews  : ${hasReviews ? review_count + " reviews" : "Not available"}
+  Additional Notes: ${notes || "None"}
 
-Return ONLY raw JSON.
-`.trim();
-}
+CONTEXT:
+  - Has website: ${hasWebsite ? "YES — " + website : "NO"}
+  - Review signals: ${hasRating && hasReviews ? `${review_count} reviews at ${rating}/5` : "Limited or none"}
 
-function buildModelBPrompt({ business_name, industry, location, notes }) {
-  return `
-Score this lead (NO website) for likelihood of purchasing a website / online presence package:
-
-Business Name : ${business_name}
-Industry      : ${industry}
-Location      : ${location}
-Website       : None / Not found
-Notes         : ${notes || "None"}
-
-Return ONLY raw JSON.
+Score this lead 0-100 and generate full sales intelligence.
+Return ONLY valid JSON.
 `.trim();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  GEMINI API CALL
 // ─────────────────────────────────────────────────────────────────────────────
-async function callGemini(systemPrompt, userPrompt) {
+async function callGemini(userPrompt) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured in environment variables.");
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured.");
 
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{
-        parts: [{ text: systemPrompt + "\n\n" + userPrompt }],
-      }],
+      contents: [{ parts: [{ text: SCORING_SYSTEM_PROMPT + "\n\n" + userPrompt }] }],
       generationConfig: {
-        temperature      : 0.2,
-        maxOutputTokens  : MAX_TOKENS,
-        responseMimeType : "application/json",
+        temperature: 0.3,
+        maxOutputTokens: MAX_TOKENS,
+        responseMimeType: "application/json",
       },
     }),
   });
@@ -198,80 +135,63 @@ async function callGemini(systemPrompt, userPrompt) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  RESPONSE PARSERS
+//  RESPONSE PARSER
 // ─────────────────────────────────────────────────────────────────────────────
-function parseModelAResponse(raw) {
+function parseScoreResponse(raw) {
   const cleaned = raw.replace(/```json/gi, "").replace(/```/gi, "").trim();
+
   let parsed;
-  try { parsed = JSON.parse(cleaned); }
-  catch (err) {
-    console.error("MODEL A RAW RESPONSE:", raw);
-    throw new Error(`Model A returned non-JSON: ${raw.slice(0, 200)}`);
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (err) {
+    console.error("RAW AI RESPONSE:", raw);
+    throw new Error(`AI returned non-JSON response: ${raw.slice(0, 200)}`);
   }
 
-  const score = Math.max(0, Math.min(100, Number(parsed.score) || 0));
+  const score = Math.max(0, Math.min(100, Number(parsed.lead_score) || 0));
+
+  // Backwards-compatible lead_score (1-10) for DB
+  const lead_score = Math.max(1, Math.min(10, Math.round(score / 10)));
+
+  const VALID_TIERS      = ["A", "B", "C", "D"];
+  const VALID_CONFIDENCE = ["high", "medium", "low"];
+  const VALID_POTENTIAL  = ["High", "Medium", "Low"];
+
   return {
-    // Core fields
+    // New 0-100 score
     score,
-    lead_score            : Math.round(score / 10),  // legacy 1-10 field for DB compat
-    score_label           : parsed.score_label || getScoreLabel(score),
-    tier                  : deriveTier(score),
-    model                 : "A",
-    estimated_value_range : String(parsed.estimated_value_range || "Unknown"),
-    confidence            : ["high","medium","low"].includes(parsed.confidence) ? parsed.confidence : "medium",
-    reasoning             : String(parsed.reasoning || ""),
-    score_breakdown       : parsed.score_breakdown || {},
-    red_flags             : Array.isArray(parsed.red_flags) ? parsed.red_flags.map(String) : [],
-    recommended_action    : String(parsed.recommended_action || ""),
-    conversion_probability: parsed.conversion_probability || "medium",
-    best_service_angle    : String(parsed.best_service_angle || ""),
-    // Model B fields default to null for DB consistency
-    website_opportunity_score    : null,
-    website_revenue_potential    : null,
-    digital_presence_score       : null,
-    recommended_website_type     : null,
-    recommended_pages            : null,
-    recommended_cta              : null,
-    recommended_conversion_strategy: null,
+    score_label: getScoreLabel(score),
+
+    // Legacy 1-10 for DB compatibility
+    lead_score,
+
+    tier: VALID_TIERS.includes(parsed.tier) ? parsed.tier : deriveTier(score),
+    confidence: VALID_CONFIDENCE.includes(parsed.confidence) ? parsed.confidence : "medium",
+    estimated_value_range: String(parsed.estimated_value_range || "Unknown"),
+
+    // New premium fields
+    revenue_potential: VALID_POTENTIAL.includes(parsed.revenue_potential)
+      ? parsed.revenue_potential : "Medium",
+    revenue_potential_reason: String(parsed.revenue_potential_reason || ""),
+    opportunity_summary: String(parsed.opportunity_summary || ""),
+    digital_presence_audit: Array.isArray(parsed.digital_presence_audit)
+      ? parsed.digital_presence_audit.map(String) : [],
+    website_opportunity: String(parsed.website_opportunity || ""),
+    outreach_angle: String(parsed.outreach_angle || ""),
+    outreach_message: String(parsed.outreach_message || ""),
+
+    // Legacy fields for backwards compat
+    reasoning: String(parsed.opportunity_summary || parsed.reasoning || ""),
+    red_flags: Array.isArray(parsed.red_flags) ? parsed.red_flags.map(String) : [],
+    recommended_action: String(parsed.recommended_action || ""),
   };
 }
 
-function parseModelBResponse(raw) {
-  const cleaned = raw.replace(/```json/gi, "").replace(/```/gi, "").trim();
-  let parsed;
-  try { parsed = JSON.parse(cleaned); }
-  catch (err) {
-    console.error("MODEL B RAW RESPONSE:", raw);
-    throw new Error(`Model B returned non-JSON: ${raw.slice(0, 200)}`);
-  }
-
-  const score = Math.max(0, Math.min(100, Number(parsed.score) || 0));
-  const woScore = Math.max(0, Math.min(100, Number(parsed.website_opportunity_score) || 0));
-  const dpScore = Math.max(0, Math.min(100, Number(parsed.digital_presence_score) || 0));
-
-  return {
-    score,
-    lead_score            : Math.round(score / 10),
-    score_label           : parsed.score_label || getScoreLabel(score),
-    tier                  : deriveTier(score),
-    model                 : "B",
-    estimated_value_range : String(parsed.estimated_value_range || "Unknown"),
-    confidence            : ["high","medium","low"].includes(parsed.confidence) ? parsed.confidence : "medium",
-    reasoning             : String(parsed.reasoning || ""),
-    score_breakdown       : parsed.score_breakdown || {},
-    red_flags             : Array.isArray(parsed.red_flags) ? parsed.red_flags.map(String) : [],
-    recommended_action    : String(parsed.recommended_action || ""),
-    conversion_probability: parsed.conversion_probability || "medium",
-    best_service_angle    : null,
-    // Model B exclusive fields
-    website_opportunity_score    : woScore,
-    website_revenue_potential    : String(parsed.website_revenue_potential || ""),
-    digital_presence_score       : dpScore,
-    recommended_website_type     : String(parsed.recommended_website_type || ""),
-    recommended_pages            : Number(parsed.recommended_pages) || 5,
-    recommended_cta              : String(parsed.recommended_cta || ""),
-    recommended_conversion_strategy: String(parsed.recommended_conversion_strategy || ""),
-  };
+function getScoreLabel(score) {
+  if (score >= 80) return "Hot";
+  if (score >= 60) return "Warm";
+  if (score >= 40) return "Mild";
+  return "Cold";
 }
 
 function deriveTier(score) {
@@ -285,32 +205,24 @@ function deriveTier(score) {
 //  PUBLIC API
 // ─────────────────────────────────────────────────────────────────────────────
 async function scoreLead(lead) {
-  const { business_name, industry, location, website, notes } = lead;
+  const { business_name, industry, location, website, notes, rating, review_count, phone } = lead;
 
   if (!business_name || !industry || !location) {
     throw new Error("scoreLead requires: business_name, industry, location");
   }
 
-  const hasWebsite = website && website.trim().length > 0;
+  const userPrompt = buildUserPrompt({
+    business_name, industry, location, website, notes,
+    rating, review_count, phone,
+  });
 
-  let raw, result;
-
-  if (hasWebsite) {
-    // MODEL A — has website
-    const prompt = buildModelAPrompt({ business_name, industry, location, website, notes });
-    raw    = await callGemini(MODEL_A_SYSTEM_PROMPT, prompt);
-    result = parseModelAResponse(raw);
-  } else {
-    // MODEL B — no website
-    const prompt = buildModelBPrompt({ business_name, industry, location, notes });
-    raw    = await callGemini(MODEL_B_SYSTEM_PROMPT, prompt);
-    result = parseModelBResponse(raw);
-  }
+  const raw    = await callGemini(userPrompt);
+  const result = parseScoreResponse(raw);
 
   return {
     ...result,
     scored_at_ms: Date.now(),
-    model_version: MODEL,
+    model: MODEL,
   };
 }
 
@@ -318,8 +230,6 @@ module.exports = {
   scoreLead,
   getScoreLabel,
   deriveTier,
-  MODEL_A_SYSTEM_PROMPT,
-  MODEL_B_SYSTEM_PROMPT,
-  buildModelAPrompt,
-  buildModelBPrompt,
+  SCORING_SYSTEM_PROMPT,
+  buildUserPrompt,
 };
