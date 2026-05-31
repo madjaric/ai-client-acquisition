@@ -341,7 +341,6 @@ app.get("/api/preview/:leadId", (req, res) => {
 
 // ─────────────────────────────────────────────
 //  Gemini proxy — website generator
-//  Reuses the existing GEMINI_API_KEY from .env
 // ─────────────────────────────────────────────
 app.post("/api/generate-website", async (req, res) => {
   if (!process.env.GEMINI_API_KEY) {
@@ -351,212 +350,219 @@ app.post("/api/generate-website", async (req, res) => {
     const { messages } = req.body;
     const userText = (messages || []).map(m => m.content).join("\n\n");
 
-    const fullPrompt = `You are a senior front-end developer at a top-tier design agency. Build a complete, single-file HTML landing page for the local business below. This page will be shown to the business owner as a sales demo — it must look genuinely impressive and modern.
+    const PROMPT = `You are a senior front-end developer at a world-class design agency. Generate a complete single-file HTML landing page for the local business below. This is a SALES DEMO shown to a business owner — it must look like a $3,000–$5,000 professionally-built website, not a generic AI page.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OUTPUT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Return ONLY raw HTML starting with <!DOCTYPE html>. No markdown. No code fences. No comments outside code.
-Single file: all CSS in <style>, all JS before </body>.
-Allowed external resources: Google Fonts <link> only.
-Use real Unsplash photos: https://images.unsplash.com/photo-ID?w=1400&q=85&fit=crop
-  — Search for photo IDs that genuinely match the industry. Examples:
-  — Auto repair: 1492144533 (mechanic), 1486262322 (car engine), 1558618666 (garage)
-  — Dental: 3845810 (dental chair), 3279209 (smile), 298611 (clinic)
-  — HVAC: 162568 (tools), 1216589 (technician), 257636 (air unit)
-  — Restaurant: 1640777 (food), 262978 (restaurant interior), 299347 (chef)
-  — Gym: 1954524 (gym), 1552106 (weights), 841130 (fitness)
-  — Landscaping: 1214497 (garden), 296230 (lawn), 273749 (landscape)
-  — Plumbing: 210881 (pipes), 2988232 (plumber), 1029599 (tools)
-  Use at least 3 photos across the page.
+══════════════════════════════════════════════════
+OUTPUT RULES
+══════════════════════════════════════════════════
+• Return ONLY raw HTML starting with <!DOCTYPE html>. No markdown. No code fences. No commentary.
+• Single file: all CSS inside <style>, all JS inside <script> before </body>.
+• Only allowed external resource: Google Fonts via <link>.
+• Use real Unsplash photos: https://images.unsplash.com/photo-PHOTOID?w=1200&q=85&fit=crop&auto=format
+  Real photo IDs by industry:
+  Auto/mechanic:    1492144533, 1486262322, 1492496111, 1503736235, 1549399645, 3807517
+  Dental/medical:   3845810, 3279209, 4021775, 4386466, 5215001, 40568
+  HVAC/trades:      1216589, 1145434, 162568, 257636, 3862634, 1422408
+  Restaurant/food:  1640777, 262978, 299347, 1279330, 1640773, 67468
+  Fitness/gym:      1954524, 1552106, 841130, 2247179, 4164418, 3253501
+  Landscaping:      1214497, 296230, 1301585, 1459495, 3076899, 2132250
+  Plumbing:         210881, 2988232, 1599703, 3517739, 2058134
+  Beauty/salon:     3065209, 3993449, 1570807, 3065171, 3065172
+  Construction:     1117452, 585419, 1395963, 2138922, 3760529, 1216589
+  Use 6–10 DIFFERENT photo IDs spread across the page. Never repeat the same photo ID.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DESIGN SYSTEM — follow exactly
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+══════════════════════════════════════════════════
+DESIGN SYSTEM
+══════════════════════════════════════════════════
+Google Fonts import (always include):
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
-FONTS — always import these two from Google Fonts:
-  Display: "Syne" weights 700,800 — use for all headings and the logo
-  Body:    "DM Sans" weights 400,500 — use for all body text, nav, buttons
+CSS :root variables — pick values suited to the industry:
+  --primary: bold accent (NOT blue/gray — use orange, teal, amber, lime, cyan, crimson, etc.)
+  --primary-rgb: RGB triplet for rgba() use e.g. "255,92,0"
+  --dark: near-black for dark sections (#0d0d0d, #0a0f1a, #0f1a0a, etc.)
+  --light: page background (#ffffff or #f8f7f4)
+  --text: #1a1a2e
+  --muted: #6b7280
+  --border: #e5e7eb
+  --radius-sm: 10px
+  --radius-md: 18px
+  --radius-lg: 32px
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.04)
+  --shadow-md: 0 4px 24px rgba(0,0,0,.10),0 12px 48px rgba(0,0,0,.08)
+  --shadow-lg: 0 16px 64px rgba(0,0,0,.14),0 32px 80px rgba(0,0,0,.10)
+  --ease: cubic-bezier(.4,0,.2,1)
 
-CSS VARIABLES — define in :root, choose values based on industry:
-  --c-bg:       page background (white #ffffff or near-white #f7f7f5)
-  --c-dark:     deep dark for header/footer/dark sections (near-black, e.g. #0d0d0d, #0f1923, #0a0f0a)
-  --c-primary:  bold brand color matching the industry (orange, teal, cyan, lime, red — NOT generic blue or gray)
-  --c-primary-light: 15% opacity version of primary for backgrounds
-  --c-text:     body text (#1a1a2e or #222)
-  --c-muted:    secondary text (#666)
-  --radius-sm: 8px
-  --radius-md: 16px
-  --radius-lg: 28px
-  --shadow-sm: 0 2px 12px rgba(0,0,0,.06)
-  --shadow-md: 0 8px 40px rgba(0,0,0,.12)
-  --shadow-lg: 0 24px 80px rgba(0,0,0,.18)
-  --transition: .25s cubic-bezier(.4,0,.2,1)
+Global reset:
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+  body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--light);line-height:1.7}
+  img{max-width:100%;height:auto;display:block}
+  a{text-decoration:none;color:inherit}
+  button{cursor:pointer;border:none;background:none;font:inherit}
 
-SPACING SCALE — use these exact values for padding/margin:
-  4px 8px 12px 16px 24px 32px 48px 64px 80px 96px 120px
+Scroll reveal classes (add to every section except hero and nav):
+  .reveal{opacity:0;transform:translateY(48px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+  .reveal.visible{opacity:1;transform:none}
+  .reveal-d1{transition-delay:.1s} .reveal-d2{transition-delay:.2s} .reveal-d3{transition-delay:.3s}
 
-TYPOGRAPHY SCALE:
-  .display   { font: 800 clamp(3.5rem,8vw,7.5rem)/1.0 'Syne'; letter-spacing:-0.04em }
-  .h1        { font: 800 clamp(2.4rem,5vw,4.5rem)/1.1 'Syne'; letter-spacing:-0.03em }
-  .h2        { font: 800 clamp(1.8rem,3.5vw,3rem)/1.2 'Syne'; letter-spacing:-0.02em }
-  .h3        { font: 700 clamp(1.2rem,2vw,1.5rem)/1.3 'Syne' }
-  body text  { font: 400 1.05rem/1.8 'DM Sans'; color: var(--c-text) }
-  .overline  { font: 600 .7rem/.85 'DM Sans'; letter-spacing:.12em; text-transform:uppercase; color:var(--c-primary) }
+══════════════════════════════════════════════════
+SECTIONS — build ALL in this exact order
+══════════════════════════════════════════════════
 
-GLOBAL RESET — include this exactly:
-  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
-  html { scroll-behavior:smooth; -webkit-font-smoothing:antialiased }
-  img { max-width:100%; display:block }
-  a { text-decoration:none; color:inherit }
-  button { cursor:pointer; border:none; background:none; font:inherit }
+1. NAV (fixed)
+   position:fixed;top:0;width:100%;z-index:1000;padding:20px 6%;transition:all .35s var(--ease);display:flex;justify-content:space-between;align-items:center
+   Initial: background:transparent
+   .nav-scrolled (JS): background:var(--dark);backdrop-filter:blur(20px);padding:14px 6%;box-shadow:0 4px 30px rgba(0,0,0,.3)
+   Logo: font-family:'Syne';font-weight:800;font-size:1.4rem;color:white — last word of name in color:var(--primary)
+   Links: display:flex;gap:32px;color:rgba(255,255,255,.8);font-size:.9rem;font-weight:500
+   CTA btn: background:var(--primary);color:white;padding:10px 22px;border-radius:var(--radius-lg);font-weight:600;font-size:.88rem
+   Mobile: hamburger (3-line SVG), full overlay menu on click
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SECTIONS — build all of these in order
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. NAV
-   - position:fixed; top:0; width:100%; z-index:100
-   - Initially: background transparent, padding 20px 5%
-   - On scroll (JS): background var(--c-dark), padding 12px 5%, box-shadow var(--shadow-md)
-   - Transition: all .3s ease
-   - Left: logo in Syne 700, accent color on last word (e.g. "Melville <span style='color:var(--c-primary)'>Auto</span>")
-   - Right: 3-4 nav links in DM Sans, white, gap 32px; then a CTA button (filled, --c-primary)
-   - Mobile: hamburger button (3 lines SVG), slide-down menu overlay on click
-
-2. HERO
-   - min-height:100vh; display:grid; place-items:center; position:relative; overflow:hidden
-   - Background: real Unsplash photo, background-size:cover, background-position:center
-   - Overlay: ::before pseudo-element with position:absolute; inset:0;
-     background: linear-gradient(135deg, rgba(0,0,0,.82) 0%, rgba(0,0,0,.45) 60%, rgba(0,0,0,.2) 100%)
-   - Content centered, max-width 800px, text-align:center, position:relative z-index:1
-   - Layout from top to bottom:
-     a) Overline badge: display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:99px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); backdrop-filter:blur(8px); font-size:.75rem; letter-spacing:.1em; color:white; text-transform:uppercase; margin-bottom:24px
-     b) Giant headline: .display class, color white, margin-bottom:20px. Make it 2-3 lines. Bold claim.
-     c) Subheading: font-size:clamp(1rem,2vw,1.25rem); color:rgba(255,255,255,.75); max-width:560px; margin:0 auto 32px; line-height:1.7
-     d) Stars row (if rating given): display:flex; gap:4px; justify-content:center; align-items:center; margin-bottom:36px. Gold stars (★) + rating text in white/80%
-     e) CTA row: display:flex; gap:12px; justify-content:center; flex-wrap:wrap
-        - Primary btn: background:var(--c-primary); color:white; padding:16px 36px; border-radius:var(--radius-lg); font:600 1rem 'DM Sans'; transition:var(--transition); hover: brightness(1.1) translateY(-2px) box-shadow var(--shadow-md)
-        - Secondary btn: border:2px solid rgba(255,255,255,.5); color:white; padding:16px 36px; border-radius:var(--radius-lg); font:600 1rem 'DM Sans'; hover: border-color white; background:rgba(255,255,255,.1)
-   - Hero entrance animation: keyframes fadeUp { from { opacity:0; transform:translateY(30px) } to { opacity:1; transform:none } }
-     Apply to each child with animation-fill-mode:both and staggered animation-delay (0s, .15s, .3s, .45s, .6s)
+2. HERO — TWO COLUMN LAYOUT
+   min-height:100vh;padding:140px 6% 80px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;overflow:hidden;background:var(--dark)
+   Background decorations: radial gradient blob top-right (primary color, 25% opacity), subtle dot grid pattern using background-image
+   
+   LEFT column — text:
+   a) Eyebrow badge: inline-flex;padding:7px 16px;border-radius:99px;background:rgba(var(--primary-rgb),.15);border:1px solid rgba(var(--primary-rgb),.3);color:var(--primary);font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px
+   b) Headline: font-family:'Syne';font-weight:800;font-size:clamp(2.8rem,5vw,4.4rem);line-height:1.05;letter-spacing:-.03em;color:white;margin-bottom:20px — one key word in var(--primary)
+   c) Subtext: font-size:1.1rem;color:rgba(255,255,255,.65);line-height:1.8;max-width:480px;margin-bottom:36px
+   d) CTA row: display:flex;gap:12px;flex-wrap:wrap;margin-bottom:36px
+      Primary: background:var(--primary);color:white;padding:15px 32px;border-radius:var(--radius-lg);font-weight:600;box-shadow:0 8px 32px rgba(var(--primary-rgb),.4);transition:.25s var(--ease)
+      Secondary: border:2px solid rgba(255,255,255,.25);color:white;padding:15px 32px;border-radius:var(--radius-lg);font-weight:600
+   e) Trust row: display:flex;gap:20px;flex-wrap:wrap;margin-bottom:28px — each item: checkmark (color:var(--primary)) + text (rgba(255,255,255,.6);font-size:.85rem)
+      4 trust items relevant to the industry e.g. "Licensed & Insured" "Free Estimates" "5-Star Rated" "Same-Day Service"
+   f) Stars (if rating provided): gold ★ chars + rating/5 + "(N reviews)" in muted white
+   
+   RIGHT column — image card:
+   position:relative;border-radius:var(--radius-md);overflow:hidden;aspect-ratio:4/5;box-shadow:var(--shadow-lg)
+   img: position:absolute;inset:0;width:100%;height:100%;object-fit:cover
+   Bottom gradient: position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(to top,rgba(0,0,0,.5),transparent)
+   Floating stat badge bottom-left: position:absolute;bottom:20px;left:20px;background:white;border-radius:var(--radius-sm);padding:12px 16px;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px — SVG icon in var(--primary), bold number, small label
+   Small secondary card right side: position:absolute;top:20%;right:-20px;width:180px;background:var(--dark);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-sm);padding:14px;backdrop-filter:blur(20px) — add a small stat or badge
+   
+   Entrance animation: @keyframes heroUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
+   Apply with animation:heroUp .8s var(--ease) both + staggered delays to each left column child
 
 3. STATS BAR
-   - background:var(--c-primary); padding:32px 5%
-   - display:flex; justify-content:space-around; flex-wrap:wrap; gap:24px
-   - 4 items. Each: text-align:center
-     - Number: font:800 2.8rem/1 'Syne'; color:white
-     - Label: font:500 .85rem 'DM Sans'; color:rgba(255,255,255,.75); margin-top:6px; text-transform:uppercase; letter-spacing:.06em
-   - Use realistic numbers: years in business, happy customers, 5-star reviews, response time etc.
-   - JS count-up animation on IntersectionObserver trigger
+   background:var(--primary);padding:20px 6%;display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px;align-items:center
+   4 items — number: font-family:'Syne';font-weight:800;font-size:2.4rem;color:white — label: font-size:.8rem;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.08em
+   data-target attribute on each number for JS count-up. Use realistic numbers.
 
-4. ABOUT
-   - padding:96px 5%; max-width:1200px; margin:0 auto
-   - display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center
-   - Left column (image side):
-     - position:relative; aspect-ratio:4/5
-     - Main image: width:85%; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-lg); object-fit:cover; height:100%
-     - Accent image (smaller, overlapping): position:absolute; bottom:-24px; right:0; width:55%; border-radius:var(--radius-md); border:4px solid white; box-shadow:var(--shadow-md); aspect-ratio:4/3; object-fit:cover
-     - Years badge: position:absolute; top:24px; left:-16px; background:var(--c-primary); color:white; padding:16px 20px; border-radius:var(--radius-md); font:800 2rem 'Syne'; line-height:1; box-shadow:var(--shadow-md)
-       Small label below number: font:500 .75rem 'DM Sans'; opacity:.85
-   - Right column:
-     - .overline text, then .h2 heading, then 2 paragraphs of body text
-     - Differentiators list: 4 items, each display:flex; gap:12px; align-items:flex-start; margin-bottom:16px
-       Icon: 20x20 inline SVG checkmark in a 36px circle background:var(--c-primary-light); border-radius:50%; flex-shrink:0
-       Text: font:500 .95rem 'DM Sans'
+4. WHY CHOOSE US (class="reveal")
+   padding:100px 6%;background:var(--light)
+   Header (centered): overline label + h2 (font-family:'Syne';font-weight:800;font-size:clamp(2rem,4vw,3rem)) + description; margin-bottom:64px
+   Grid: display:grid;grid-template-columns:repeat(3,1fr);gap:28px
+   Cards: background:white;border-radius:var(--radius-md);padding:36px 28px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);transition:all .3s var(--ease)
+   hover: transform:translateY(-6px);box-shadow:var(--shadow-md);border-color:rgba(var(--primary-rgb),.3)
+   Icon: 52px circle bg:rgba(var(--primary-rgb),.1);SVG 26px stroke:var(--primary);stroke-width:1.75;fill:none
+   h3: font-family:'Syne';font-weight:700;font-size:1.15rem;margin-bottom:10px
+   p: font-size:.95rem;color:var(--muted);line-height:1.75
+   Add 6 feature cards.
 
-5. SERVICES
-   - padding:96px 5%; background:var(--c-bg)
-   - Header: centered, .overline + .h2 + short descriptor paragraph; margin-bottom:64px
-   - Grid: display:grid; grid-template-columns:repeat(3,1fr); gap:24px
-   - Each card:
-     background:white; border-radius:var(--radius-md); padding:36px 28px;
-     border:1.5px solid rgba(0,0,0,.06); box-shadow:var(--shadow-sm);
-     transition:var(--transition);
-     hover: transform:translateY(-8px); box-shadow:var(--shadow-lg); border-color:var(--c-primary)
-     - Icon wrap: width:56px; height:56px; border-radius:var(--radius-sm); background:var(--c-primary-light); display:flex; align-items:center; justify-content:center; margin-bottom:20px
-       SVG icon: 28x28, stroke:var(--c-primary), stroke-width:1.75, fill:none
-     - h3 in .h3 style, margin-bottom:10px
-     - p in body style, color:var(--c-muted), font-size:.95rem
+5. SERVICES (class="reveal")
+   padding:100px 6%;background:#f9f9f7
+   Header centered; margin-bottom:64px
+   Grid: display:grid;grid-template-columns:repeat(3,1fr);gap:24px
+   Each card: position:relative;border-radius:var(--radius-md);overflow:hidden;background:white;box-shadow:var(--shadow-sm);transition:all .35s var(--ease)
+   hover: transform:translateY(-8px);box-shadow:var(--shadow-lg)
+   Image area: height:200px — img:width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease) — hover img:transform:scale(1.08)
+   .service-overlay: position:absolute;inset:0;background:rgba(var(--primary-rgb),.9);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;color:white;font-weight:600
+   hover .service-overlay: opacity:1
+   Content: padding:24px — icon (36px circle) + h3 (font-family:'Syne') + p
+   Include 6 service cards with real industry-specific services.
 
-6. DARK FEATURE BAND
-   - background:var(--c-dark); padding:96px 5%
-   - Header: .overline (color:var(--c-primary)) + .h2 (color:white); centered; margin-bottom:64px
-   - display:grid; grid-template-columns:repeat(4,1fr); gap:32px (or 2 cols on narrow)
-   - Each feature:
-     border:1px solid rgba(255,255,255,.08); border-radius:var(--radius-md); padding:32px 24px;
-     transition:var(--transition)
-     hover: border-color:rgba(255,255,255,.2); background:rgba(255,255,255,.03)
-     - Icon: 40x40 SVG, color:var(--c-primary)
-     - Big word/stat: font:800 1.4rem 'Syne'; color:white; margin:16px 0 8px
-     - Description: font-size:.9rem; color:rgba(255,255,255,.55); line-height:1.7
+6. GALLERY (class="reveal")
+   padding:100px 6%;background:var(--dark)
+   Header: overline (var(--primary)) + h2 (white) + desc (rgba(255,255,255,.55));centered;margin-bottom:56px
+   Grid: display:grid;grid-template-columns:repeat(4,1fr);gap:16px
+   Items: position:relative;border-radius:var(--radius-sm);overflow:hidden;cursor:pointer
+   First item and one other: grid-column:span 2;aspect-ratio:16/9
+   Others: aspect-ratio:1/1
+   img: width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)
+   hover img: transform:scale(1.06)
+   .gallery-overlay: position:absolute;inset:0;background:rgba(var(--primary-rgb),.75);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s — white SVG zoom icon inside
+   hover .gallery-overlay: opacity:1
+   8 different photos.
 
-7. TESTIMONIAL (only if rating or reviews data provided)
-   - padding:96px 5%; background:var(--c-primary-light)
-   - max-width:760px; margin:0 auto; text-align:center
-   - Giant quotation mark: font:800 8rem 'Syne'; color:var(--c-primary); opacity:.2; line-height:.5; margin-bottom:16px
-   - Quote text: font:400 1.4rem/1.7 'DM Sans'; color:var(--c-text); font-style:italic; margin-bottom:32px
-   - Stars: gold ★ ★ ★ ★ ★ font-size:1.2rem; gap:4px; justify-content:center; margin-bottom:16px
-   - Attribution: font:600 1rem 'Syne'; color:var(--c-text)
-   - Rating summary below: "X.X/5 based on N reviews"
+7. TESTIMONIALS (class="reveal")
+   padding:100px 6%;background:var(--light)
+   Header centered; margin-bottom:56px
+   Grid: display:grid;grid-template-columns:repeat(3,1fr);gap:24px
+   Cards: background:white;border-radius:var(--radius-md);padding:32px;box-shadow:var(--shadow-sm);border:1.5px solid var(--border);position:relative;transition:.3s
+   hover: box-shadow:var(--shadow-md);transform:translateY(-4px)
+   Big quote mark: position:absolute;top:20px;right:24px;font-family:'Syne';font-size:4rem;font-weight:800;color:rgba(var(--primary-rgb),.12);line-height:1
+   Stars: ★ chars color:var(--primary);font-size:1rem;margin-bottom:16px
+   Review text: font-size:.95rem;line-height:1.8;font-style:italic;margin-bottom:24px
+   Reviewer: 40px avatar circle (bg:rgba(var(--primary-rgb),.15);initial letter in var(--primary)) + name (font-weight:600) + detail (color:var(--muted))
+   3 realistic reviews with specific details.
 
-8. CONTACT
-   - padding:96px 5%; max-width:1200px; margin:0 auto
-   - display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start
-   - Left: .overline + .h2 + contact details
-     Each detail row: display:flex; gap:16px; align-items:flex-start; margin-bottom:24px
-     Icon in 44px circle background:var(--c-primary-light), then text block (label in .overline, value in body)
-     Phone: <a href="tel:..."> styled in color:var(--c-primary); font:700 1.3rem 'Syne'
-     Email: <a href="mailto:..."> link
-     Address: plain text
-     Hours: plain text
-   - Right: the form
-     Form wrapper: background:white; border-radius:var(--radius-lg); padding:40px; box-shadow:var(--shadow-md)
-     Each field: margin-bottom:20px
-       label: display:block; font:600 .8rem 'DM Sans'; letter-spacing:.05em; text-transform:uppercase; color:var(--c-muted); margin-bottom:6px
-       input/textarea: width:100%; padding:14px 18px; border:1.5px solid #e8e8e8; border-radius:var(--radius-sm); font:400 1rem 'DM Sans'; outline:none; transition:border-color .2s
-       focus: border-color:var(--c-primary)
-     Submit btn: full width; background:var(--c-primary); color:white; padding:16px; border-radius:var(--radius-sm); font:600 1rem 'DM Sans'; transition:var(--transition)
-     hover: brightness(1.08) translateY(-1px)
+8. ABOUT (class="reveal")
+   padding:100px 6%;background:#f9f9f7
+   display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center
+   LEFT image composition (position:relative;min-height:520px):
+   Main img: width:85%;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-lg) — img:height:480px;object-fit:cover
+   Secondary img: position:absolute;bottom:-32px;right:-16px;width:52%;border-radius:var(--radius-sm);border:4px solid white;box-shadow:var(--shadow-md) — img:height:220px;object-fit:cover
+   Years badge: position:absolute;top:32px;left:-20px;background:var(--primary);color:white;border-radius:var(--radius-sm);padding:18px 22px;box-shadow:var(--shadow-md) — big number in Syne 800 + small label
+   RIGHT content: overline + h2 + 2 paragraphs + 4-item list (checkmark circle + bold label + desc) + CTA button
 
-9. FOOTER
-   - background:var(--c-dark); padding:48px 5% 32px; color:rgba(255,255,255,.5)
-   - Top row: display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px; padding-bottom:32px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:24px
-     Logo (same style as nav), tagline in small text, nav links row
-   - Bottom: text-align:center; font-size:.85rem "© 2025 [Business]. All rights reserved."
+9. CTA BANNER (class="reveal")
+   position:relative;padding:100px 6%;overflow:hidden;text-align:center
+   Background: real Unsplash photo;background-size:cover;background-position:center
+   ::before: position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--primary-rgb),.88),rgba(0,0,0,.8))
+   Content (relative z-index:1): h2 (Syne 800 white clamp(2rem,4vw,3.5rem)) + p + button row
+   Buttons: white filled (color:var(--primary)) + <a href="tel:..."> outlined white (click-to-call with phone SVG icon)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-JAVASCRIPT — include all of this
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. Nav scroll effect: window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 60) })
-2. Hamburger: toggle a .menu-open class on nav, slide down mobile menu
-3. IntersectionObserver: add class .visible to sections as they enter viewport
-   CSS: .reveal { opacity:0; transform:translateY(40px); transition:opacity .7s ease, transform .7s ease }
-        .reveal.visible { opacity:1; transform:none }
-   Apply .reveal to: about, services, dark band, testimonial, contact sections
-4. Count-up animation for stats bar: triggered by IntersectionObserver, animate from 0 to target over 1.5s using easeOutQuart
+10. CONTACT (class="reveal")
+    padding:100px 6%;background:var(--light)
+    display:grid;grid-template-columns:1fr 1.3fr;gap:80px;align-items:start
+    LEFT: overline + h2 + paragraph + 4 contact detail items (icon circle + label + value)
+    Phone: <a href="tel:..."> color:var(--primary);font-family:'Syne';font-size:1.2rem;font-weight:800
+    Click-to-call button: full-width;background:var(--primary);color:white;padding:16px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px
+    RIGHT form: background:white;border-radius:var(--radius-lg);padding:44px;box-shadow:var(--shadow-md);border:1.5px solid var(--border)
+    Fields: Name, Phone, Service (select dropdown with real services), Message
+    Input style: width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans';font-size:.95rem;outline:none;background:var(--light)
+    :focus: border-color:var(--primary);box-shadow:0 0 0 3px rgba(var(--primary-rgb),.12)
+    Submit: width:100%;background:var(--primary);color:white;padding:15px;border-radius:var(--radius-sm);font-family:'DM Sans';font-weight:600
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. FOOTER
+    background:var(--dark);padding:64px 6% 32px
+    Top grid: display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:32px
+    Col 1: logo + tagline + description + social icons
+    Col 2: Quick Links + 5 nav links
+    Col 3: Contact Info + phone (tel: link) + email + address + hours
+    Bottom: © 2025 [name]. All rights reserved. + "Built with LeadFlow AI" right-aligned
+
+══════════════════════════════════════════════════
+JAVASCRIPT
+══════════════════════════════════════════════════
+1. Nav scroll: window.addEventListener('scroll',()=>nav.classList.toggle('nav-scrolled',scrollY>60))
+2. Hamburger: toggle .menu-open; mobile menu slides down
+3. Scroll reveal: IntersectionObserver threshold 0.12 adds .visible class to .reveal elements
+4. Count-up: on stats bar entry, animate 0→target over 1800ms with easeOutQuart; read target from data-target attr
+5. Gallery lightbox: click item → fixed overlay with full-size image; click overlay to close
+
+══════════════════════════════════════════════════
 RESPONSIVE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-@media (max-width:900px):
-  About: grid-template-columns:1fr; image side hidden or shown above text
-  Services: grid-template-columns:1fr 1fr
-  Dark band: grid-template-columns:1fr 1fr
-  Contact: grid-template-columns:1fr
+══════════════════════════════════════════════════
+@media (max-width:1024px): hero grid-template-columns:1fr; right column shown below, aspect-ratio:16/9; about grid-template-columns:1fr
+@media (max-width:768px): why/services/testimonials grid-template-columns:1fr 1fr; gallery grid-template-columns:repeat(2,1fr); contact grid-template-columns:1fr; footer top grid-template-columns:1fr; nav links hidden, hamburger shown
+@media (max-width:480px): all grids grid-template-columns:1fr; hero font-size clamp(2.2rem,8vw,3.2rem); CTA buttons flex-direction:column width:100%
 
-@media (max-width:640px):
-  Services: grid-template-columns:1fr
-  Dark band: grid-template-columns:1fr
-  Nav links hidden, hamburger shown
-  Buttons: full width, stacked
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+══════════════════════════════════════════════════
 BUSINESS DATA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${userText}
+══════════════════════════════════════════════════
+BUSINESS_DATA_PLACEHOLDER
 
-Write all copy as the business owner — confident, local, trustworthy. Zero placeholder text. Make it feel like a real business that's been operating for years.`;
+COPY RULES:
+• Write as the actual business owner — confident, local, trustworthy
+• ZERO placeholder text or lorem ipsum — every word must be specific to this business
+• Generate 3 realistic testimonials with specific, plausible customer first names
+• Adapt everything to the industry — a dentist and a plumber should feel completely different
+• Phone: use real one from data or (555) 000-0000 as fallback with tel: link
+• Make it feel like this website has been live and earning customers for years`;
+
+    const prompt = PROMPT.replace("BUSINESS_DATA_PLACEHOLDER", userText);
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
@@ -564,8 +570,8 @@ Write all copy as the business owner — confident, local, trustworthy. Zero pla
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
-        generationConfig: { maxOutputTokens: 65536, temperature: 0.7 },
+        contents        : [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 65536, temperature: 0.75 },
       }),
     });
 
@@ -576,31 +582,21 @@ Write all copy as the business owner — confident, local, trustworthy. Zero pla
     }
 
     let html = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    // Strip any accidental markdown fences Gemini might add
     html = html.replace(/^```html\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
 
     if (!html.toLowerCase().includes("<!doctype") && !html.toLowerCase().includes("<html")) {
       return res.status(500).json({ error: { message: "Gemini did not return valid HTML. Try again." } });
     }
 
-    // Return in Anthropic-compatible shape — but wrap html in a simple JSON so
-    // the client can distinguish html from error messages
     res.json({
       content: [{
         type: "text",
         text: JSON.stringify({
           generated_html  : html,
           editable_content: {
-            hero_title          : "",
-            hero_subtitle       : "",
-            call_to_action      : "",
-            about_title         : "",
-            about_text          : "",
-            services_title      : "",
-            services_list       : [],
-            contact_title       : "",
-            contact_instructions: "",
+            hero_title:"",hero_subtitle:"",call_to_action:"",
+            about_title:"",about_text:"",services_title:"",
+            services_list:[],contact_title:"",contact_instructions:"",
           }
         })
       }]
@@ -610,6 +606,7 @@ Write all copy as the business owner — confident, local, trustworthy. Zero pla
     res.status(500).json({ error: { message: err.message } });
   }
 });
+
 
 // ─────────────────────────────────────────────
 //  Root redirect
