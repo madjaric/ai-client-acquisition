@@ -1730,11 +1730,12 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 
         <!-- Score result -->
         <div class="ai-result-panel" id="score-result" style="margin-top:16px">
+          <!-- Score header -->
           <div class="score-display">
             <div>
               <div class="score-meta-label">Lead Score</div>
               <div class="score-big" id="res-score-num">—</div>
-              <div style="font-family:var(--fm);font-size:11px;color:var(--text-3);margin-top:2px">/10</div>
+              <div id="res-score-label" style="font-family:var(--fm);font-size:11px;font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:.06em">—</div>
             </div>
             <div class="score-meta">
               <div style="margin-bottom:12px">
@@ -1742,36 +1743,73 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
                 <div id="res-tier"></div>
               </div>
               <div>
-                <div class="score-meta-label">Estimated Value</div>
+                <div class="score-meta-label">Est. Value</div>
                 <div class="score-meta-value value-range" id="res-value">—</div>
               </div>
             </div>
             <div style="text-align:right">
-              <div class="score-meta-label" style="margin-bottom:6px">Confidence</div>
-              <div id="res-confidence"></div>
+              <div class="score-meta-label" style="margin-bottom:6px">Revenue Potential</div>
+              <div id="res-revenue-potential" style="font-family:var(--fm);font-size:13px;font-weight:700">—</div>
+              <div id="res-revenue-reason" style="font-size:11px;color:var(--text-3);margin-top:4px;max-width:160px;line-height:1.4;text-align:right">—</div>
             </div>
           </div>
 
+          <!-- Intelligence card -->
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Analysis</div>
-              <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">
-                → Generate Outreach
-              </button>
-            </div>
-            <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
-              <div>
-                <div class="section-title">Reasoning</div>
-                <p class="reasoning" id="res-reasoning">—</p>
+              <div class="card-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:5px;color:var(--brand)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Sales Intelligence
               </div>
+              <button class="btn btn-green btn-sm" onclick="navigate('outreach'); setOutreachLead()">→ Generate Outreach</button>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:18px">
+
+              <!-- Opportunity Summary -->
+              <div>
+                <div class="section-title">Opportunity Summary</div>
+                <p class="reasoning" id="res-reasoning" style="line-height:1.7">—</p>
+              </div>
+
+              <!-- Digital Presence Audit -->
+              <div id="res-audit-wrap">
+                <div class="section-title">Digital Presence Audit</div>
+                <div id="res-audit" style="display:flex;flex-direction:column;gap:5px;margin-top:6px"></div>
+              </div>
+
+              <!-- Website Opportunity -->
+              <div id="res-wo-wrap">
+                <div class="section-title">Website Opportunity</div>
+                <p id="res-website-opportunity" style="font-size:12.5px;color:var(--text-2);line-height:1.65;background:var(--amber-dim);border:1px solid var(--amber-mid);border-radius:var(--radius);padding:11px 13px">—</p>
+              </div>
+
+              <!-- Outreach Angle -->
+              <div id="res-angle-wrap">
+                <div class="section-title">Outreach Angle</div>
+                <p id="res-outreach-angle" style="font-size:12.5px;font-weight:600;color:var(--brand);line-height:1.55;background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:11px 13px">—</p>
+              </div>
+
+              <!-- AI Outreach Message -->
+              <div id="res-msg-wrap">
+                <div class="section-title" style="display:flex;align-items:center;justify-content:space-between">
+                  AI Outreach Message
+                  <button class="btn btn-outline btn-xs" onclick="copyText('res-outreach-message', this)">Copy</button>
+                </div>
+                <div class="result-block" id="res-outreach-message" style="margin-top:6px;white-space:pre-wrap">—</div>
+              </div>
+
+              <!-- Red Flags -->
               <div id="res-red-flags-wrap">
                 <div class="section-title">Red Flags</div>
                 <div class="red-flags" id="res-red-flags"></div>
               </div>
+
+              <!-- Recommended Action -->
               <div>
-                <div class="section-title">Recommended Action</div>
-                <p id="res-action" style="font-size:13px;font-weight:600;color:var(--text)">—</p>
+                <div class="section-title">Recommended Next Action</div>
+                <p id="res-action" style="font-size:13px;font-weight:600;color:var(--text);background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px">—</p>
               </div>
+
             </div>
           </div>
         </div>
@@ -3050,7 +3088,7 @@ function navigate(page) {
   if (page === 'outreach')  { loadOutreachHistory(); refreshSelects(); }
   if (page === 'email')     { loadEmailStats(); loadEmailLogs(); loadEmailSelects(); }
   if (page === 'discovery') { checkDiscoverySource(); }
-  if (page === 'wopp')      { woppSyncFromLeads(); woppSyncFromDisc(); woppUpdateStats(); woppRenderTable(); }
+  if (page === 'wopp')      { woppSyncFromDisc(); woppUpdateStats(); woppRenderTable(); }
 }
 
 /* ─── Mobile sidebar ─────────────────────────── */
@@ -3119,13 +3157,12 @@ function renderLeads(list) {
         <td>${badgeStatus(l.status)}</td>
         <td>${l.score ? scoreBar(l.score) : `<span style="color:var(--text-3);font-family:var(--fm);font-size:11px">—</span>`}</td>
         <td>
-          <div style="display:flex;gap:4px;flex-wrap:nowrap;align-items:center">
-            <button onclick="openLeadIntelligence('${l.id}')" title="Lead Intelligence Panel"
-              style="padding:4px 9px;font-size:11px;font-family:var(--fm);font-weight:700;border-radius:var(--radius);border:1.5px solid var(--blue-mid);background:var(--blue-dim);color:#60a5fa;cursor:pointer;white-space:nowrap;line-height:1">ⓘ Intel</button>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-outline btn-xs" onclick="openLeadIntelligence('${l.id}')" title="Intelligence panel">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </button>
             <button class="btn btn-amber btn-xs" onclick="quickScore('${l.id}')">Score</button>
             <button class="btn btn-blue btn-xs"  onclick="quickOutreach('${l.id}')">Outreach</button>
-            ${(!l.website || !l.website.trim()) ? `<button onclick="generateWebsiteForLead('${l.id}','${esc(l.business_name||l.name)}','${esc(l.industry||'')}','${esc(l.location||'')}' )" title="Generate website"
-              style="padding:4px 9px;font-size:11px;font-family:var(--fm);font-weight:700;border-radius:var(--radius);border:1.5px solid var(--amber-mid);background:var(--amber-dim);color:var(--amber);cursor:pointer;white-space:nowrap;line-height:1">⚡ Site</button>` : ''}
           </div>
         </td>
       </tr>`).join('')}
@@ -3202,7 +3239,9 @@ async function scoreLead() {
   lastScoredId = leadId;
   renderScoreResult(s);
   loadLeads(); loadScoredLeads();
-  toast(`Scored: Tier ${s.tier} · ${s.lead_score}/10`, 'success');
+  const scoreDisplay = s.score || (s.lead_score ? s.lead_score * 10 : '?');
+  const label = s.score_label || s.tier || '';
+  toast(`Scored: ${label} ${scoreDisplay}/100 — Tier ${s.tier}`, 'success');
 
   // Mark onboarding step 2 done
   const s2 = document.getElementById('obs-2');
@@ -3213,33 +3252,101 @@ function renderScoreResult(s) {
   const panel = document.getElementById('score-result');
   panel.classList.add('visible');
 
-  // Support both 0-100 (new) and 1-10 (legacy) scores
+  // Score — support both 0-100 (new) and 1-10 (legacy)
   const score100 = s.score !== undefined ? s.score : (s.lead_score ? s.lead_score * 10 : 0);
-  const score10  = s.lead_score || Math.round(score100 / 10);
-  const scoreLabel = s.score_label || getScoreLabelClient ? (typeof getScoreLabelClient !== 'undefined' ? getScoreLabelClient(score100) : '') : '';
+  const label    = s.score_label || (score100 >= 80 ? 'Hot' : score100 >= 60 ? 'Warm' : score100 >= 40 ? 'Mild' : 'Cold');
+  const col      = score100 >= 80 ? 'var(--red)' : score100 >= 60 ? 'var(--amber)' : score100 >= 40 ? '#60a5fa' : 'var(--text-3)';
 
-  const col = score100 >= 90 ? 'var(--red)' : score100 >= 70 ? 'var(--amber)' : score100 >= 40 ? '#60a5fa' : 'var(--text-3)';
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
 
-  document.getElementById('res-score-num').textContent = score100 || score10;
+  // Header
+  document.getElementById('res-score-num').textContent = score100 || '—';
   document.getElementById('res-score-num').style.color = col;
+  setEl('res-score-label', label);
+  document.getElementById('res-score-label').style.color = col;
   document.getElementById('res-tier').innerHTML = `${tierBadge(s.tier)} <span style="font-family:var(--fm);font-size:9px;padding:2px 6px;border-radius:3px;background:${s.model === 'B' ? 'var(--amber-dim)' : 'var(--blue-dim)'};color:${s.model === 'B' ? 'var(--amber)' : 'var(--blue)'}">MODEL ${s.model || (s.website ? 'A' : 'B')}</span>`;
-  document.getElementById('res-value').textContent     = s.estimated_value_range || '—';
-  document.getElementById('res-confidence').innerHTML  = confidenceBadge(s.confidence);
-  document.getElementById('res-reasoning').textContent = s.reasoning || '—';
-  document.getElementById('res-action').textContent    = s.recommended_action || '—';
+  setEl('res-value', s.estimated_value_range || '—');
 
-  const flags = Array.isArray(s.red_flags) ? s.red_flags
-    : (typeof s.red_flags === 'string' ? JSON.parse(s.red_flags || '[]') : []);
+  // Revenue potential
+  const potCol = s.revenue_potential === 'High' ? 'var(--brand)' : s.revenue_potential === 'Medium' ? 'var(--amber)' : 'var(--text-3)';
+  const potEl  = document.getElementById('res-revenue-potential');
+  if (potEl) { potEl.textContent = s.revenue_potential || '—'; potEl.style.color = potCol; }
+  setEl('res-revenue-reason', s.revenue_potential_reason || '');
 
-  const flagWrap = document.getElementById('res-red-flags-wrap');
-  if (flags.length) {
-    document.getElementById('res-red-flags').innerHTML = flags.map(f => `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
-    flagWrap.style.display = 'block';
-  } else {
-    flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--brand)">✓ None identified</span>`;
+  // Opportunity summary
+  setEl('res-reasoning', s.opportunity_summary || s.reasoning || '—');
+
+  // Digital presence audit
+  const auditEl = document.getElementById('res-audit');
+  const audit   = s.digital_presence_audit || [];
+  if (auditEl) {
+    if (audit.length) {
+      auditEl.innerHTML = audit.map(line => {
+        const isGood = line.startsWith('✅');
+        const isBad  = line.startsWith('❌');
+        const color  = isGood ? 'var(--brand)' : isBad ? 'var(--red)' : 'var(--text-2)';
+        return `<div style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.4">
+          <span style="color:${color};flex-shrink:0;font-size:13px">${line.slice(0,2)}</span>
+          <span style="color:var(--text-2)">${esc(line.slice(2).trim())}</span>
+        </div>`;
+      }).join('');
+    } else {
+      auditEl.innerHTML = `<div style="font-size:12px;color:var(--text-3)">No audit data — score this lead to generate.</div>`;
+    }
   }
 
-  // Model B: show website opportunity block if present
+  // Website opportunity
+  const woEl = document.getElementById('res-website-opportunity');
+  if (woEl) {
+    if (s.website_opportunity) {
+      woEl.textContent = s.website_opportunity;
+      document.getElementById('res-wo-wrap').style.display = '';
+    } else {
+      document.getElementById('res-wo-wrap').style.display = 'none';
+    }
+  }
+
+  // Outreach angle
+  const angleEl = document.getElementById('res-outreach-angle');
+  if (angleEl) {
+    if (s.outreach_angle) {
+      angleEl.textContent = '"' + s.outreach_angle + '"';
+      document.getElementById('res-angle-wrap').style.display = '';
+    } else {
+      document.getElementById('res-angle-wrap').style.display = 'none';
+    }
+  }
+
+  // AI Outreach message
+  const msgEl = document.getElementById('res-outreach-message');
+  if (msgEl) {
+    if (s.outreach_message) {
+      msgEl.textContent = s.outreach_message;
+      document.getElementById('res-msg-wrap').style.display = '';
+    } else {
+      document.getElementById('res-msg-wrap').style.display = 'none';
+    }
+  }
+
+  // Red flags
+  const flags   = Array.isArray(s.red_flags) ? s.red_flags
+    : (typeof s.red_flags === 'string' ? (() => { try { return JSON.parse(s.red_flags); } catch { return []; } })() : []);
+  const flagWrap = document.getElementById('res-red-flags-wrap');
+  if (flagWrap) {
+    if (flags.length) {
+      document.getElementById('res-red-flags').innerHTML = flags.map(f =>
+        `<span class="red-flag">⚠ ${esc(f)}</span>`).join('');
+      flagWrap.style.display = '';
+    } else {
+      flagWrap.innerHTML = `<div class="section-title">Red Flags</div><span style="font-size:12px;color:var(--brand)">✓ None identified</span>`;
+    }
+  }
+
+  // Recommended action
+  setEl('res-action', s.recommended_action || '—');
+
+  // Model B: Website opportunity block (legacy support)
   const existingWoBlock = document.getElementById('score-result-wo-block');
   if (existingWoBlock) existingWoBlock.remove();
   if (s.model === 'B' && (s.website_opportunity_score != null || s.recommended_website_type)) {
@@ -3250,14 +3357,8 @@ function renderScoreResult(s) {
       <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:10px">⚡ Website Opportunity Intelligence</div>
       <div style="display:flex;flex-direction:column;gap:7px;font-size:12px">
         ${s.website_opportunity_score != null ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Opportunity Score</span><strong style="color:var(--amber)">${s.website_opportunity_score}/100</strong></div>` : ''}
-        ${s.digital_presence_score    != null ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Digital Presence Score</span><strong style="color:var(--text)">${s.digital_presence_score}/100</strong></div>` : ''}
-        ${s.website_revenue_potential  ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Revenue Potential</span><strong style="color:var(--brand)">${esc(s.website_revenue_potential)}</strong></div>` : ''}
-        ${s.recommended_website_type   ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Recommended Site</span><span style="color:var(--text)">${esc(s.recommended_website_type)}</span></div>` : ''}
-        ${s.recommended_pages          ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Pages</span><span style="color:var(--text)">${s.recommended_pages}</span></div>` : ''}
-        ${s.recommended_cta            ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Primary CTA</span><span style="color:var(--text)">${esc(s.recommended_cta)}</span></div>` : ''}
-        ${s.recommended_conversion_strategy ? `<div style="margin-top:4px;color:var(--text-2);line-height:1.5">${esc(s.recommended_conversion_strategy)}</div>` : ''}
-      </div>
-    `;
+        ${s.recommended_website_type ? `<div style="display:flex;justify-content:space-between"><span style="color:var(--text-2)">Recommended Site</span><span>${esc(s.recommended_website_type)}</span></div>` : ''}
+      </div>`;
     panel.appendChild(woBlock);
   }
 }
@@ -4431,71 +4532,6 @@ function woppOnGenerated(biz, html) {
 }
 
 /** Sync no-website leads from discFiltered into opportunities (without html) */
-// Sync all no-website leads from pipeline into woppOpps
-function woppSyncFromLeads() {
-  if (!allLeads || !allLeads.length) return;
-  let added = 0;
-  allLeads.forEach(l => {
-    if (l.website && l.website.trim()) return;
-    const name     = l.business_name || l.name || '';
-    const location = l.location || '';
-    if (!name) return;
-    const exists = woppOpps.find(o =>
-      o.leadId === l.id ||
-      (o.name === name && o.location === location)
-    );
-    if (!exists) {
-      woppOpps.push({
-        id       : 'wo_lead_' + l.id,
-        leadId   : l.id,
-        name,
-        industry : l.industry || '—',
-        location,
-        rating      : null,
-        reviewCount : null,
-        status      : 0,
-        html        : null,
-        activity    : [{ type:'info', text:'Added from pipeline (no website)', time: new Date().toISOString() }],
-        createdAt   : l.created_at || new Date().toISOString(),
-      });
-      added++;
-    }
-  });
-  if (added) { woppSave(); }
-}
-
-// Open Website Opps for a specific lead — called from pipeline ⚡ Site button
-function generateWebsiteForLead(leadId, name, industry, location) {
-  // Ensure lead is in woppOpps
-  const existing = woppOpps.find(o =>
-    o.leadId === leadId || (o.name === name && o.location === location)
-  );
-  if (!existing) {
-    woppOpps.unshift({
-      id       : 'wo_lead_' + leadId,
-      leadId,
-      name,
-      industry : industry || '—',
-      location : location || '—',
-      rating      : null,
-      reviewCount : null,
-      status      : 0,
-      html        : null,
-      activity    : [{ type:'info', text:'Added from pipeline', time: new Date().toISOString() }],
-      createdAt   : new Date().toISOString(),
-    });
-    woppSave();
-  }
-  const targetId = existing ? existing.id : 'wo_lead_' + leadId;
-  navigate('wopp');
-  setTimeout(() => {
-    woppSyncFromLeads();
-    woppUpdateStats();
-    woppRenderTable();
-    woOpenProject(targetId);
-  }, 250);
-}
-
 function woppSyncFromDisc() {
   if (!discFiltered || !discFiltered.length) return;
   let added = 0;
@@ -5146,6 +5182,7 @@ async function loadLeadIntelligence(leadId) {
     : `<span style="font-family:var(--fm);font-size:9px;background:var(--amber-dim);color:var(--amber);padding:2px 7px;border-radius:3px;border:1px solid var(--amber-mid)">MODEL B · WEBSITE OPP</span>`;
 
   body.innerHTML = `
+    
     <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg)">
       <div class="li-score-ring" style="background:${scoreVal ? `conic-gradient(${scoreColor} ${scoreVal}%, var(--bg-3) 0)` : 'var(--bg-3)'}">
         <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-1);display:flex;flex-direction:column;align-items:center;justify-content:center">
@@ -5164,6 +5201,7 @@ async function loadLeadIntelligence(leadId) {
     </div>
 
     ${score ? `
+    
     <div>
       <div class="li-section-title">AI Score Reasoning</div>
       <div style="font-size:12.5px;color:var(--text-2);line-height:1.65;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px">${esc(score.reasoning || 'No reasoning available.')}</div>
