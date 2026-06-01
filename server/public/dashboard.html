@@ -2767,6 +2767,14 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
         <div id="wo-project-preview" style="display:none">
           <div style="display:flex;align-items:center;justify-content:flex-end;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg-2);gap:8px">
             <span style="font-family:var(--fm);font-size:10px;color:var(--text-3);flex:1">Preview — scroll to see full page</span>
+            <button class="btn btn-brand btn-sm" onclick="woEditWebsite()" style="display:inline-flex;align-items:center;gap:6px" title="Edit website content">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit Website
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="woRegenWebsite()" style="display:inline-flex;align-items:center;gap:6px" title="Regenerate website">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Regenerate
+            </button>
             <button class="btn btn-outline btn-sm" onclick="woOpenFullPreview('project')" style="display:inline-flex;align-items:center;gap:6px">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               Open Full Preview
@@ -4132,24 +4140,43 @@ Return ONLY a valid JSON object. No markdown. No backticks. No explanation. Just
 }
 
 HTML requirements:
-- Single self-contained file. All CSS inside <style> tag. No external resources, no CDN, no Google Fonts.
-- System font stack only: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif
-- Mobile-first responsive. Sections: hero (full-height with CTA button), about, services grid (2–3 columns), contact with phone/email, footer.
+- Single self-contained file. All CSS inside <style> tag.
+- Google Fonts allowed via <link> tag. Use a distinctive font pairing suited to the industry (e.g. Syne + DM Sans, Playfair Display + Source Sans 3, Oswald + Lato, etc.)
+- IMAGES ARE REQUIRED. Use real Unsplash photos via: https://images.unsplash.com/photo-PHOTOID?w=1200&q=85&fit=crop&auto=format
+  Pick 6-8 DIFFERENT photo IDs from the list below based on the business industry. NEVER repeat a photo ID.
+  Auto/mechanic:    1492144533, 1486262322, 1492496111, 1503736235, 1549399645, 3807517
+  Dental/medical:   3845810, 3279209, 4021775, 4386466, 5215001, 40568
+  HVAC/plumbing:    210881, 2988232, 1599703, 3517739, 2058134, 1216589
+  Restaurant/food:  1640777, 262978, 299347, 1279330, 1640773, 67468
+  Fitness/gym:      1954524, 1552106, 841130, 2247179, 4164418, 3253501
+  Landscaping:      1214497, 296230, 1301585, 1459495, 3076899, 2132250
+  Beauty/salon:     3065209, 3993449, 1570807, 3065171, 3065172
+  Construction:     1117452, 585419, 1395963, 2138922, 3760529
+  Electrician:      257636, 3862634, 1422408, 162568, 1145434
+  General business: 1181406, 3184360, 3184291, 3184292, 3184338, 1181263
+  If the industry does not match any category above, use the General business IDs.
+- EVERY image tag must use: width="100%" height="100%" style="object-fit:cover;display:block" loading="lazy"
+- Hero section MUST have a real background image (either <img> with position:absolute covering the hero, or background-image with an Unsplash URL). No blank hero backgrounds.
+- Services section MUST have an image per service card (height:180px container with the image filling it).
+- About section MUST have at least one image.
+- Mobile-first responsive. Sections: nav (sticky), hero (full-height with CTA), about, services grid (2-3 columns), testimonials (3 cards), contact with phone/email, footer.
 - Choose a DISTINCTIVE color palette based on the industry (plumbers = deep blue+white, dentists = clean teal+white, electricians = yellow+dark, gyms = bold red+black, landscaping = forest green, etc.)
-- Include subtle CSS animations: fade-in on load, hover effects on cards and buttons
+- Include CSS animations: fade-in on load, scroll reveal via IntersectionObserver (class reveal -> visible), hover effects on cards and buttons
 - All phone numbers and emails must be clickable links (tel:, mailto:)
 - Stars rating and review count displayed in hero if provided
-- Professional and conversion-focused. No Lorem ipsum. No placeholder text.
-- Services displayed in a responsive card grid with icons (use Unicode symbols or SVG inline)
+- Professional and conversion-focused. No Lorem ipsum. No placeholder text. Generate realistic content for the specific business.
+- Services displayed in a responsive card grid with real images and SVG inline icons.
 
 Writing rules: credible, high-quality, industry-appropriate. Sound like the business wrote it themselves.`;
 
 let iwgCurrentBiz   = null;   // raw discovery object
-let iwgGeneratedHtml = null;  // final HTML string
-let iwgEditable      = null;  // editable_content object
-let iwgOriginalHtml  = null;  // for reset
-let iwgOrigEditable  = null;  // for reset
-let iwgDirty         = false;
+let iwgGeneratedHtml     = null;  // final HTML string (latest, including edits)
+let iwgEditable          = null;  // editable_content object (current)
+let iwgOriginalHtml      = null;  // updated after each apply — tracks "current base" for next diff
+let iwgOrigEditable      = null;  // updated after each apply — tracks "current base" for next diff
+let iwgTrueOriginalHtml  = null;  // immutable — AI-generated HTML, used for full reset
+let iwgTrueOrigEditable  = null;  // immutable — AI-generated editable_content, used for full reset
+let iwgDirty             = false;
 let iwgLoadInterval  = null;
 let iwgLoadPct       = 0;
 
@@ -4176,6 +4203,10 @@ function iwgShowState(name) {
         woppOnGenerated(iwgCurrentBiz, iwgGeneratedHtml);
       }
     }, 600);
+    // If editing/generating in WOPP context, persist the HTML back to the opportunity
+    if (iwgWoppContextId && iwgGeneratedHtml) {
+      wsePersistToWopp(iwgGeneratedHtml);
+    }
   }
 }
 
@@ -4185,12 +4216,15 @@ function iwgTrigger(idx) {
   if (!b) return;
   if (b.website) { toast('This business already has a website.', 'info'); return; }
 
-  iwgCurrentBiz = b;
-  iwgGeneratedHtml = null;
-  iwgEditable      = null;
-  iwgOriginalHtml  = null;
-  iwgOrigEditable  = null;
-  iwgDirty         = false;
+  iwgCurrentBiz    = b;
+  iwgWoppContextId    = null; // Discovery context — not a WOPP opportunity
+  iwgGeneratedHtml    = null;
+  iwgEditable         = null;
+  iwgOriginalHtml     = null;
+  iwgOrigEditable     = null;
+  iwgTrueOriginalHtml = null;
+  iwgTrueOrigEditable = null;
+  iwgDirty            = false;
 
   // Populate header
   document.getElementById('iwg-biz-name').textContent     = b.name     || 'Business';
@@ -4225,9 +4259,14 @@ function iwgTrigger(idx) {
 
 function iwgClose() {
   document.getElementById('iwg-anchor').style.display = 'none';
-  iwgCurrentBiz    = null;
-  iwgGeneratedHtml = null;
-  iwgEditable      = null;
+  iwgCurrentBiz       = null;
+  iwgWoppContextId    = null;
+  iwgGeneratedHtml    = null;
+  iwgEditable         = null;
+  iwgOriginalHtml     = null;
+  iwgOrigEditable     = null;
+  iwgTrueOriginalHtml = null;
+  iwgTrueOrigEditable = null;
   clearInterval(iwgLoadInterval);
 }
 
@@ -4292,11 +4331,13 @@ This business has NO website. Generate a complete, professional landing page tha
     if (barEl) barEl.style.width = '100%';
     await new Promise(r => setTimeout(r, 300));
 
-    iwgGeneratedHtml = parsed.generated_html;
-    iwgEditable      = JSON.parse(JSON.stringify(parsed.editable_content));
-    iwgOriginalHtml  = parsed.generated_html;
-    iwgOrigEditable  = JSON.parse(JSON.stringify(parsed.editable_content));
-    iwgDirty         = false;
+    iwgGeneratedHtml    = parsed.generated_html;
+    iwgEditable         = JSON.parse(JSON.stringify(parsed.editable_content));
+    iwgOriginalHtml     = parsed.generated_html;
+    iwgOrigEditable     = JSON.parse(JSON.stringify(parsed.editable_content));
+    iwgTrueOriginalHtml = parsed.generated_html;
+    iwgTrueOrigEditable = JSON.parse(JSON.stringify(parsed.editable_content));
+    iwgDirty            = false;
 
     // Populate iframe
     const iframe = document.getElementById('iwg-iframe');
@@ -4325,6 +4366,14 @@ This business has NO website. Generate a complete, professional landing page tha
 }
 
 function iwgRegen() {
+  // Clear all generated state so the next generate() call starts fresh
+  iwgGeneratedHtml    = null;
+  iwgEditable         = null;
+  iwgOriginalHtml     = null;
+  iwgOrigEditable     = null;
+  iwgTrueOriginalHtml = null;
+  iwgTrueOrigEditable = null;
+  iwgDirty            = false;
   iwgShowState('idle');
   document.getElementById('iwg-btn-regen').style.display = 'none';
 }
@@ -4398,8 +4447,10 @@ function iwgApplyEdits() {
   iwgEditable.contact_title        = document.getElementById('iwge-contact-title').value;
   iwgEditable.contact_instructions = document.getElementById('iwge-contact-instructions').value;
 
-  // String-replace changed values in the HTML
-  let html = iwgOriginalHtml;
+  // String-replace changed values in the HTML.
+  // IMPORTANT: always apply against the CURRENT generated HTML (not original),
+  // so that re-edits accumulate correctly instead of reverting previous changes.
+  let html = iwgGeneratedHtml || iwgOriginalHtml;
   const orig = iwgOrigEditable;
   const curr = iwgEditable;
 
@@ -4420,8 +4471,17 @@ function iwgApplyEdits() {
   }
   iwgGeneratedHtml = html;
 
+  // After applying, update the "original" baseline to the CURRENT editable state,
+  // so the next round of edits compares against what's currently in the HTML.
+  iwgOrigEditable  = JSON.parse(JSON.stringify(curr));
+  // Also update the base HTML so future string-replaces start from the right point
+  iwgOriginalHtml  = html;
+
   const iframe = document.getElementById('iwg-iframe');
   if (iframe) iframe.srcdoc = html;
+
+  // Persist edits back to woppOpps if this generator is in WO context
+  wsePersistToWopp(html);
 
   iwgDirty = false;
   document.getElementById('iwg-btn-reset-edits').style.display = 'none';
@@ -4430,14 +4490,19 @@ function iwgApplyEdits() {
 }
 
 function iwgResetEdits() {
-  if (!iwgOrigEditable) return;
-  iwgEditable      = JSON.parse(JSON.stringify(iwgOrigEditable));
-  iwgGeneratedHtml = iwgOriginalHtml;
+  if (!iwgTrueOrigEditable) return;
+  // Reset to the AI-generated original (before any edits)
+  iwgEditable      = JSON.parse(JSON.stringify(iwgTrueOrigEditable));
+  iwgOrigEditable  = JSON.parse(JSON.stringify(iwgTrueOrigEditable));
+  iwgGeneratedHtml = iwgTrueOriginalHtml;
+  iwgOriginalHtml  = iwgTrueOriginalHtml;
   iwgPopulateEditFields();
   const iframe = document.getElementById('iwg-iframe');
-  if (iframe) iframe.srcdoc = iwgOriginalHtml;
+  if (iframe) iframe.srcdoc = iwgTrueOriginalHtml;
+  // Persist reset to WOPP if in that context
+  wsePersistToWopp(iwgTrueOriginalHtml);
   iwgDirty = false;
-  toast('Reset to original.', 'info');
+  toast('Reset to original AI-generated version.', 'info');
 }
 
 function iwgTab(name) {
@@ -4473,6 +4538,158 @@ function iwgCopyHtml() {
     }
     toast('HTML copied to clipboard.', 'success');
   }).catch(() => toast('Copy failed. Try downloading instead.', 'error'));
+}
+
+/* ═══════════════════════════════════════════════════
+   SHARED WEBSITE EDITOR INFRASTRUCTURE
+   Used by both Discovery (IWG) and Website Opportunities (WOPP).
+   Single source of truth — no duplicate editor code.
+═══════════════════════════════════════════════════ */
+
+/**
+ * iwgWoppContextId — when the editor is opened from a WOPP opportunity,
+ * this is set to the opportunity ID so edits are persisted back to woppOpps.
+ * null = Discovery context (IWG anchor widget only).
+ */
+let iwgWoppContextId = null;
+
+/**
+ * wsePersistToWopp(html)
+ * If the editor was opened from a WOPP opportunity, write the latest
+ * generated HTML back into that opportunity entry and persist it.
+ */
+function wsePersistToWopp(html) {
+  if (!iwgWoppContextId) return;
+  const opp = woppOpps.find(o => o.id === iwgWoppContextId);
+  if (!opp) return;
+  opp.html   = html;
+  opp.status = Math.max(opp.status, 1);
+  // Persist the editable content snapshot so editor can be re-opened with correct state
+  if (iwgEditable) opp.editableContent = JSON.parse(JSON.stringify(iwgEditable));
+  woppSave();
+  woppUpdateStats();
+  woppRenderTable();
+  // Refresh project modal preview if it's still open for this opp
+  if (woppCurrentId === iwgWoppContextId) {
+    const iframe = document.getElementById('wo-project-iframe');
+    if (iframe) iframe.srcdoc = html;
+    const noHtml  = document.getElementById('wo-project-nohtml');
+    const preview = document.getElementById('wo-project-preview');
+    if (noHtml)  noHtml.style.display  = 'none';
+    if (preview) preview.style.display = '';
+  }
+}
+
+/**
+ * wseOpenEditorForWopp(oppId)
+ * Opens the shared IWG editor (the Discovery inline widget) pre-loaded with
+ * the WOPP opportunity's current HTML and editable content.
+ * Works by navigating to Discovery panel, scrolling the IWG anchor into view,
+ * and populating it with the opportunity's data.
+ */
+function wseOpenEditorForWopp(oppId) {
+  const opp = woppOpps.find(o => o.id === oppId);
+  if (!opp || !opp.html) { toast('Generate a website first.', 'error'); return; }
+
+  // Track that we are editing in WOPP context
+  iwgWoppContextId = oppId;
+
+  // Populate IWG state as if the website was just generated for this biz
+  iwgCurrentBiz    = { name: opp.name, industry: opp.industry, location: opp.location,
+                        id: opp.leadId || null, phone: opp.phone || null, rating: opp.rating || null };
+  iwgGeneratedHtml = opp.html;
+  iwgOriginalHtml  = opp.html;
+  // Build a fresh editable snapshot from the stored one, or empty defaults
+  const ec = opp.editableContent || {
+    hero_title:'', hero_subtitle:'', call_to_action:'', about_title:'', about_text:'',
+    services_title:'', services_list:[], contact_title:'', contact_instructions:''
+  };
+  iwgEditable         = JSON.parse(JSON.stringify(ec));
+  iwgOrigEditable     = JSON.parse(JSON.stringify(ec));
+  iwgTrueOrigEditable = JSON.parse(JSON.stringify(ec));
+  iwgTrueOriginalHtml = opp.html;
+  iwgDirty            = false;
+
+  // Update IWG header labels
+  const nameEl = document.getElementById('iwg-biz-name');
+  const indEl  = document.getElementById('iwg-biz-industry');
+  const locEl  = document.getElementById('iwg-biz-location');
+  const subEl  = document.getElementById('iwg-header-sub');
+  if (nameEl) nameEl.textContent = opp.name || 'Business';
+  if (indEl)  indEl.textContent  = opp.industry || '—';
+  if (locEl)  locEl.textContent  = opp.location || '—';
+  if (subEl)  subEl.textContent  = `Editing website for ${opp.name}`;
+
+  const regenBtn = document.getElementById('iwg-btn-regen');
+  if (regenBtn) regenBtn.style.display = '';
+
+  const ratingEl  = document.getElementById('iwg-biz-rating');
+  const ratingDot = document.getElementById('iwg-meta-dot-rating');
+  if (opp.rating) {
+    if (ratingEl)  { ratingEl.textContent = `★ ${opp.rating.toFixed(1)}`; ratingEl.style.display = ''; }
+    if (ratingDot) ratingDot.style.display = '';
+  } else {
+    if (ratingEl)  ratingEl.style.display  = 'none';
+    if (ratingDot) ratingDot.style.display = 'none';
+  }
+
+  // Load HTML into iframe and populate edit fields
+  iwgShowState('result');
+  iwgPopulateEditFields();
+  const iframe = document.getElementById('iwg-iframe');
+  if (iframe) iframe.srcdoc = opp.html;
+
+  // Navigate to Discovery panel and reveal the anchor
+  navigate('discovery');
+  const anchor = document.getElementById('iwg-anchor');
+  if (anchor) {
+    anchor.style.display = 'flex';
+    setTimeout(() => anchor.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+  }
+
+  // Show the content (edit) tab automatically so the user can start editing
+  iwgTab('content');
+
+  toast('Editor opened — make your changes and click Apply Changes.', 'info');
+}
+
+/**
+ * wseRegenForWopp(oppId)
+ * Regenerates the website for a WOPP opportunity using the shared IWG generator.
+ * Navigates to Discovery, opens the IWG widget in idle state ready to generate.
+ */
+function wseRegenForWopp(oppId) {
+  const opp = woppOpps.find(o => o.id === oppId);
+  if (!opp) return;
+
+  iwgWoppContextId = oppId;
+  iwgCurrentBiz    = { name: opp.name, industry: opp.industry, location: opp.location,
+                        id: opp.leadId || null, phone: opp.phone || null, rating: opp.rating || null };
+  iwgGeneratedHtml = null;
+  iwgEditable      = null;
+  iwgOriginalHtml  = null;
+  iwgOrigEditable  = null;
+  iwgDirty         = false;
+
+  const nameEl = document.getElementById('iwg-biz-name');
+  const indEl  = document.getElementById('iwg-biz-industry');
+  const locEl  = document.getElementById('iwg-biz-location');
+  const subEl  = document.getElementById('iwg-header-sub');
+  if (nameEl) nameEl.textContent = opp.name || 'Business';
+  if (indEl)  indEl.textContent  = opp.industry || '—';
+  if (locEl)  locEl.textContent  = opp.location || '—';
+  if (subEl)  subEl.textContent  = `Regenerating website for ${opp.name}`;
+
+  document.getElementById('iwg-btn-regen').style.display = 'none';
+  iwgShowState('idle');
+
+  navigate('discovery');
+  const anchor = document.getElementById('iwg-anchor');
+  if (anchor) {
+    anchor.style.display = 'flex';
+    setTimeout(() => anchor.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+  }
+  toast('Click "Generate Website" to regenerate.', 'info');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -4523,10 +4740,13 @@ function woppInit() {
 
 /** Called when a website is generated in IWG — creates/updates an opportunity entry */
 function woppOnGenerated(biz, html) {
+  // Capture latest editable content from the IWG editor state if available
+  const editableSnapshot = iwgEditable ? JSON.parse(JSON.stringify(iwgEditable)) : null;
   const existing = woppOpps.find(o => o.name === biz.name && o.location === biz.location);
   if (existing) {
     existing.html   = html;
     existing.status = Math.max(existing.status, 1);
+    if (editableSnapshot) existing.editableContent = editableSnapshot;
     woppAddActivity(existing.id, 'gen', 'Website generated');
   } else {
     const id = 'wo_' + Date.now();
@@ -4534,6 +4754,7 @@ function woppOnGenerated(biz, html) {
       id, name: biz.name, industry: biz.industry || '—', location: biz.location || '—',
       rating: biz.rating, reviewCount: biz.review_count,
       status: 1, html,
+      editableContent: editableSnapshot,
       activity: [{ type:'gen', text:'Website generated', time: new Date().toISOString() }],
       createdAt: new Date().toISOString()
     };
@@ -4903,6 +5124,28 @@ function woCloseProject() {
   document.getElementById('wo-project-modal').classList.remove('open');
   document.body.style.overflow = '';
   woppCurrentId = null;
+}
+
+/**
+ * woEditWebsite() — Opens the shared IWG editor for the current WOPP opportunity.
+ * Closes the project modal first, then opens the editor in Discovery panel.
+ */
+function woEditWebsite() {
+  const id = woppCurrentId;
+  if (!id) return;
+  woCloseProject();
+  wseOpenEditorForWopp(id);
+}
+
+/**
+ * woRegenWebsite() — Triggers website regeneration for the current WOPP opportunity
+ * using the shared IWG generator in Discovery panel.
+ */
+function woRegenWebsite() {
+  const id = woppCurrentId;
+  if (!id) return;
+  woCloseProject();
+  wseRegenForWopp(id);
 }
 
 function pmTab(name) {
