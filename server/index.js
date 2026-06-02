@@ -396,7 +396,7 @@ const STOCK_INDUSTRY_MAP = {
 };
 
 function stockUrl(id, w, h) {
-  return \`https://images.unsplash.com/photo-\${id}?w=\${w||1600}&h=\${h||900}&q=85&fit=crop&auto=format\`;
+  return `https://images.unsplash.com/photo-\${id}?w=\${w||1600}&h=\${h||900}&q=85&fit=crop&auto=format`;
 }
 
 function getStockForIndustry(industry) {
@@ -444,16 +444,16 @@ function postProcessGeneratedHtml(html, industry) {
   const fallback   = getStockForIndustry(industry);
 
   // ── 1. Replace empty / placeholder src values ──────────────────────────────
-  html = html.replace(/src=["']\s*["']/gi, () => \`src="\${nextStock()}"\`);
+  html = html.replace(/src=["']\s*["']/gi, () => `src="\${nextStock()}"`);
   html = html.replace(/src=["'](#|placeholder[^"']*|YOUR[_-]IMAGE[^"']*|IMAGE[_-]URL[^"']*|https?:\/\/via\.placeholder[^"']*|https?:\/\/placeholder[^"']*)["']/gi,
-    () => \`src="\${nextStock()}"\`);
+    () => `src="\${nextStock()}"`);
 
   // ── 2. Add onerror fallback to every <img> tag ─────────────────────────────
   html = html.replace(/<img(\b[^>]*?)>/gi, (match, attrs) => {
     // Skip if already has onerror
     if (/onerror/i.test(attrs)) return match;
     const fb = nextStock();
-    return \`<img\${attrs} onerror="this.onerror=null;this.src='\${fb}'">\`;
+    return `<img\${attrs} onerror="this.onerror=null;this.src='\${fb}'">`;
   });
 
   // ── 3. Ensure hero section always has a background image ───────────────────
@@ -463,10 +463,10 @@ function postProcessGeneratedHtml(html, industry) {
       !/<div[^>]*(?:class|id)=["'][^"']*hero[^"']*["'][^>]*>[\s\S]{0,800}background-image/.test(html)) {
     // Inject a fallback hero bg via a <style> block before </head>
     const heroBg = getStockForIndustry(industry);
-    const heroStyle = \`<style>
+    const heroStyle = `<style>
 /* Stock image fallback — hero section background */
 .hero-img-fallback{background-image:url('\${heroBg}')!important;background-size:cover;background-position:center}
-</style>\`;
+</style>`;
     html = html.replace(/<\/head>/i, heroStyle + '</head>');
   }
 
