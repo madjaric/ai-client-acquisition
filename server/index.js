@@ -442,7 +442,7 @@ Output starts with <!DOCTYPE html> — nothing before it.`;
       body   : JSON.stringify({
         contents: [{ role: "user", parts: [{ text: PROMPT }] }],
         generationConfig: {
-          maxOutputTokens: 16384,   // Was 65536 — 4x faster
+          maxOutputTokens: 32768,   // Enough for full page, not too slow
           temperature    : 0.7,
           candidateCount : 1,
         },
@@ -476,6 +476,13 @@ Output starts with <!DOCTYPE html> — nothing before it.`;
 
     const t3 = Date.now();
     console.log(`[IWG] HTML extracted in ${t3 - t2}ms — ${html.length} chars`);
+
+    // ── Repair truncated HTML (token limit hit) ────────────────────────────────
+    const wasTruncated = !/<\/html>/i.test(html);
+    if (wasTruncated) {
+      console.warn(`[IWG] HTML truncated — repairing missing closing tags`);
+      html = repairHtml(html);
+    }
 
     // ── Validate ──────────────────────────────────────────────────────────────
     const validationError = validateHtml(html);
@@ -567,17 +574,42 @@ function extractHtml(raw) {
 }
 
 /**
+ * repairHtml(html)
+ * If Gemini truncated the output (hit token limit), the HTML will be missing
+ * closing tags. Rather than failing, we repair it so the user gets a working
+ * (if slightly incomplete) page instead of an error.
+ */
+function repairHtml(html) {
+  if (!html) return html;
+
+  // Close any open <style> block
+  const styleOpens  = (html.match(/<style[^>]*>/gi) || []).length;
+  const styleCloses = (html.match(/<\/style>/gi) || []).length;
+  if (styleOpens > styleCloses) html += '\n</style>';
+
+  // Close any open <script> block
+  const scriptOpens  = (html.match(/<script[^>]*>/gi) || []).length;
+  const scriptCloses = (html.match(/<\/script>/gi) || []).length;
+  if (scriptOpens > scriptCloses) html += '\n</script>';
+
+  // Ensure </body> and </html> exist
+  if (!/<\/body>/i.test(html)) html += '\n</body>';
+  if (!/<\/html>/i.test(html)) html += '\n</html>';
+
+  return html;
+}
+
+/**
  * validateHtml(html)
  * Returns null if valid, or an error string describing the problem.
+ * Truncated HTML is repaired rather than rejected.
  */
 function validateHtml(html) {
-  if (!html)                             return "Generated HTML is empty";
-  if (html.length < 500)                 return `Generated HTML too short (${html.length} chars — expected >500)`;
+  if (!html)              return "Generated HTML is empty";
+  if (html.length < 500)  return `Generated HTML too short (${html.length} chars — Gemini may have failed)`;
   if (!/<!doctype\s+html/i.test(html) &&
-      !/<html[\s>]/i.test(html))         return "Generated HTML missing <html> tag";
-  if (!/<\/html>/i.test(html))           return "Generated HTML missing closing </html> tag";
-  if (!/<\/body>/i.test(html))           return "Generated HTML missing closing </body> tag";
-  return null;
+      !/<html[\s>]/i.test(html)) return "Generated HTML missing <html> tag — Gemini returned wrong format";
+  return null;  // closing tags validated/repaired separately via repairHtml()
 }
 
 /**
