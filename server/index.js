@@ -342,12 +342,143 @@ app.get("/api/preview/:leadId", (req, res) => {
 // ─────────────────────────────────────────────
 //  Gemini proxy — website generator
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+//  Stock Image System — server-side
+//  Curated Unsplash IDs guaranteed to load.
+//  No API key, no billing, permanent CDN URLs.
+// ─────────────────────────────────────────────
+
+const STOCK_PHOTO_IDS = [
+  // office / workspace / team
+  '1497366216548-37526070297c',
+  '1498050108023-c5249f4df085',
+  '1556761175-b413da4baf72',
+  '1556742502-ec7c0e9f34b1',
+  // buildings / exteriors
+  '1486325212027-8081e485255e',
+  '1441986300917-64674bd600d8',
+  // professionals / service workers
+  '1507003211169-0a1dd7228f2d',
+  '1560250097-0b93528c311a',
+  // tools / trades / construction
+  '1504328345596-9c7c7df1ad62',
+  '1504307651254-35680f356dfd',
+  // meetings / consulting / networking
+  '1521791136064-7986c2920216',
+  '1552664730-d307ca884978',
+  // tech / desk / productivity
+  '1593642632559-0c6d3fc62b89',
+  '1551288049-bebda4e38f71',
+  '1542744173-8e7e53415bb0',
+  // mobile / entrepreneur
+  '1512941937669-90a1b58e7e9c',
+  '1559136555-9303baea8eae',
+  // growth / results
+  '1579621970588-a35d0e7ab9b6',
+  '1497366754035-f200968a333c',
+  // customer service / interaction
+  '1556742049-0cfed4f6a45d',
+];
+
+/** industry keyword → preferred stock photo index pool */
+const STOCK_INDUSTRY_MAP = {
+  plumb:     [8,6,9,1],  hvac:     [8,6,9,1],  electr: [8,6,9,1],
+  mechanic:  [8,9,6,0],  auto:     [8,9,6,0],  repair: [8,9,6,0],
+  construct: [9,8,4,5],  landscap: [9,8,4,6],
+  dental:    [6,3,7,0],  medical:  [6,3,7,0],  health: [6,3,7,19],
+  restaurant:[5,19,3,2], food:     [5,19,2,3], cafe:   [5,14,2,16],
+  fitness:   [6,7,11,1], gym:      [6,7,11,1],
+  beauty:    [3,19,7,6], salon:    [3,19,7,6],
+  retail:    [5,19,3,2], consult:  [10,11,1,0],
+  market:    [11,13,1,2],tech:     [13,1,14,2],
+  law:       [10,0,11,7],account:  [17,0,10,13],
+  real:      [4,0,10,17],
+};
+
+function stockUrl(id, w, h) {
+  return \`https://images.unsplash.com/photo-\${id}?w=\${w||1600}&h=\${h||900}&q=85&fit=crop&auto=format\`;
+}
+
+function getStockForIndustry(industry) {
+  const lower = (industry || '').toLowerCase();
+  for (const key of Object.keys(STOCK_INDUSTRY_MAP)) {
+    if (lower.includes(key)) {
+      const pool = STOCK_INDUSTRY_MAP[key];
+      const id   = STOCK_PHOTO_IDS[pool[Math.floor(Math.random() * pool.length)]];
+      return stockUrl(id);
+    }
+  }
+  const idx = Math.floor(Math.random() * STOCK_PHOTO_IDS.length);
+  return stockUrl(STOCK_PHOTO_IDS[idx]);
+}
+
+function getMultipleStockUrls(industry, count) {
+  const lower = (industry || '').toLowerCase();
+  let pool = [];
+  for (const key of Object.keys(STOCK_INDUSTRY_MAP)) {
+    if (lower.includes(key)) { pool = [...STOCK_INDUSTRY_MAP[key]]; break; }
+  }
+  // pad with all indices in shuffled order
+  const all = STOCK_PHOTO_IDS.map((_, i) => i).sort(() => Math.random() - 0.5);
+  all.forEach(i => { if (!pool.includes(i)) pool.push(i); });
+  return pool.slice(0, count || 8).map(i => stockUrl(STOCK_PHOTO_IDS[i]));
+}
+
+/**
+ * postProcessGeneratedHtml(html, industry)
+ *
+ * Applied to every AI-generated website before it is returned to the client.
+ *
+ * Priority:
+ *  1. If the AI included real Unsplash URLs → keep them, just add onerror
+ *  2. If the AI left placeholder src values  → replace with stock photos
+ *  3. Add onerror fallback to every <img>    → no broken browser placeholders ever
+ *  4. Ensure hero section always has a bg image via inline style if src-based hero is absent
+ */
+function postProcessGeneratedHtml(html, industry) {
+  if (!html) return html;
+
+  const stockUrls  = getMultipleStockUrls(industry, 12);
+  let   stockIndex = 0;
+  const nextStock  = () => stockUrls[stockIndex++ % stockUrls.length];
+  const fallback   = getStockForIndustry(industry);
+
+  // ── 1. Replace empty / placeholder src values ──────────────────────────────
+  html = html.replace(/src=["']\s*["']/gi, () => \`src="\${nextStock()}"\`);
+  html = html.replace(/src=["'](#|placeholder[^"']*|YOUR[_-]IMAGE[^"']*|IMAGE[_-]URL[^"']*|https?:\/\/via\.placeholder[^"']*|https?:\/\/placeholder[^"']*)["']/gi,
+    () => \`src="\${nextStock()}"\`);
+
+  // ── 2. Add onerror fallback to every <img> tag ─────────────────────────────
+  html = html.replace(/<img(\b[^>]*?)>/gi, (match, attrs) => {
+    // Skip if already has onerror
+    if (/onerror/i.test(attrs)) return match;
+    const fb = nextStock();
+    return \`<img\${attrs} onerror="this.onerror=null;this.src='\${fb}'">\`;
+  });
+
+  // ── 3. Ensure hero section always has a background image ───────────────────
+  // Look for common hero patterns — if hero has background:var(--dark) or similar
+  // but no background-image, inject one.
+  if (!/<section[^>]*(?:hero|id="hero")[^>]*>[\s\S]{0,800}background-image/.test(html) &&
+      !/<div[^>]*(?:class|id)=["'][^"']*hero[^"']*["'][^>]*>[\s\S]{0,800}background-image/.test(html)) {
+    // Inject a fallback hero bg via a <style> block before </head>
+    const heroBg = getStockForIndustry(industry);
+    const heroStyle = \`<style>
+/* Stock image fallback — hero section background */
+.hero-img-fallback{background-image:url('\${heroBg}')!important;background-size:cover;background-position:center}
+</style>\`;
+    html = html.replace(/<\/head>/i, heroStyle + '</head>');
+  }
+
+  return html;
+}
+
 app.post("/api/generate-website", async (req, res) => {
   if (!process.env.GEMINI_API_KEY) {
     return res.status(503).json({ error: { message: "GEMINI_API_KEY not configured on server." } });
   }
   try {
-    const { messages } = req.body;
+    const { messages, industry } = req.body;
     const userText = (messages || []).map(m => m.content).join("\n\n");
 
     const PROMPT = `You are a senior front-end developer at a world-class design agency. Generate a complete single-file HTML landing page for the local business below. This is a SALES DEMO shown to a business owner — it must look like a $3,000–$5,000 professionally-built website, not a generic AI page.
@@ -370,6 +501,8 @@ OUTPUT RULES
   Beauty/salon:     3065209, 3993449, 1570807, 3065171, 3065172
   Construction:     1117452, 585419, 1395963, 2138922, 3760529, 1216589
   Use 6–10 DIFFERENT photo IDs spread across the page. Never repeat the same photo ID.
+  EVERY <img> tag MUST include this exact onerror attribute (use a different stock photo ID as fallback):
+  onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&fit=crop&auto=format'"
 
 ══════════════════════════════════════════════════
 DESIGN SYSTEM
@@ -587,6 +720,12 @@ COPY RULES:
     if (!html.toLowerCase().includes("<!doctype") && !html.toLowerCase().includes("<html")) {
       return res.status(500).json({ error: { message: "Gemini did not return valid HTML. Try again." } });
     }
+
+    // ── Apply stock image fallback system ──────────────────────────────────────
+    // Ensures every <img> has onerror protection, replaces empty src values,
+    // and guarantees the hero section always has a background image.
+    const detectedIndustry = industry || userText.match(/Industry[^\n:]*:\s*([^\n]+)/i)?.[1] || '';
+    html = postProcessGeneratedHtml(html, detectedIndustry);
 
     res.json({
       content: [{
