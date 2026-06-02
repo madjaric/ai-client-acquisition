@@ -342,409 +342,267 @@ app.get("/api/preview/:leadId", (req, res) => {
 // ─────────────────────────────────────────────
 //  Gemini proxy — website generator
 // ─────────────────────────────────────────────
-// ─────────────────────────────────────────────
-//  Stock Image System — server-side
-//  Curated Unsplash IDs guaranteed to load.
-//  No API key, no billing, permanent CDN URLs.
-// ─────────────────────────────────────────────
-
-const STOCK_PHOTO_IDS = [
-  // office / workspace / team
-  '1497366216548-37526070297c',
-  '1498050108023-c5249f4df085',
-  '1556761175-b413da4baf72',
-  '1556742502-ec7c0e9f34b1',
-  // buildings / exteriors
-  '1486325212027-8081e485255e',
-  '1441986300917-64674bd600d8',
-  // professionals / service workers
-  '1507003211169-0a1dd7228f2d',
-  '1560250097-0b93528c311a',
-  // tools / trades / construction
-  '1504328345596-9c7c7df1ad62',
-  '1504307651254-35680f356dfd',
-  // meetings / consulting / networking
-  '1521791136064-7986c2920216',
-  '1552664730-d307ca884978',
-  // tech / desk / productivity
-  '1593642632559-0c6d3fc62b89',
-  '1551288049-bebda4e38f71',
-  '1542744173-8e7e53415bb0',
-  // mobile / entrepreneur
-  '1512941937669-90a1b58e7e9c',
-  '1559136555-9303baea8eae',
-  // growth / results
-  '1579621970588-a35d0e7ab9b6',
-  '1497366754035-f200968a333c',
-  // customer service / interaction
-  '1556742049-0cfed4f6a45d',
-];
-
-/** industry keyword → preferred stock photo index pool */
-const STOCK_INDUSTRY_MAP = {
-  plumb:     [8,6,9,1],  hvac:     [8,6,9,1],  electr: [8,6,9,1],
-  mechanic:  [8,9,6,0],  auto:     [8,9,6,0],  repair: [8,9,6,0],
-  construct: [9,8,4,5],  landscap: [9,8,4,6],
-  dental:    [6,3,7,0],  medical:  [6,3,7,0],  health: [6,3,7,19],
-  restaurant:[5,19,3,2], food:     [5,19,2,3], cafe:   [5,14,2,16],
-  fitness:   [6,7,11,1], gym:      [6,7,11,1],
-  beauty:    [3,19,7,6], salon:    [3,19,7,6],
-  retail:    [5,19,3,2], consult:  [10,11,1,0],
-  market:    [11,13,1,2],tech:     [13,1,14,2],
-  law:       [10,0,11,7],account:  [17,0,10,13],
-  real:      [4,0,10,17],
-};
-
-function stockUrl(id, w, h) {
-  return `https://images.unsplash.com/photo-\${id}?w=\${w||1600}&h=\${h||900}&q=85&fit=crop&auto=format`;
-}
-
-function getStockForIndustry(industry) {
-  const lower = (industry || '').toLowerCase();
-  for (const key of Object.keys(STOCK_INDUSTRY_MAP)) {
-    if (lower.includes(key)) {
-      const pool = STOCK_INDUSTRY_MAP[key];
-      const id   = STOCK_PHOTO_IDS[pool[Math.floor(Math.random() * pool.length)]];
-      return stockUrl(id);
-    }
-  }
-  const idx = Math.floor(Math.random() * STOCK_PHOTO_IDS.length);
-  return stockUrl(STOCK_PHOTO_IDS[idx]);
-}
-
-function getMultipleStockUrls(industry, count) {
-  const lower = (industry || '').toLowerCase();
-  let pool = [];
-  for (const key of Object.keys(STOCK_INDUSTRY_MAP)) {
-    if (lower.includes(key)) { pool = [...STOCK_INDUSTRY_MAP[key]]; break; }
-  }
-  // pad with all indices in shuffled order
-  const all = STOCK_PHOTO_IDS.map((_, i) => i).sort(() => Math.random() - 0.5);
-  all.forEach(i => { if (!pool.includes(i)) pool.push(i); });
-  return pool.slice(0, count || 8).map(i => stockUrl(STOCK_PHOTO_IDS[i]));
-}
-
-/**
- * postProcessGeneratedHtml(html, industry)
- *
- * Applied to every AI-generated website before it is returned to the client.
- *
- * Priority:
- *  1. If the AI included real Unsplash URLs → keep them, just add onerror
- *  2. If the AI left placeholder src values  → replace with stock photos
- *  3. Add onerror fallback to every <img>    → no broken browser placeholders ever
- *  4. Ensure hero section always has a bg image via inline style if src-based hero is absent
- */
-function postProcessGeneratedHtml(html, industry) {
-  if (!html) return html;
-
-  const stockUrls  = getMultipleStockUrls(industry, 12);
-  let   stockIndex = 0;
-  const nextStock  = () => stockUrls[stockIndex++ % stockUrls.length];
-  const fallback   = getStockForIndustry(industry);
-
-  // ── 1. Replace empty / placeholder src values ──────────────────────────────
-  html = html.replace(/src=["']\s*["']/gi, () => `src="\${nextStock()}"`);
-  html = html.replace(/src=["'](#|placeholder[^"']*|YOUR[_-]IMAGE[^"']*|IMAGE[_-]URL[^"']*|https?:\/\/via\.placeholder[^"']*|https?:\/\/placeholder[^"']*)["']/gi,
-    () => `src="\${nextStock()}"`);
-
-  // ── 2. Add onerror fallback to every <img> tag ─────────────────────────────
-  html = html.replace(/<img(\b[^>]*?)>/gi, (match, attrs) => {
-    // Skip if already has onerror
-    if (/onerror/i.test(attrs)) return match;
-    const fb = nextStock();
-    return `<img\${attrs} onerror="this.onerror=null;this.src='\${fb}'">`;
-  });
-
-  // ── 3. Ensure hero section always has a background image ───────────────────
-  // Look for common hero patterns — if hero has background:var(--dark) or similar
-  // but no background-image, inject one.
-  if (!/<section[^>]*(?:hero|id="hero")[^>]*>[\s\S]{0,800}background-image/.test(html) &&
-      !/<div[^>]*(?:class|id)=["'][^"']*hero[^"']*["'][^>]*>[\s\S]{0,800}background-image/.test(html)) {
-    // Inject a fallback hero bg via a <style> block before </head>
-    const heroBg = getStockForIndustry(industry);
-    const heroStyle = `<style>
-/* Stock image fallback — hero section background */
-.hero-img-fallback{background-image:url('\${heroBg}')!important;background-size:cover;background-position:center}
-</style>`;
-    html = html.replace(/<\/head>/i, heroStyle + '</head>');
-  }
-
-  return html;
-}
-
 app.post("/api/generate-website", async (req, res) => {
+  const t0 = Date.now();
+
   if (!process.env.GEMINI_API_KEY) {
     return res.status(503).json({ error: { message: "GEMINI_API_KEY not configured on server." } });
   }
+
   try {
     const { messages, industry } = req.body;
     const userText = (messages || []).map(m => m.content).join("\n\n");
 
-    const PROMPT = `You are a senior front-end developer at a world-class design agency. Generate a complete single-file HTML landing page for the local business below. This is a SALES DEMO shown to a business owner — it must look like a $3,000–$5,000 professionally-built website, not a generic AI page.
+    console.log(`[IWG] Generation started — industry: ${industry || "unknown"}`);
+    console.log(`[IWG] User text length: ${userText.length} chars`);
 
-══════════════════════════════════════════════════
-OUTPUT RULES
-══════════════════════════════════════════════════
-• Return ONLY raw HTML starting with <!DOCTYPE html>. No markdown. No code fences. No commentary.
-• Single file: all CSS inside <style>, all JS inside <script> before </body>.
-• Only allowed external resource: Google Fonts via <link>.
-• Use real Unsplash photos: https://images.unsplash.com/photo-PHOTOID?w=1200&q=85&fit=crop&auto=format
-  Real photo IDs by industry:
-  Auto/mechanic:    1492144533, 1486262322, 1492496111, 1503736235, 1549399645, 3807517
-  Dental/medical:   3845810, 3279209, 4021775, 4386466, 5215001, 40568
-  HVAC/trades:      1216589, 1145434, 162568, 257636, 3862634, 1422408
-  Restaurant/food:  1640777, 262978, 299347, 1279330, 1640773, 67468
-  Fitness/gym:      1954524, 1552106, 841130, 2247179, 4164418, 3253501
-  Landscaping:      1214497, 296230, 1301585, 1459495, 3076899, 2132250
-  Plumbing:         210881, 2988232, 1599703, 3517739, 2058134
-  Beauty/salon:     3065209, 3993449, 1570807, 3065171, 3065172
-  Construction:     1117452, 585419, 1395963, 2138922, 3760529, 1216589
-  Use 6–10 DIFFERENT photo IDs spread across the page. Never repeat the same photo ID.
-  EVERY <img> tag MUST include this exact onerror attribute (use a different stock photo ID as fallback):
-  onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&fit=crop&auto=format'"
+    // ── Pick industry-matched photo IDs ───────────────────────────────────────
+    const PHOTO_POOLS = {
+      auto:        ["1492144533","1486262322","1492496111","1503736235","1549399645","3807517"],
+      dental:      ["3845810","3279209","4021775","4386466","5215001","40568"],
+      hvac:        ["1216589","1145434","162568","257636","3862634","1422408"],
+      plumb:       ["210881","2988232","1599703","3517739","2058134","1216589"],
+      restaurant:  ["1640777","262978","299347","1279330","1640773","67468"],
+      food:        ["1640777","262978","299347","1279330","1640773","67468"],
+      fitness:     ["1954524","1552106","841130","2247179","4164418","3253501"],
+      landscap:    ["1214497","296230","1301585","1459495","3076899","2132250"],
+      beauty:      ["3065209","3993449","1570807","3065171","3065172"],
+      salon:       ["3065209","3993449","1570807","3065171","3065172"],
+      construct:   ["1117452","585419","1395963","2138922","3760529","1216589"],
+      electr:      ["257636","3862634","1422408","162568","1145434"],
+    };
+    const FALLBACK_PHOTOS = ["1497366216548-37526070297c","1498050108023-c5249f4df085",
+      "1556761175-b413da4baf72","1521791136064-7986c2920216","1504328345596-9c7c7df1ad62"];
+    let photoPool = FALLBACK_PHOTOS;
+    const industryLower = (industry || userText).toLowerCase();
+    for (const [key, ids] of Object.entries(PHOTO_POOLS)) {
+      if (industryLower.includes(key)) { photoPool = ids; break; }
+    }
+    // Shuffle and pick 6
+    const photos = [...photoPool].sort(() => Math.random() - 0.5).slice(0, 6);
+    const photoUrls = photos.map(id =>
+      `https://images.unsplash.com/photo-${id}?w=1200&q=80&fit=crop&auto=format`
+    );
 
-══════════════════════════════════════════════════
-DESIGN SYSTEM
-══════════════════════════════════════════════════
-Google Fonts import (always include):
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    // ── Generation prompt ─────────────────────────────────────────────────────
+    const PROMPT = `You are a senior front-end developer at a world-class design agency.
+Generate a complete single-file HTML landing page for the local business below.
+This is a SALES DEMO — it must look like a $3,000–$5,000 professionally-built website.
 
-CSS :root variables — pick values suited to the industry:
-  --primary: bold accent (NOT blue/gray — use orange, teal, amber, lime, cyan, crimson, etc.)
-  --primary-rgb: RGB triplet for rgba() use e.g. "255,92,0"
-  --dark: near-black for dark sections (#0d0d0d, #0a0f1a, #0f1a0a, etc.)
-  --light: page background (#ffffff or #f8f7f4)
-  --text: #1a1a2e
-  --muted: #6b7280
-  --border: #e5e7eb
-  --radius-sm: 10px
-  --radius-md: 18px
-  --radius-lg: 32px
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.04)
-  --shadow-md: 0 4px 24px rgba(0,0,0,.10),0 12px 48px rgba(0,0,0,.08)
-  --shadow-lg: 0 16px 64px rgba(0,0,0,.14),0 32px 80px rgba(0,0,0,.10)
-  --ease: cubic-bezier(.4,0,.2,1)
+OUTPUT RULES:
+• Return ONLY raw HTML starting with <!DOCTYPE html>. No markdown. No code fences.
+• Single file: all CSS in <style>, all JS in <script> before </body>.
+• Google Fonts: <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
-Global reset:
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-  body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--light);line-height:1.7}
-  img{max-width:100%;height:auto;display:block}
-  a{text-decoration:none;color:inherit}
-  button{cursor:pointer;border:none;background:none;font:inherit}
+DESIGN:
+• CSS vars: --primary (bold industry color, not blue/gray), --primary-rgb, --dark (#0d0d0d), --light (#f8f7f4)
+• Every <img>: onerror="this.onerror=null;this.src='${photoUrls[0]}'" loading="lazy"
+• Use these Unsplash photos (no repeats):
+${photoUrls.map((u,i) => `  ${u}`).join("\n")}
 
-Scroll reveal classes (add to every section except hero and nav):
-  .reveal{opacity:0;transform:translateY(48px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
-  .reveal.visible{opacity:1;transform:none}
-  .reveal-d1{transition-delay:.1s} .reveal-d2{transition-delay:.2s} .reveal-d3{transition-delay:.3s}
+SECTIONS (build ALL in this order):
+1. NAV — fixed, transparent→dark on scroll, logo + links + CTA button, hamburger mobile
+2. HERO — min-height:100vh, dark bg, TWO columns: left=eyebrow+headline(Syne 800)+subtext+CTA buttons+trust items+stars; right=image card (aspect-ratio:4/5, img covers, floating stat badge)
+3. STATS BAR — primary bg, 4 animated count-up numbers with data-target attr
+4. WHY CHOOSE US — 3-col grid, 6 feature cards with SVG icons
+5. SERVICES — 3-col grid, 6 service cards each with image (height:200px) + icon + title + desc
+6. GALLERY — 4-col grid, 8 photos, lightbox on click
+7. TESTIMONIALS — 3 cards with stars, review text, avatar initial, realistic names
+8. ABOUT — 2-col: left=image composition (main+secondary+years badge), right=text+list+CTA
+9. CTA BANNER — full-width bg photo with gradient overlay, headline + buttons
+10. CONTACT — 2-col: left=details+click-to-call, right=form (Name/Phone/Service/Message)
+11. FOOTER — dark bg, 3-col grid, logo+links+contact info, copyright
 
-══════════════════════════════════════════════════
-SECTIONS — build ALL in this exact order
-══════════════════════════════════════════════════
-
-1. NAV (fixed)
-   position:fixed;top:0;width:100%;z-index:1000;padding:20px 6%;transition:all .35s var(--ease);display:flex;justify-content:space-between;align-items:center
-   Initial: background:transparent
-   .nav-scrolled (JS): background:var(--dark);backdrop-filter:blur(20px);padding:14px 6%;box-shadow:0 4px 30px rgba(0,0,0,.3)
-   Logo: font-family:'Syne';font-weight:800;font-size:1.4rem;color:white — last word of name in color:var(--primary)
-   Links: display:flex;gap:32px;color:rgba(255,255,255,.8);font-size:.9rem;font-weight:500
-   CTA btn: background:var(--primary);color:white;padding:10px 22px;border-radius:var(--radius-lg);font-weight:600;font-size:.88rem
-   Mobile: hamburger (3-line SVG), full overlay menu on click
-
-2. HERO — TWO COLUMN LAYOUT
-   min-height:100vh;padding:140px 6% 80px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;overflow:hidden;background:var(--dark)
-   Background decorations: radial gradient blob top-right (primary color, 25% opacity), subtle dot grid pattern using background-image
-   
-   LEFT column — text:
-   a) Eyebrow badge: inline-flex;padding:7px 16px;border-radius:99px;background:rgba(var(--primary-rgb),.15);border:1px solid rgba(var(--primary-rgb),.3);color:var(--primary);font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px
-   b) Headline: font-family:'Syne';font-weight:800;font-size:clamp(2.8rem,5vw,4.4rem);line-height:1.05;letter-spacing:-.03em;color:white;margin-bottom:20px — one key word in var(--primary)
-   c) Subtext: font-size:1.1rem;color:rgba(255,255,255,.65);line-height:1.8;max-width:480px;margin-bottom:36px
-   d) CTA row: display:flex;gap:12px;flex-wrap:wrap;margin-bottom:36px
-      Primary: background:var(--primary);color:white;padding:15px 32px;border-radius:var(--radius-lg);font-weight:600;box-shadow:0 8px 32px rgba(var(--primary-rgb),.4);transition:.25s var(--ease)
-      Secondary: border:2px solid rgba(255,255,255,.25);color:white;padding:15px 32px;border-radius:var(--radius-lg);font-weight:600
-   e) Trust row: display:flex;gap:20px;flex-wrap:wrap;margin-bottom:28px — each item: checkmark (color:var(--primary)) + text (rgba(255,255,255,.6);font-size:.85rem)
-      4 trust items relevant to the industry e.g. "Licensed & Insured" "Free Estimates" "5-Star Rated" "Same-Day Service"
-   f) Stars (if rating provided): gold ★ chars + rating/5 + "(N reviews)" in muted white
-   
-   RIGHT column — image card:
-   position:relative;border-radius:var(--radius-md);overflow:hidden;aspect-ratio:4/5;box-shadow:var(--shadow-lg)
-   img: position:absolute;inset:0;width:100%;height:100%;object-fit:cover
-   Bottom gradient: position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(to top,rgba(0,0,0,.5),transparent)
-   Floating stat badge bottom-left: position:absolute;bottom:20px;left:20px;background:white;border-radius:var(--radius-sm);padding:12px 16px;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px — SVG icon in var(--primary), bold number, small label
-   Small secondary card right side: position:absolute;top:20%;right:-20px;width:180px;background:var(--dark);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-sm);padding:14px;backdrop-filter:blur(20px) — add a small stat or badge
-   
-   Entrance animation: @keyframes heroUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
-   Apply with animation:heroUp .8s var(--ease) both + staggered delays to each left column child
-
-3. STATS BAR
-   background:var(--primary);padding:20px 6%;display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px;align-items:center
-   4 items — number: font-family:'Syne';font-weight:800;font-size:2.4rem;color:white — label: font-size:.8rem;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.08em
-   data-target attribute on each number for JS count-up. Use realistic numbers.
-
-4. WHY CHOOSE US (class="reveal")
-   padding:100px 6%;background:var(--light)
-   Header (centered): overline label + h2 (font-family:'Syne';font-weight:800;font-size:clamp(2rem,4vw,3rem)) + description; margin-bottom:64px
-   Grid: display:grid;grid-template-columns:repeat(3,1fr);gap:28px
-   Cards: background:white;border-radius:var(--radius-md);padding:36px 28px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);transition:all .3s var(--ease)
-   hover: transform:translateY(-6px);box-shadow:var(--shadow-md);border-color:rgba(var(--primary-rgb),.3)
-   Icon: 52px circle bg:rgba(var(--primary-rgb),.1);SVG 26px stroke:var(--primary);stroke-width:1.75;fill:none
-   h3: font-family:'Syne';font-weight:700;font-size:1.15rem;margin-bottom:10px
-   p: font-size:.95rem;color:var(--muted);line-height:1.75
-   Add 6 feature cards.
-
-5. SERVICES (class="reveal")
-   padding:100px 6%;background:#f9f9f7
-   Header centered; margin-bottom:64px
-   Grid: display:grid;grid-template-columns:repeat(3,1fr);gap:24px
-   Each card: position:relative;border-radius:var(--radius-md);overflow:hidden;background:white;box-shadow:var(--shadow-sm);transition:all .35s var(--ease)
-   hover: transform:translateY(-8px);box-shadow:var(--shadow-lg)
-   Image area: height:200px — img:width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease) — hover img:transform:scale(1.08)
-   .service-overlay: position:absolute;inset:0;background:rgba(var(--primary-rgb),.9);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;color:white;font-weight:600
-   hover .service-overlay: opacity:1
-   Content: padding:24px — icon (36px circle) + h3 (font-family:'Syne') + p
-   Include 6 service cards with real industry-specific services.
-
-6. GALLERY (class="reveal")
-   padding:100px 6%;background:var(--dark)
-   Header: overline (var(--primary)) + h2 (white) + desc (rgba(255,255,255,.55));centered;margin-bottom:56px
-   Grid: display:grid;grid-template-columns:repeat(4,1fr);gap:16px
-   Items: position:relative;border-radius:var(--radius-sm);overflow:hidden;cursor:pointer
-   First item and one other: grid-column:span 2;aspect-ratio:16/9
-   Others: aspect-ratio:1/1
-   img: width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)
-   hover img: transform:scale(1.06)
-   .gallery-overlay: position:absolute;inset:0;background:rgba(var(--primary-rgb),.75);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s — white SVG zoom icon inside
-   hover .gallery-overlay: opacity:1
-   8 different photos.
-
-7. TESTIMONIALS (class="reveal")
-   padding:100px 6%;background:var(--light)
-   Header centered; margin-bottom:56px
-   Grid: display:grid;grid-template-columns:repeat(3,1fr);gap:24px
-   Cards: background:white;border-radius:var(--radius-md);padding:32px;box-shadow:var(--shadow-sm);border:1.5px solid var(--border);position:relative;transition:.3s
-   hover: box-shadow:var(--shadow-md);transform:translateY(-4px)
-   Big quote mark: position:absolute;top:20px;right:24px;font-family:'Syne';font-size:4rem;font-weight:800;color:rgba(var(--primary-rgb),.12);line-height:1
-   Stars: ★ chars color:var(--primary);font-size:1rem;margin-bottom:16px
-   Review text: font-size:.95rem;line-height:1.8;font-style:italic;margin-bottom:24px
-   Reviewer: 40px avatar circle (bg:rgba(var(--primary-rgb),.15);initial letter in var(--primary)) + name (font-weight:600) + detail (color:var(--muted))
-   3 realistic reviews with specific details.
-
-8. ABOUT (class="reveal")
-   padding:100px 6%;background:#f9f9f7
-   display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center
-   LEFT image composition (position:relative;min-height:520px):
-   Main img: width:85%;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-lg) — img:height:480px;object-fit:cover
-   Secondary img: position:absolute;bottom:-32px;right:-16px;width:52%;border-radius:var(--radius-sm);border:4px solid white;box-shadow:var(--shadow-md) — img:height:220px;object-fit:cover
-   Years badge: position:absolute;top:32px;left:-20px;background:var(--primary);color:white;border-radius:var(--radius-sm);padding:18px 22px;box-shadow:var(--shadow-md) — big number in Syne 800 + small label
-   RIGHT content: overline + h2 + 2 paragraphs + 4-item list (checkmark circle + bold label + desc) + CTA button
-
-9. CTA BANNER (class="reveal")
-   position:relative;padding:100px 6%;overflow:hidden;text-align:center
-   Background: real Unsplash photo;background-size:cover;background-position:center
-   ::before: position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--primary-rgb),.88),rgba(0,0,0,.8))
-   Content (relative z-index:1): h2 (Syne 800 white clamp(2rem,4vw,3.5rem)) + p + button row
-   Buttons: white filled (color:var(--primary)) + <a href="tel:..."> outlined white (click-to-call with phone SVG icon)
-
-10. CONTACT (class="reveal")
-    padding:100px 6%;background:var(--light)
-    display:grid;grid-template-columns:1fr 1.3fr;gap:80px;align-items:start
-    LEFT: overline + h2 + paragraph + 4 contact detail items (icon circle + label + value)
-    Phone: <a href="tel:..."> color:var(--primary);font-family:'Syne';font-size:1.2rem;font-weight:800
-    Click-to-call button: full-width;background:var(--primary);color:white;padding:16px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px
-    RIGHT form: background:white;border-radius:var(--radius-lg);padding:44px;box-shadow:var(--shadow-md);border:1.5px solid var(--border)
-    Fields: Name, Phone, Service (select dropdown with real services), Message
-    Input style: width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans';font-size:.95rem;outline:none;background:var(--light)
-    :focus: border-color:var(--primary);box-shadow:0 0 0 3px rgba(var(--primary-rgb),.12)
-    Submit: width:100%;background:var(--primary);color:white;padding:15px;border-radius:var(--radius-sm);font-family:'DM Sans';font-weight:600
-
-11. FOOTER
-    background:var(--dark);padding:64px 6% 32px
-    Top grid: display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:32px
-    Col 1: logo + tagline + description + social icons
-    Col 2: Quick Links + 5 nav links
-    Col 3: Contact Info + phone (tel: link) + email + address + hours
-    Bottom: © 2025 [name]. All rights reserved. + "Built with LeadFlow AI" right-aligned
-
-══════════════════════════════════════════════════
-JAVASCRIPT
-══════════════════════════════════════════════════
-1. Nav scroll: window.addEventListener('scroll',()=>nav.classList.toggle('nav-scrolled',scrollY>60))
-2. Hamburger: toggle .menu-open; mobile menu slides down
-3. Scroll reveal: IntersectionObserver threshold 0.12 adds .visible class to .reveal elements
-4. Count-up: on stats bar entry, animate 0→target over 1800ms with easeOutQuart; read target from data-target attr
-5. Gallery lightbox: click item → fixed overlay with full-size image; click overlay to close
-
-══════════════════════════════════════════════════
-RESPONSIVE
-══════════════════════════════════════════════════
-@media (max-width:1024px): hero grid-template-columns:1fr; right column shown below, aspect-ratio:16/9; about grid-template-columns:1fr
-@media (max-width:768px): why/services/testimonials grid-template-columns:1fr 1fr; gallery grid-template-columns:repeat(2,1fr); contact grid-template-columns:1fr; footer top grid-template-columns:1fr; nav links hidden, hamburger shown
-@media (max-width:480px): all grids grid-template-columns:1fr; hero font-size clamp(2.2rem,8vw,3.2rem); CTA buttons flex-direction:column width:100%
-
-══════════════════════════════════════════════════
-BUSINESS DATA
-══════════════════════════════════════════════════
-BUSINESS_DATA_PLACEHOLDER
+BEHAVIOUR:
+• Nav scroll: classList.toggle('nav-scrolled', scrollY>60)
+• Scroll reveal: IntersectionObserver adds .visible to .reveal elements
+• Count-up: animate data-target numbers over 1800ms on entry
+• Gallery lightbox: click→overlay with full image
 
 COPY RULES:
-• Write as the actual business owner — confident, local, trustworthy
-• ZERO placeholder text or lorem ipsum — every word must be specific to this business
-• Generate 3 realistic testimonials with specific, plausible customer first names
-• Adapt everything to the industry — a dentist and a plumber should feel completely different
-• Phone: use real one from data or (555) 000-0000 as fallback with tel: link
-• Make it feel like this website has been live and earning customers for years`;
+• Zero placeholder text — every word specific to this business
+• 3 realistic testimonials with local customer names
+• Phone as <a href="tel:...">. Industry-appropriate trust badges.
+• Make it feel like the site has been live and earning customers for years
 
-    const prompt = PROMPT.replace("BUSINESS_DATA_PLACEHOLDER", userText);
+BUSINESS DATA:
+${userText}
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+Output starts with <!DOCTYPE html> — nothing before it.`;
 
-    const upstream = await fetch(url, {
+    const t1 = Date.now();
+    console.log(`[IWG] Prompt built in ${t1 - t0}ms — ${PROMPT.length} chars`);
+
+    // ── Call Gemini ───────────────────────────────────────────────────────────
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+    const upstream = await fetch(geminiUrl, {
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({
-        contents        : [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 65536, temperature: 0.75 },
+        contents: [{ role: "user", parts: [{ text: PROMPT }] }],
+        generationConfig: {
+          maxOutputTokens: 16384,   // Was 65536 — 4x faster
+          temperature    : 0.7,
+          candidateCount : 1,
+        },
       }),
     });
+
+    const t2 = Date.now();
+    console.log(`[IWG] Gemini responded in ${t2 - t1}ms — HTTP ${upstream.status}`);
 
     const data = await upstream.json();
 
     if (!upstream.ok) {
-      return res.status(upstream.status).json({ error: { message: data?.error?.message || "Gemini API error" } });
+      console.error(`[IWG] Gemini error:`, data?.error);
+      return res.status(upstream.status).json({
+        error: { message: data?.error?.message || "Gemini API error" }
+      });
     }
 
-    let html = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    html = html.replace(/^```html\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+    // ── Extract HTML ──────────────────────────────────────────────────────────
+    let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    console.log(`[IWG] Raw response length: ${rawText.length} chars`);
 
-    if (!html.toLowerCase().includes("<!doctype") && !html.toLowerCase().includes("<html")) {
-      return res.status(500).json({ error: { message: "Gemini did not return valid HTML. Try again." } });
+    if (!rawText) {
+      const reason = data?.candidates?.[0]?.finishReason || "unknown";
+      console.error(`[IWG] Empty response — finishReason: ${reason}`);
+      return res.status(500).json({ error: { message: `Gemini returned empty response (reason: ${reason})` } });
     }
 
-    // ── Apply stock image fallback system ──────────────────────────────────────
-    // Ensures every <img> has onerror protection, replaces empty src values,
-    // and guarantees the hero section always has a background image.
-    const detectedIndustry = industry || userText.match(/Industry[^\n:]*:\s*([^\n]+)/i)?.[1] || '';
-    html = postProcessGeneratedHtml(html, detectedIndustry);
+    // Robust HTML extraction pipeline
+    let html = extractHtml(rawText);
 
+    const t3 = Date.now();
+    console.log(`[IWG] HTML extracted in ${t3 - t2}ms — ${html.length} chars`);
+
+    // ── Validate ──────────────────────────────────────────────────────────────
+    const validationError = validateHtml(html);
+    if (validationError) {
+      console.error(`[IWG] Validation failed: ${validationError}`);
+      console.error(`[IWG] HTML preview: ${html.substring(0, 200)}`);
+      return res.status(500).json({ error: { message: validationError } });
+    }
+
+    // ── Post-process: inject stock image fallbacks ────────────────────────────
+    html = postProcessHtml(html, photoUrls);
+
+    const t4 = Date.now();
+    console.log(`[IWG] Post-process done in ${t4 - t3}ms`);
+    console.log(`[IWG] Total generation time: ${t4 - t0}ms`);
+
+    // ── Respond ───────────────────────────────────────────────────────────────
+    // Wrap in the same envelope the frontend expects.
     res.json({
       content: [{
         type: "text",
         text: JSON.stringify({
           generated_html  : html,
           editable_content: {
-            hero_title:"",hero_subtitle:"",call_to_action:"",
-            about_title:"",about_text:"",services_title:"",
-            services_list:[],contact_title:"",contact_instructions:"",
+            hero_title:"", hero_subtitle:"", call_to_action:"",
+            about_title:"", about_text:"", services_title:"",
+            services_list:[], contact_title:"", contact_instructions:"",
           }
         })
       }]
     });
 
   } catch (err) {
+    console.error("[IWG] Unhandled error:", err);
     res.status(500).json({ error: { message: err.message } });
   }
 });
+
+/**
+ * extractHtml(rawText)
+ * Robust pipeline — handles all known Gemini output variations:
+ * 1. Clean HTML (ideal case)
+ * 2. ```html ... ``` fenced
+ * 3. ``` ... ``` fenced (no lang)
+ * 4. JSON envelope {"generated_html":"..."}
+ * 5. Partial/truncated HTML
+ */
+function extractHtml(raw) {
+  if (!raw) return "";
+
+  // 1. Already starts with doctype/html
+  const trimmed = raw.trim();
+  if (/^<!doctype\s+html/i.test(trimmed) || /^<html/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  // 2. Fenced ```html ... ```
+  const htmlFence = trimmed.match(/```html\s*([\s\S]*?)```/i);
+  if (htmlFence) return htmlFence[1].trim();
+
+  // 3. Generic ``` ... ```
+  const genericFence = trimmed.match(/```\s*([\s\S]*?)```/);
+  if (genericFence) {
+    const inner = genericFence[1].trim();
+    if (inner.toLowerCase().includes('<html') || inner.toLowerCase().includes('<!doctype')) {
+      return inner;
+    }
+  }
+
+  // 4. JSON envelope {"generated_html": "..."}
+  try {
+    const jsonStart = raw.indexOf('{');
+    if (jsonStart !== -1) {
+      // Handle escaped HTML inside JSON
+      const parsed = JSON.parse(raw.slice(jsonStart));
+      if (parsed.generated_html) return parsed.generated_html;
+    }
+  } catch (_) {}
+
+  // 5. Find HTML document anywhere in the string
+  const docStart = raw.search(/<!doctype\s+html/i);
+  if (docStart !== -1) return raw.slice(docStart).trim();
+
+  const htmlStart = raw.search(/<html[\s>]/i);
+  if (htmlStart !== -1) return raw.slice(htmlStart).trim();
+
+  // 6. Return as-is and let validation catch it
+  return trimmed;
+}
+
+/**
+ * validateHtml(html)
+ * Returns null if valid, or an error string describing the problem.
+ */
+function validateHtml(html) {
+  if (!html)                             return "Generated HTML is empty";
+  if (html.length < 500)                 return `Generated HTML too short (${html.length} chars — expected >500)`;
+  if (!/<!doctype\s+html/i.test(html) &&
+      !/<html[\s>]/i.test(html))         return "Generated HTML missing <html> tag";
+  if (!/<\/html>/i.test(html))           return "Generated HTML missing closing </html> tag";
+  if (!/<\/body>/i.test(html))           return "Generated HTML missing closing </body> tag";
+  return null;
+}
+
+/**
+ * postProcessHtml(html, photoUrls)
+ * Adds onerror fallbacks to any <img> that lacks them.
+ * Replaces empty/placeholder src values.
+ */
+function postProcessHtml(html, photoUrls) {
+  if (!html) return html;
+  const fallback = photoUrls[0] || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80&fit=crop&auto=format";
+  let photoIdx = 1;
+
+  // Replace empty/placeholder srcs
+  html = html.replace(/src=["']\s*["']/gi, () => `src="${photoUrls[photoIdx++ % photoUrls.length] || fallback}"`);
+  html = html.replace(/src=["'](#|placeholder[^"']*|YOUR[_-]IMAGE[^"']*)["']/gi,
+    () => `src="${photoUrls[photoIdx++ % photoUrls.length] || fallback}"`);
+
+  // Add onerror to any <img> missing it
+  html = html.replace(/<img(\b[^>]*?)>/gi, (match, attrs) => {
+    if (/onerror/i.test(attrs)) return match;
+    return `<img${attrs} onerror="this.onerror=null;this.src='${fallback}'">`;
+  });
+
+  return html;
+}
 
 
 // ─────────────────────────────────────────────

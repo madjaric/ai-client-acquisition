@@ -1343,7 +1343,6 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
   .score-display { flex-direction: column; align-items: flex-start; }
 }
 </style>
-<script src="/stock-images.js"></script>
 </head>
 
 <body>
@@ -4121,56 +4120,75 @@ async function handleUpgradeClick(plan) {
    INSTANT WEBSITE GENERATOR — IWG
 ═══════════════════════════════════════════════════ */
 
-const IWG_SYSTEM = `You are an AI that generates complete, production-ready HTML landing pages for local businesses.
+// ═══════════════════════════════════════════════════════════════
+//  SHARED HTML PARSING + VALIDATION HELPERS
+//  Used by both iwgGenerate() and woRunGenerate()
+// ═══════════════════════════════════════════════════════════════
 
-Return ONLY a valid JSON object. No markdown. No backticks. No explanation. Just raw JSON.
+function parseGeneratedHtml(data) {
+  if (!data) throw new Error('No response data from server');
+  console.log('[parse] keys:', Object.keys(data).join(', '));
 
-{
-  "editable_content": {
-    "hero_title": "string",
-    "hero_subtitle": "string",
-    "call_to_action": "string",
-    "about_title": "string",
-    "about_text": "string",
-    "services_title": "string",
-    "services_list": [{"name":"string","description":"string"}],
-    "contact_title": "string",
-    "contact_instructions": "string"
-  },
-  "generated_html": "<!DOCTYPE html>...complete HTML..."
+  if (data.html) return data.html;
+  if (data.error) throw new Error(data.error.message || 'Server error');
+
+  if (!data.content || !data.content.length)
+    throw new Error('Response missing content array');
+
+  const rawText = data.content.filter(c => c.type === 'text').map(c => c.text || '').join('');
+  console.log('[parse] rawText length:', rawText.length);
+  if (!rawText) throw new Error('Response content is empty');
+
+  // Try JSON parse (server returns JSON envelope)
+  const parsed = tryParseJson(rawText);
+  if (parsed) {
+    if (parsed.generated_html) return parsed.generated_html;
+    if (parsed.html)           return parsed.html;
+  }
+
+  // Try extracting raw HTML from text
+  const extracted = extractHtmlFromText(rawText);
+  if (extracted) return extracted;
+
+  console.warn('[parse] Unknown shape, returning raw');
+  return rawText.trim();
 }
 
-HTML requirements:
-- Single self-contained file. All CSS inside <style> tag.
-- Google Fonts allowed via <link> tag. Use a distinctive font pairing suited to the industry (e.g. Syne + DM Sans, Playfair Display + Source Sans 3, Oswald + Lato, etc.)
-- IMAGES ARE REQUIRED. Use real Unsplash photos via: https://images.unsplash.com/photo-PHOTOID?w=1200&q=85&fit=crop&auto=format
-  Pick 6-8 DIFFERENT photo IDs from the list below based on the business industry. NEVER repeat a photo ID.
-  Auto/mechanic:    1492144533, 1486262322, 1492496111, 1503736235, 1549399645, 3807517
-  Dental/medical:   3845810, 3279209, 4021775, 4386466, 5215001, 40568
-  HVAC/plumbing:    210881, 2988232, 1599703, 3517739, 2058134, 1216589
-  Restaurant/food:  1640777, 262978, 299347, 1279330, 1640773, 67468
-  Fitness/gym:      1954524, 1552106, 841130, 2247179, 4164418, 3253501
-  Landscaping:      1214497, 296230, 1301585, 1459495, 3076899, 2132250
-  Beauty/salon:     3065209, 3993449, 1570807, 3065171, 3065172
-  Construction:     1117452, 585419, 1395963, 2138922, 3760529
-  Electrician:      257636, 3862634, 1422408, 162568, 1145434
-  General business: 1181406, 3184360, 3184291, 3184292, 3184338, 1181263
-  If the industry does not match any category above, use the General business IDs.
-- EVERY image tag must use: width="100%" height="100%" style="object-fit:cover;display:block" loading="lazy"
-- Hero section MUST have a real background image (either <img> with position:absolute covering the hero, or background-image with an Unsplash URL). No blank hero backgrounds.
-- Services section MUST have an image per service card (height:180px container with the image filling it).
-- About section MUST have at least one image.
-- Mobile-first responsive. Sections: nav (sticky), hero (full-height with CTA), about, services grid (2-3 columns), testimonials (3 cards), contact with phone/email, footer.
-- Choose a DISTINCTIVE color palette based on the industry (plumbers = deep blue+white, dentists = clean teal+white, electricians = yellow+dark, gyms = bold red+black, landscaping = forest green, etc.)
-- Include CSS animations: fade-in on load, scroll reveal via IntersectionObserver (class reveal -> visible), hover effects on cards and buttons
-- All phone numbers and emails must be clickable links (tel:, mailto:)
-- Stars rating and review count displayed in hero if provided
-- Professional and conversion-focused. No Lorem ipsum. No placeholder text. Generate realistic content for the specific business.
-- Services displayed in a responsive card grid with real images and SVG inline icons.
-- EVERY <img> tag MUST include an onerror fallback attribute:
-  onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&fit=crop&auto=format'"
+function tryParseJson(text) {
+  try { return JSON.parse(text.trim()); } catch(_) {}
+  const stripped = text.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
+  try { return JSON.parse(stripped); } catch(_) {}
+  const brace = text.indexOf('{');
+  if (brace !== -1) { try { return JSON.parse(text.slice(brace)); } catch(_) {} }
+  return null;
+}
 
-Writing rules: credible, high-quality, industry-appropriate. Sound like the business wrote it themselves.`;
+function extractHtmlFromText(text) {
+  if (!text) return null;
+  const fenced = text.match(/```html\s*([\s\S]*?)```/i);
+  if (fenced) return fenced[1].trim();
+  const gfenced = text.match(/```\s*([\s\S]*?)```/);
+  if (gfenced && /<!doctype|<html/i.test(gfenced[1])) return gfenced[1].trim();
+  const trimmed = text.trim();
+  if (/^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) return trimmed;
+  const dt = text.search(/<!doctype\s+html/i);
+  if (dt !== -1) return text.slice(dt).trim();
+  const ht = text.search(/<html[\s>]/i);
+  if (ht !== -1) return text.slice(ht).trim();
+  return null;
+}
+
+function validateGeneratedHtml(html) {
+  if (!html)                    return 'HTML is empty';
+  if (html.length < 1000)       return `HTML too short (${html.length} chars)`;
+  if (!/<!doctype|<html/i.test(html)) return 'HTML missing <html> or DOCTYPE';
+  if (!/<\/html>/i.test(html))  return 'HTML missing </html>';
+  if (!/<\/body>/i.test(html))  return 'HTML missing </body>';
+  return null;
+}
+
+const IWG_SYSTEM = ""; // prompt built server-side
+
 
 let iwgCurrentBiz   = null;   // raw discovery object
 let iwgGeneratedHtml     = null;  // final HTML string (latest, including edits)
@@ -4275,12 +4293,12 @@ function iwgClose() {
 
 async function iwgGenerate() {
   if (!iwgCurrentBiz) return;
-  const b = iwgCurrentBiz;
+  const b   = iwgCurrentBiz;
+  const t0  = performance.now();
 
   iwgShowState('loading');
   document.getElementById('iwg-btn-gen').disabled = true;
 
-  // Progress bar + step messages
   iwgLoadPct = 0;
   let stepIdx = 0;
   const barEl  = document.getElementById('iwg-loading-bar');
@@ -4289,72 +4307,64 @@ async function iwgGenerate() {
   iwgLoadInterval = setInterval(() => {
     iwgLoadPct = Math.min(iwgLoadPct + (100 / (IWG_STEPS.length * 2.5)), 92);
     if (barEl) barEl.style.width = iwgLoadPct + '%';
-    if (stepEl && stepIdx < IWG_STEPS.length) {
-      stepEl.textContent = IWG_STEPS[stepIdx++];
-    }
+    if (stepEl && stepIdx < IWG_STEPS.length) stepEl.textContent = IWG_STEPS[stepIdx++];
   }, 800);
 
-  // Build rich prompt from discovery data
-  const prompt = `Generate a complete landing page for this local business:
+  const prompt = [
+    `Business Name: ${b.name}`,
+    `Industry: ${b.industry || 'General'}`,
+    `Location: ${b.location || ''}`,
+    b.phone       ? `Phone: ${b.phone}` : null,
+    b.rating      ? `Rating: ${b.rating}/5 (${b.review_count || 0} reviews)` : null,
+    b.description ? `Description: ${b.description}` : null,
+    Array.isArray(b.services) && b.services.length
+      ? `Services: ${b.services.slice(0,8).join(', ')}` : null,
+  ].filter(Boolean).join('\n');
 
-Business Name: ${b.name}
-Industry / Category: ${b.industry}
-Location: ${b.location}
-Phone: ${b.phone || 'not provided'}
-Rating: ${b.rating != null ? b.rating + '/5' : 'not available'}
-Reviews: ${b.review_count != null ? b.review_count.toLocaleString() + ' reviews' : 'not available'}
-Description: ${b.description || 'Local business serving the ' + b.location + ' area'}
-${Array.isArray(b.services) && b.services.length ? 'Services: ' + b.services.join(', ') : ''}
-${Array.isArray(b.photos) && b.photos.length ? 'Photos available: yes (do NOT include img tags, use CSS gradients as placeholders instead)' : ''}
-
-This business has NO website. Generate a complete, professional landing page that will impress the business owner and convince them to hire a web developer.`;
+  console.log('[IWG] Generating for:', b.name, '| prompt:', prompt.length, 'chars');
 
   try {
+    const t1  = performance.now();
     const res = await fetch('/api/generate-website', {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({
-        model     : 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
-        system    : IWG_SYSTEM,
-        industry  : b.industry || '',
-        messages  : [{ role: 'user', content: prompt }]
-      })
+      body   : JSON.stringify({ messages: [{ role: 'user', content: prompt }], industry: b.industry || '' })
     });
+    console.log('[IWG] Fetch done in', Math.round(performance.now()-t1), 'ms — HTTP', res.status);
 
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message || 'API error');
+    if (!res.ok || data.error) throw new Error(data.error?.message || `HTTP ${res.status}`);
 
-    const raw    = (data.content || []).map(c => c.text || '').join('');
-    const clean  = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-    const parsed = JSON.parse(clean);
+    const html = parseGeneratedHtml(data);
+    console.log('[IWG] HTML length:', html ? html.length : 0);
 
-    if (!parsed.generated_html || !parsed.editable_content) throw new Error('Incomplete response from AI');
+    const validErr = validateGeneratedHtml(html);
+    if (validErr) throw new Error(validErr);
+
+    console.log('[IWG] Total:', Math.round(performance.now()-t0), 'ms');
 
     clearInterval(iwgLoadInterval);
     if (barEl) barEl.style.width = '100%';
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 200));
 
-    iwgGeneratedHtml    = parsed.generated_html;
-    iwgEditable         = JSON.parse(JSON.stringify(parsed.editable_content));
-    iwgOriginalHtml     = parsed.generated_html;
-    iwgOrigEditable     = JSON.parse(JSON.stringify(parsed.editable_content));
-    iwgTrueOriginalHtml = parsed.generated_html;
-    iwgTrueOrigEditable = JSON.parse(JSON.stringify(parsed.editable_content));
+    const emptyEditable = { hero_title:'', hero_subtitle:'', call_to_action:'', about_title:'',
+      about_text:'', services_title:'', services_list:[], contact_title:'', contact_instructions:'' };
+
+    iwgGeneratedHtml    = html;
+    iwgEditable         = JSON.parse(JSON.stringify(emptyEditable));
+    iwgOriginalHtml     = html;
+    iwgOrigEditable     = JSON.parse(JSON.stringify(emptyEditable));
+    iwgTrueOriginalHtml = html;
+    iwgTrueOrigEditable = JSON.parse(JSON.stringify(emptyEditable));
     iwgDirty            = false;
 
-    // Populate iframe
     const iframe = document.getElementById('iwg-iframe');
-    if (iframe) iframe.srcdoc = typeof LF_STOCK !== "undefined" ? LF_STOCK.patchHtml(iwgGeneratedHtml, iwgCurrentBiz?.industry) : iwgGeneratedHtml;
+    if (iframe) iframe.srcdoc = html;
 
-    // URL bar
-    const urlName = (b.name || 'website').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const urlEl   = document.getElementById('iwg-chrome-url-text');
-    if (urlEl) urlEl.textContent = urlName + '.html';
+    const urlEl = document.getElementById('iwg-chrome-url-text');
+    if (urlEl) urlEl.textContent = (b.name||'website').toLowerCase().replace(/[^a-z0-9]+/g,'-') + '.html';
 
-    // Populate edit fields
     iwgPopulateEditFields();
-
     iwgShowState('result');
     document.getElementById('iwg-btn-regen').style.display = '';
     document.getElementById('iwg-btn-gen').disabled = false;
@@ -4362,6 +4372,7 @@ This business has NO website. Generate a complete, professional landing page tha
     iwgTab('preview');
 
   } catch(e) {
+    console.error('[IWG] Failed:', e);
     clearInterval(iwgLoadInterval);
     iwgShowState('idle');
     document.getElementById('iwg-btn-gen').disabled = false;
@@ -4482,7 +4493,7 @@ function iwgApplyEdits() {
   iwgOriginalHtml  = html;
 
   const iframe = document.getElementById('iwg-iframe');
-  if (iframe) iframe.srcdoc = typeof LF_STOCK !== 'undefined' ? LF_STOCK.patchHtml(html, iwgCurrentBiz?.industry) : html;
+  if (iframe) iframe.srcdoc = html;
 
   // Persist edits back to woppOpps if this generator is in WO context
   wsePersistToWopp(html);
@@ -4502,7 +4513,7 @@ function iwgResetEdits() {
   iwgOriginalHtml  = iwgTrueOriginalHtml;
   iwgPopulateEditFields();
   const iframe = document.getElementById('iwg-iframe');
-  if (iframe) iframe.srcdoc = typeof LF_STOCK !== 'undefined' ? LF_STOCK.patchHtml(iwgTrueOriginalHtml, iwgCurrentBiz?.industry) : iwgTrueOriginalHtml;
+  if (iframe) iframe.srcdoc = iwgTrueOriginalHtml;
   // Persist reset to WOPP if in that context
   wsePersistToWopp(iwgTrueOriginalHtml);
   iwgDirty = false;
@@ -4641,7 +4652,7 @@ function wseOpenEditorForWopp(oppId) {
   iwgShowState('result');
   iwgPopulateEditFields();
   const iframe = document.getElementById('iwg-iframe');
-  if (iframe) iframe.srcdoc = typeof LF_STOCK !== 'undefined' ? LF_STOCK.patchHtml(opp.html, opp.industry) : opp.html;
+  if (iframe) iframe.srcdoc = opp.html;
 
   // Navigate to Discovery panel and reveal the anchor
   navigate('discovery');
@@ -5096,7 +5107,7 @@ function woOpenProject(id) {
   if (opp.html) {
     noHtml.style.display  = 'none';
     preview.style.display = '';
-    iframe.srcdoc = typeof LF_STOCK !== "undefined" ? LF_STOCK.patchHtml(opp.html, opp.industry) : opp.html;
+    iframe.srcdoc = opp.html;
   } else {
     noHtml.style.display  = '';
     preview.style.display = 'none';
@@ -5293,84 +5304,74 @@ function woCloseGeneratorModal() {
 async function woRunGenerate() {
   const opp = woppOpps.find(o => o.id === woGenCurrentId);
   if (!opp) return;
+  const t0 = performance.now();
 
   document.getElementById('wo-gen-state-idle').style.display    = 'none';
   document.getElementById('wo-gen-state-loading').style.display = '';
   document.getElementById('wo-gen-state-result').style.display  = 'none';
 
-  const steps = ['Analyzing business data…','Writing professional copy…','Designing color palette…','Building layout & sections…','Generating hero section…','Creating services grid…','Polishing contact section…','Finalizing HTML…'];
+  const steps = ['Analyzing data…','Writing copy…','Designing layout…','Building sections…',
+    'Generating hero…','Creating services grid…','Finalizing…'];
   let stepIdx = 0, pct = 0;
   const barEl  = document.getElementById('wo-gen-bar');
   const stepEl = document.getElementById('wo-gen-step');
   const interval = setInterval(() => {
-    pct = Math.min(pct + 12, 92);
+    pct = Math.min(pct + 13, 92);
     if (barEl) barEl.style.width = pct + '%';
     if (stepEl && stepIdx < steps.length) stepEl.textContent = steps[stepIdx++];
   }, 800);
 
-  const prompt = `Generate a complete landing page for this local business:
+  const prompt = [
+    `Business Name: ${opp.name}`,
+    `Industry: ${opp.industry || 'General'}`,
+    `Location: ${opp.location || ''}`,
+    opp.rating ? `Rating: ${opp.rating}/5 (${opp.reviewCount || 0} reviews)` : null,
+    opp.phone  ? `Phone: ${opp.phone}` : null,
+  ].filter(Boolean).join('\n');
 
-Business Name: ${opp.name}
-Industry / Category: ${opp.industry}
-Location: ${opp.location}
-Rating: ${opp.rating != null ? opp.rating + '/5' : 'not available'}
-Reviews: ${opp.reviewCount != null ? opp.reviewCount.toLocaleString() + ' reviews' : 'not available'}
-Description: Local business serving the ${opp.location} area
-
-This business has NO website. Generate a complete, professional landing page that will impress the business owner and convince them to hire a web developer.`;
+  console.log('[WO] Generating for:', opp.name);
 
   try {
+    const t1  = performance.now();
     const res = await fetch('/api/generate-website', {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({
-        model     : 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
-        system    : IWG_SYSTEM,
-        industry  : opp.industry || '',
-        messages  : [{ role: 'user', content: prompt }]
-      })
+      body   : JSON.stringify({ messages: [{ role: 'user', content: prompt }], industry: opp.industry || '' })
     });
+    console.log('[WO] Fetch done in', Math.round(performance.now()-t1), 'ms — HTTP', res.status);
 
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message || 'API error');
+    if (!res.ok || data.error) throw new Error(data.error?.message || `HTTP ${res.status}`);
 
-    const raw    = (data.content || []).map(c => c.text || '').join('');
-    const clean  = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-    const parsed = JSON.parse(clean);
-    if (!parsed.generated_html) throw new Error('Incomplete response from AI');
+    const html = parseGeneratedHtml(data);
+    console.log('[WO] HTML length:', html ? html.length : 0);
+
+    const validErr = validateGeneratedHtml(html);
+    if (validErr) throw new Error(validErr);
+
+    console.log('[WO] Total:', Math.round(performance.now()-t0), 'ms');
 
     clearInterval(interval);
     if (barEl) barEl.style.width = '100%';
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 200));
 
-    // Save to opportunity
-    opp.html   = parsed.generated_html;
+    opp.html   = html;
     opp.status = Math.max(opp.status, 1);
     woppAddActivity(woGenCurrentId, 'gen', 'Website generated');
     woppSave(); woppUpdateStats(); woppRenderTable();
 
-    // Upload HTML to server and save preview URL to lead
-    const bizForUpload = {
-      id     : opp.leadId || null,
-      leadId : opp.leadId || null,
-      name   : opp.name,
-      industry: opp.industry,
-      location: opp.location,
-    };
-    if (typeof woppOnGenerated === 'function') {
-      woppOnGenerated(bizForUpload, parsed.generated_html);
-    }
+    const bizForUpload = { id: opp.leadId||null, leadId: opp.leadId||null,
+      name: opp.name, industry: opp.industry, location: opp.location };
+    if (typeof woppOnGenerated === 'function') woppOnGenerated(bizForUpload, html);
 
-    // Show result in modal
     const iframe = document.getElementById('wo-gen-iframe');
-    if (iframe) iframe.srcdoc = typeof LF_STOCK !== "undefined" ? LF_STOCK.patchHtml(parsed.generated_html, opp.industry) : parsed.generated_html;
+    if (iframe) iframe.srcdoc = html;
     document.getElementById('wo-gen-state-loading').style.display = 'none';
     document.getElementById('wo-gen-state-result').style.display  = '';
-
     toast('Website generated!', 'success');
 
   } catch(e) {
+    console.error('[WO] Failed:', e);
     clearInterval(interval);
     document.getElementById('wo-gen-state-loading').style.display = 'none';
     document.getElementById('wo-gen-state-idle').style.display    = '';
@@ -5744,13 +5745,6 @@ loadScoredLeads();
 loadOutreachHistory();
 loadQuota();
 woppInit();
-
-// ── Stock image protection ────────────────────────────────────────────────────
-if (typeof LF_STOCK !== 'undefined') {
-  LF_STOCK.protect();
-  const _stockObserver = new MutationObserver(() => LF_STOCK.protect());
-  _stockObserver.observe(document.body, { childList: true, subtree: true });
-}
 </script>
 
 </body>
