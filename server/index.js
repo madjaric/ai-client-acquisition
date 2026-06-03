@@ -56,6 +56,11 @@ const generateOutreachRouter = require("./routes/generateOutreach");
 const sendEmailRouter        = require("./routes/sendEmail");
 const discoveryRouter        = require("./routes/discovery");
 
+// ─── Template-based website generation stack ─────────────────────────────────
+const { renderLandingPage } = require("./renderLandingPage");
+const { resolveIndustry }   = require("./resolveIndustry");
+const { getTemplate }       = require("./services/templateManifest");
+
 // ─────────────────────────────────────────────
 //  App Setup
 // ─────────────────────────────────────────────
@@ -350,100 +355,65 @@ app.post("/api/generate-website", async (req, res) => {
   }
 
   try {
-    const { messages, industry } = req.body;
+    const { messages, industry: rawIndustry } = req.body;
     const userText = (messages || []).map(m => m.content).join("\n\n");
 
-    console.log(`[IWG] Generation started — industry: ${industry || "unknown"}`);
-    console.log(`[IWG] User text length: ${userText.length} chars`);
+    const bizData      = parseBusinessPrompt(userText);
+    const businessName = bizData.business_name || "Our Business";
+    const industry     = rawIndustry || bizData.industry || "";
 
-    // ── Pick industry-matched photo IDs ───────────────────────────────────────
-    const PHOTO_POOLS = {
-      auto:        ["1492144533","1486262322","1492496111","1503736235","1549399645","3807517"],
-      dental:      ["3845810","3279209","4021775","4386466","5215001","40568"],
-      hvac:        ["1216589","1145434","162568","257636","3862634","1422408"],
-      plumb:       ["210881","2988232","1599703","3517739","2058134","1216589"],
-      restaurant:  ["1640777","262978","299347","1279330","1640773","67468"],
-      food:        ["1640777","262978","299347","1279330","1640773","67468"],
-      fitness:     ["1954524","1552106","841130","2247179","4164418","3253501"],
-      landscap:    ["1214497","296230","1301585","1459495","3076899","2132250"],
-      beauty:      ["3065209","3993449","1570807","3065171","3065172"],
-      salon:       ["3065209","3993449","1570807","3065171","3065172"],
-      construct:   ["1117452","585419","1395963","2138922","3760529","1216589"],
-      electr:      ["257636","3862634","1422408","162568","1145434"],
-    };
-    const FALLBACK_PHOTOS = ["1497366216548-37526070297c","1498050108023-c5249f4df085",
-      "1556761175-b413da4baf72","1521791136064-7986c2920216","1504328345596-9c7c7df1ad62"];
-    let photoPool = FALLBACK_PHOTOS;
-    const industryLower = (industry || userText).toLowerCase();
-    for (const [key, ids] of Object.entries(PHOTO_POOLS)) {
-      if (industryLower.includes(key)) { photoPool = ids; break; }
+    console.log(`[IWG] Generation started — business: ${businessName} | industry: ${industry || "unknown"}`);
+
+    const category     = resolveIndustry(industry);
+    const templateName = CATEGORY_TEMPLATE_MAP[category] || "professional";
+    const manifest     = getTemplate(templateName);
+
+    if (!manifest) {
+      throw new Error(`Template manifest entry not found for: ${templateName}`);
     }
-    // Shuffle and pick 6
-    const photos = [...photoPool].sort(() => Math.random() - 0.5).slice(0, 6);
-    const photoUrls = photos.map(id =>
-      `https://images.unsplash.com/photo-${id}?w=1200&q=80&fit=crop&auto=format`
-    );
 
-    // ── Generation prompt ─────────────────────────────────────────────────────
-    const PROMPT = `You are a senior front-end developer at a world-class design agency.
-Generate a complete single-file HTML landing page for the local business below.
-This is a SALES DEMO — it must look like a $3,000–$5,000 professionally-built website.
+    const templateHtml = require("fs").readFileSync(manifest.file, "utf8");
+    console.log(`[IWG] Template: ${templateName} (category: ${category}) — ${templateHtml.length} chars`);
 
-OUTPUT RULES:
-• Return ONLY raw HTML starting with <!DOCTYPE html>. No markdown. No code fences.
-• Single file: all CSS in <style>, all JS in <script> before </body>.
-• Google Fonts: <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    const tone = TEMPLATE_TONE_MAP[templateName] || "professional";
 
-DESIGN:
-• CSS vars: --primary (bold industry color, not blue/gray), --primary-rgb, --dark (#0d0d0d), --light (#f8f7f4)
-• Every <img>: onerror="this.onerror=null;this.src='${photoUrls[0]}'" loading="lazy"
-• Use these Unsplash photos (no repeats):
-${photoUrls.map((u,i) => `  ${u}`).join("\n")}
+    const JSON_PROMPT = `You are a senior copywriter for a local business marketing agency.
+Extract and enhance the business information below into a JSON object.
+Return ONLY a raw JSON object — no markdown, no code fences, nothing before { or after }.
 
-SECTIONS (build ALL in this order):
-1. NAV — fixed, transparent→dark on scroll, logo + links + CTA button, hamburger mobile
-2. HERO — min-height:100vh, dark bg, TWO columns: left=eyebrow+headline(Syne 800)+subtext+CTA buttons+trust items+stars; right=image card (aspect-ratio:4/5, img covers, floating stat badge)
-3. STATS BAR — primary bg, 4 animated count-up numbers with data-target attr
-4. WHY CHOOSE US — 3-col grid, 6 feature cards with SVG icons
-5. SERVICES — 3-col grid, 6 service cards each with image (height:200px) + icon + title + desc
-6. GALLERY — 4-col grid, 8 photos, lightbox on click
-7. TESTIMONIALS — 3 cards with stars, review text, avatar initial, realistic names
-8. ABOUT — 2-col: left=image composition (main+secondary+years badge), right=text+list+CTA
-9. CTA BANNER — full-width bg photo with gradient overlay, headline + buttons
-10. CONTACT — 2-col: left=details+click-to-call, right=form (Name/Phone/Service/Message)
-11. FOOTER — dark bg, 3-col grid, logo+links+contact info, copyright
-
-BEHAVIOUR:
-• Nav scroll: classList.toggle('nav-scrolled', scrollY>60)
-• Scroll reveal: IntersectionObserver adds .visible to .reveal elements
-• Count-up: animate data-target numbers over 1800ms on entry
-• Gallery lightbox: click→overlay with full image
-
-COPY RULES:
-• Zero placeholder text — every word specific to this business
-• 3 realistic testimonials with local customer names
-• Phone as <a href="tel:...">. Industry-appropriate trust badges.
-• Make it feel like the site has been live and earning customers for years
-
-BUSINESS DATA:
+Business data:
 ${userText}
 
-Output starts with <!DOCTYPE html> — nothing before it.`;
+Return this exact JSON structure:
+{
+  "headline":    "<compelling hero headline, 6-12 words, specific to this business>",
+  "description": "<2-sentence description of the business, what they do and why choose them>",
+  "services":    ["<service 1>", "<service 2>", "<service 3>", "<service 4>", "<service 5>", "<service 6>"],
+  "cta_text":    "<action CTA button text, 3-6 words, e.g. Get a Free Quote>",
+  "tone":        "${tone}"
+}
+
+Rules:
+- headline: specific, benefit-driven, no generic phrases like "Welcome to"
+- description: warm, professional, mentions location if available
+- services: 3-6 items max, use actual service names from the data above if provided
+- cta_text: urgent but not pushy, industry-appropriate
+- tone: always "${tone}"
+- Zero placeholder text — every field specific to this exact business`;
 
     const t1 = Date.now();
-    console.log(`[IWG] Prompt built in ${t1 - t0}ms — ${PROMPT.length} chars`);
+    console.log(`[IWG] JSON prompt: ${JSON_PROMPT.length} chars`);
 
-    // ── Call Gemini ───────────────────────────────────────────────────────────
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
     const upstream = await fetch(geminiUrl, {
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: PROMPT }] }],
+        contents: [{ role: "user", parts: [{ text: JSON_PROMPT }] }],
         generationConfig: {
-          maxOutputTokens: 32768,   // Enough for full page, not too slow
-          temperature    : 0.7,
+          maxOutputTokens: 1024,
+          temperature    : 0.65,
           candidateCount : 1,
         },
       }),
@@ -461,55 +431,79 @@ Output starts with <!DOCTYPE html> — nothing before it.`;
       });
     }
 
-    // ── Extract HTML ──────────────────────────────────────────────────────────
-    let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    console.log(`[IWG] Raw response length: ${rawText.length} chars`);
-
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     if (!rawText) {
       const reason = data?.candidates?.[0]?.finishReason || "unknown";
       console.error(`[IWG] Empty response — finishReason: ${reason}`);
       return res.status(500).json({ error: { message: `Gemini returned empty response (reason: ${reason})` } });
     }
 
-    // Robust HTML extraction pipeline
-    let html = extractHtml(rawText);
-
-    const t3 = Date.now();
-    console.log(`[IWG] HTML extracted in ${t3 - t2}ms — ${html.length} chars`);
-
-    // ── Repair truncated HTML (token limit hit) ────────────────────────────────
-    const wasTruncated = !/<\/html>/i.test(html);
-    if (wasTruncated) {
-      console.warn(`[IWG] HTML truncated — repairing missing closing tags`);
-      html = repairHtml(html);
+    let generatedFields;
+    try {
+      const clean = rawText
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```\s*$/, "")
+        .trim();
+      generatedFields = JSON.parse(clean);
+    } catch (e) {
+      console.error(`[IWG] JSON parse failed:`, e.message, "\nRaw:", rawText.slice(0, 200));
+      generatedFields = {
+        headline:    businessName,
+        description: bizData.description || `Professional ${industry || "services"} for your area.`,
+        services:    bizData.services,
+        cta_text:    "Get a Free Quote",
+        tone,
+      };
     }
 
-    // ── Validate ──────────────────────────────────────────────────────────────
+    const t3 = Date.now();
+
+    const jsonData = {
+      business_name: businessName,
+      headline:      generatedFields.headline    || businessName,
+      description:   generatedFields.description || "",
+      services:      generatedFields.services    || bizData.services || [],
+      cta_text:      generatedFields.cta_text    || "Get a Free Quote",
+      phone:         bizData.phone    || "",
+      address:       bizData.location || "",
+      email:         bizData.email    || "",
+      industry,
+      tone:          generatedFields.tone || tone,
+    };
+
+    const html = renderLandingPage(jsonData, templateHtml);
+
+    const t4 = Date.now();
+    console.log(`[IWG] Rendered in ${t4 - t3}ms — ${html.length} chars (template: ${templateName})`);
+    console.log(`[IWG] Total generation time: ${t4 - t0}ms`);
+
     const validationError = validateHtml(html);
     if (validationError) {
-      console.error(`[IWG] Validation failed: ${validationError}`);
-      console.error(`[IWG] HTML preview: ${html.substring(0, 200)}`);
+      console.error(`[IWG] Rendered HTML validation failed: ${validationError}`);
       return res.status(500).json({ error: { message: validationError } });
     }
 
-    // ── Post-process: inject stock image fallbacks ────────────────────────────
-    html = postProcessHtml(html, photoUrls);
-
-    const t4 = Date.now();
-    console.log(`[IWG] Post-process done in ${t4 - t3}ms`);
-    console.log(`[IWG] Total generation time: ${t4 - t0}ms`);
-
-    // ── Respond ───────────────────────────────────────────────────────────────
-    // Wrap in the same envelope the frontend expects.
     res.json({
       content: [{
         type: "text",
         text: JSON.stringify({
           generated_html  : html,
           editable_content: {
-            hero_title:"", hero_subtitle:"", call_to_action:"",
-            about_title:"", about_text:"", services_title:"",
-            services_list:[], contact_title:"", contact_instructions:"",
+            hero_title:           generatedFields.headline    || "",
+            hero_subtitle:        generatedFields.description || "",
+            call_to_action:       generatedFields.cta_text    || "",
+            about_title:          businessName,
+            about_text:           generatedFields.description || "",
+            services_title:       "Our Services",
+            services_list:        (generatedFields.services || []),
+            contact_title:        "Get in Touch",
+            contact_instructions: "",
+          },
+          _meta: {
+            template:  templateName,
+            category:  category,
+            tone:      jsonData.tone,
+            generated: new Date().toISOString(),
           }
         })
       }]
@@ -520,6 +514,68 @@ Output starts with <!DOCTYPE html> — nothing before it.`;
     res.status(500).json({ error: { message: err.message } });
   }
 });
+
+// ─── Industry → template selection map ───────────────────────────────────────
+const CATEGORY_TEMPLATE_MAP = {
+  plumb:       "professional",
+  hvac:        "professional",
+  electr:      "professional",
+  construct:   "professional",
+  mechanic:    "dark",
+  landscap:    "vibrant",
+  cleaning:    "professional",
+  dental:      "professional",
+  medical:     "professional",
+  cafe:        "vibrant",
+  restaurant:  "vibrant",
+  food:        "vibrant",
+  fitness:     "dark",
+  beauty:      "vibrant",
+  retail:      "vibrant",
+  law:         "professional",
+  consult:     "professional",
+  tech:        "dark",
+  fallback:    "professional",
+};
+
+const TEMPLATE_TONE_MAP = {
+  professional: "professional",
+  vibrant:      "professional",
+  dark:         "premium",
+};
+
+/**
+ * parseBusinessPrompt(text)
+ * Parses "Key: Value\n" format from iwgGenerate messages[0].content.
+ */
+function parseBusinessPrompt(text) {
+  const result = {
+    business_name: "", industry: "", location: "",
+    phone: "", email: "", rating: "", description: "", services: [],
+  };
+  if (!text) return result;
+
+  for (const line of text.split("\n")) {
+    const sep = line.indexOf(": ");
+    if (sep === -1) continue;
+    const key = line.slice(0, sep).trim().toLowerCase().replace(/\s+/g, "_");
+    const val = line.slice(sep + 2).trim();
+    if (!val) continue;
+    switch (key) {
+      case "business_name": case "name":        result.business_name = val; break;
+      case "industry":                          result.industry      = val; break;
+      case "location":                          result.location      = val; break;
+      case "phone":                             result.phone         = val; break;
+      case "email":                             result.email         = val; break;
+      case "rating":                            result.rating        = val; break;
+      case "description":                       result.description   = val; break;
+      case "services":
+        result.services = val.split(",").map(s => s.trim()).filter(Boolean);
+        break;
+    }
+  }
+  return result;
+}
 
 /**
  * extractHtml(rawText)
