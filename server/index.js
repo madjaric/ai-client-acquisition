@@ -413,9 +413,10 @@ Rules:
       body   : JSON.stringify({
         contents: [{ role: "user", parts: [{ text: JSON_PROMPT }] }],
         generationConfig: {
-          maxOutputTokens: 1024,
+          maxOutputTokens: 8000,
           temperature    : 0.65,
           candidateCount : 1,
+          thinkingConfig : { thinkingBudget: 0 },
         },
       }),
     });

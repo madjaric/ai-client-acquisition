@@ -253,6 +253,13 @@ function renderLandingPage(jsonData, template) {
   const images       = resolveImages(category);
   const serviceItems = transformServices(jsonData.services);
 
+  // ── DIAGNOSTIC LOGGING — remove after image issue is resolved ──────────────
+  console.log('[IMG] industry="' + (jsonData.industry||'') + '" → category="' + category + '"');
+  console.log('[IMG] hero_image_url  :', images.hero);
+  console.log('[IMG] about_image_url :', images.about);
+  console.log('[IMG] iframe mode: srcdoc (set by iwgGenerate/woGenGenerate in dashboard.html)');
+  // ── END DIAGNOSTIC LOGGING ──────────────────────────────────────────────────
+
   // ── Step 2: resolve tone (table lookup, no inline branching) ──────────────
   const toneKey  = TONE_MAP[jsonData.tone] ? jsonData.tone : DEFAULT_TONE;
   const tone     = TONE_MAP[toneKey];

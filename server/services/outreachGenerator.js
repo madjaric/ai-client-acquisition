@@ -179,8 +179,9 @@ async function callGemini(userPrompt) {
       ],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 2000,
-		responseMimeType: "application/json",
+        maxOutputTokens: 8000,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 0 },
       },
     }),
   });
