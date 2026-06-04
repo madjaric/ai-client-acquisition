@@ -80,8 +80,8 @@ function iwgShowState(name) {
   // Auto-register opportunity when website is generated
   if (name === 'result') {
     setTimeout(() => {
-      if (state.iwgCurrentBiz && state.iwgGeneratedHtml && typeof woppOnGenerated === 'function') {
-        woppOnGenerated(state.iwgCurrentBiz, state.iwgGeneratedHtml);
+      if (state.iwgCurrentBiz && state.iwgGeneratedHtml && typeof window.woppOnGenerated === 'function') {
+        window.woppOnGenerated(state.iwgCurrentBiz, state.iwgGeneratedHtml);
       }
     }, 600);
     // If editing/generating in WOPP context, persist the HTML back to the opportunity
@@ -1214,7 +1214,7 @@ async function woRunGenerate() {
 
     const bizForUpload = { id: opp.leadId||null, leadId: opp.leadId||null,
       name: opp.name, industry: opp.industry, location: opp.location };
-    if (typeof woppOnGenerated === 'function') woppOnGenerated(bizForUpload, html);
+    if (typeof window.woppOnGenerated === 'function') window.woppOnGenerated(bizForUpload, html);
 
     const iframe = document.getElementById('wo-gen-iframe');
     if (iframe) iframe.srcdoc = html;
