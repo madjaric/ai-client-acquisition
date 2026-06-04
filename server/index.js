@@ -701,12 +701,12 @@ function postProcessHtml(html, photoUrls) {
 app.get("/", (req, res) => {
   const wantsHtml = req.headers.accept && req.headers.accept.includes("text/html");
   if (wantsHtml) {
-    return res.redirect(302, "/dashboard.html");
+    return res.redirect(302, "/dashboard/dashboard.html");
   }
   res.json({
     name    : "AI Client Acquisition System — LeadFlow",
     version : "1.0.0",
-    ui      : "http://localhost:" + PORT + "/dashboard.html",
+    ui      : "http://localhost:" + PORT + "/dashboard/dashboard.html",
     endpoints: {
       health            : "GET  /api/health",
       auth              : "POST /api/auth/register  |  POST /api/auth/login  |  GET /api/auth/me",
@@ -725,7 +725,7 @@ app.get("/", (req, res) => {
 //  (auth guard in dashboard.html handles the redirect to /login.html)
 // ─────────────────────────────────────────────
 app.get(/^(?!\/api\/).*/, (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, "dashboard.html"));
+  res.sendFile(path.join(PUBLIC_DIR, "dashboard", "dashboard.html"));
 });
 
 // ─────────────────────────────────────────────
@@ -746,7 +746,7 @@ app.use((err, req, res, next) => {
       message: process.env.NODE_ENV === "production" ? "Internal server error." : err.message,
     });
   }
-  res.status(500).sendFile(path.join(PUBLIC_DIR, "dashboard.html"));
+  res.status(500).sendFile(path.join(PUBLIC_DIR, "dashboard", "dashboard.html"));
 });
 
 // ─────────────────────────────────────────────
@@ -762,7 +762,7 @@ function start() {
   const server = app.listen(PORT, () => {
     console.log(`\n🚀 LeadFlow — AI Client Acquisition System`);
     console.log(`   Env       : ${process.env.NODE_ENV || "development"}`);
-    console.log(`   Dashboard : http://localhost:${PORT}/dashboard.html`);
+    console.log(`   Dashboard : http://localhost:${PORT}/dashboard/dashboard.html`);
     console.log(`   Login     : http://localhost:${PORT}/login.html`);
     console.log(`   API Health: http://localhost:${PORT}/api/health`);
     console.log(`   SERPAPI   : ${process.env.SERPAPI_KEY        ? "✅ configured" : "⚠️  not set (mock data)"}`);
