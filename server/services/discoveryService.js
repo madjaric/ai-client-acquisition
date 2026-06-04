@@ -13,6 +13,78 @@ const SERPAPI_ENDPOINT = "https://serpapi.com/search.json";
 //  SERPAPI — LIVE DATA
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  EMAIL EXTRACTION HELPER
+// ─────────────────────────────────────────────────────────────────────────────
+
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+
+/**
+ * extractEmailFromSerp(result)
+ *
+ * Checks every field in a SerpAPI local_results entry that can contain
+ * an email address. Never generates or infers — only returns emails that
+ * actually exist in source data.
+ *
+ * Checked fields (in priority order):
+ *   1. extensions.contact.email
+ *   2. place_info.email
+ *   3. knowledge_graph.email  (top-level response field, passed in separately)
+ *   4. description text — regex extraction
+ *
+ * @param {object} r  - single entry from data.local_results[]
+ * @returns {{ email: string|null, email_source: string|null }}
+ */
+function extractEmailFromSerp(r) {
+  function validate(raw) {
+    if (!raw || typeof raw !== "string") return null;
+    const trimmed = raw.trim().toLowerCase();
+    return EMAIL_REGEX.test(trimmed) ? trimmed : null;
+  }
+
+  // 1. extensions.contact.email
+  const extEmail = validate(r.extensions?.contact?.email);
+  if (extEmail) return { email: extEmail, email_source: "extensions" };
+
+  // 2. place_info.email
+  const placeEmail = validate(r.place_info?.email);
+  if (placeEmail) return { email: placeEmail, email_source: "place_info" };
+
+  // 3. knowledge_graph.email — passed at top-level response level
+  const kgEmail = validate(r._knowledge_graph_email);
+  if (kgEmail) return { email: kgEmail, email_source: "knowledge_graph" };
+
+  // 4. Regex extraction from description text
+  if (r.description && typeof r.description === "string") {
+    const matches = r.description.match(
+      /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
+    );
+    if (matches) {
+      const found = validate(matches[0]);
+      if (found) return { email: found, email_source: "description_regex" };
+    }
+  }
+
+  return { email: null, email_source: null };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PHONE NORMALIZATION HELPER
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * normalizePhone(raw)
+ * Attempts to normalize a US phone number to +1XXXXXXXXXX format.
+ * Returns null if the input cannot be normalized to a 10-digit US number.
+ */
+function normalizePhone(raw) {
+  if (!raw || typeof raw !== "string") return null;
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return null;
+}
+
 async function searchViaSerpApi(keyword, limit = 20) {
   const key = process.env.SERPAPI_KEY;
   if (!key) throw new Error("SERPAPI_KEY not set");
@@ -34,25 +106,42 @@ async function searchViaSerpApi(keyword, limit = 20) {
   const data = await res.json();
   if (data.error) throw new Error(`SerpAPI: ${data.error}`);
 
+  // Extract knowledge_graph email once — inject into each result as private
+  // field so extractEmailFromSerp() can access it without extra API calls.
+  const kgEmail = data.knowledge_graph?.email || null;
+
   const results = data.local_results || [];
-  return results.slice(0, limit).map(r => normalizeSerp(r, keyword));
+  return results.slice(0, limit).map(r => {
+    if (kgEmail) r._knowledge_graph_email = kgEmail;
+    return normalizeSerp(r, keyword);
+  });
 }
 
 function normalizeSerp(r, keyword) {
   const industry = inferIndustry(keyword, r.type || "");
+
+  const { email, email_source } = extractEmailFromSerp(r);
+  const phone_raw        = r.phone || null;
+  const phone_normalized = normalizePhone(phone_raw);
+
   return {
-    name         : String(r.title   || "").trim(),
-    location     : String(r.address || r.place_info?.address || "").trim(),
+    name             : String(r.title   || "").trim(),
+    location         : String(r.address || r.place_info?.address || "").trim(),
     industry,
-    rating       : r.rating   ? parseFloat(r.rating)    : null,
-    review_count : r.reviews  ? parseInt(r.reviews, 10) : null,
-    website      : r.website  ? normalizeUrl(r.website) : null,
-    phone        : r.phone    || null,
-    place_id     : r.place_id || null,
-    source       : "serpapi",
+    phone            : phone_raw,
+    phone_normalized,
+    email,
+    email_source,
+    website          : r.website ? normalizeUrl(r.website) : null,
+    rating           : r.rating  ? parseFloat(r.rating)    : null,
+    review_count     : r.reviews ? parseInt(r.reviews, 10) : null,
+    place_id         : r.place_id    || null,
+    description      : r.description || null,
+    unclaimed_listing: r.unclaimed_listing === true,
+    types            : Array.isArray(r.types) ? r.types : [],
+    source           : "serpapi",
   };
 }
-
 // ─────────────────────────────────────────────────────────────────────────────
 //  MOCK DATA
 // ─────────────────────────────────────────────────────────────────────────────
@@ -168,17 +257,23 @@ function searchViaMock(keyword, limit = 20) {
   }
 
   return templates.slice(0, limit).map(t => ({
-    name         : t.name,
-    location     : city || "United States",
+    name             : t.name,
+    location         : city || "United States",
     industry,
-    rating       : t.rating ? Math.round((t.rating + (Math.random() * 0.2 - 0.1)) * 10) / 10 : null,
-    review_count : t.review_count,
-    website      : t.website
+    rating           : t.rating ? Math.round((t.rating + (Math.random() * 0.2 - 0.1)) * 10) / 10 : null,
+    review_count     : t.review_count,
+    website          : t.website
       ? `https://www.${t.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`
       : null,
-    phone        : t.phone,
-    place_id     : null,
-    source       : "mock",
+    phone            : t.phone,
+    phone_normalized : normalizePhone(t.phone),
+    email            : null,
+    email_source     : null,
+    place_id         : null,
+    description      : null,
+    unclaimed_listing: false,
+    types            : [],
+    source           : "mock",
   }));
 }
 
@@ -303,4 +398,11 @@ function getDataSource() {
   return process.env.SERPAPI_KEY ? "serpapi" : "mock";
 }
 
-module.exports = { searchBusinesses, getDataSource, inferIndustry, getQuotaInfo };
+module.exports = {
+  searchBusinesses,
+  getDataSource,
+  inferIndustry,
+  getQuotaInfo,
+  extractEmailFromSerp,
+  normalizePhone,
+};

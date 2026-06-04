@@ -23,8 +23,20 @@ const { validate, createLeadSchema, updateLeadSchema } = require("../middleware/
 // ─────────────────────────────────────────────
 router.post("/", validate(createLeadSchema), (req, res) => {
   try {
-    const { business_name, industry, location, website, notes } = req.body;
-    const lead = leadsService.createLead({ business_name, industry, location, website, notes });
+    const {
+      business_name, industry, location, website, notes,
+      email, email_source,
+      phone, phone_normalized,
+      rating, review_count,
+      place_id, discovery_source,
+    } = req.body;
+    const lead = leadsService.createLead({
+      business_name, industry, location, website, notes,
+      email, email_source,
+      phone, phone_normalized,
+      rating, review_count,
+      place_id, discovery_source,
+    });
 
     return res.status(201).json({
       success: true,

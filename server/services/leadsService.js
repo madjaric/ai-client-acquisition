@@ -80,13 +80,28 @@ function leadExists(business_name, location, excludeId = null) {
 /**
  * Create a new lead.
  * @param {object} data
- * @param {string} data.business_name  - required
- * @param {string} data.industry       - required
- * @param {string} data.location       - required
- * @param {string} [data.website]      - optional
- * @param {string} [data.notes]        - optional
+ * @param {string} data.business_name    - required
+ * @param {string} data.industry         - required
+ * @param {string} data.location         - required
+ * @param {string} [data.website]        - optional
+ * @param {string} [data.notes]          - optional
+ * @param {string} [data.email]          - optional, contact email
+ * @param {string} [data.email_source]   - optional, where email was found
+ * @param {string} [data.phone]          - optional, raw phone
+ * @param {string} [data.phone_normalized] - optional, E.164 phone
+ * @param {number} [data.rating]         - optional, Google rating
+ * @param {number} [data.review_count]   - optional
+ * @param {string} [data.place_id]       - optional, Google place_id
+ * @param {string} [data.discovery_source] - optional, "serpapi"|"mock"
  */
-function createLead({ business_name, industry, location, website, notes }) {
+function createLead({
+  business_name, industry, location,
+  website, notes,
+  email, email_source,
+  phone, phone_normalized,
+  rating, review_count,
+  place_id, discovery_source,
+}) {
   const db = getDb();
 
   if (leadExists(business_name, location)) {
@@ -100,16 +115,31 @@ function createLead({ business_name, industry, location, website, notes }) {
   const id = uuidv4();
 
   db.prepare(`
-    INSERT INTO leads (id, name, business_name, industry, location, website, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO leads (
+      id, name, business_name, industry, location,
+      website, notes,
+      email, email_source,
+      phone, phone_normalized,
+      rating, review_count,
+      place_id, discovery_source
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
-    business_name,           // keep legacy `name` col in sync
+    business_name,
     business_name,
     industry,
     location,
-    website  || null,
-    notes    || null
+    website           || null,
+    notes             || null,
+    email             || null,
+    email_source      || null,
+    phone             || null,
+    phone_normalized  || null,
+    rating            ?? null,
+    review_count      ?? null,
+    place_id          || null,
+    discovery_source  || null,
   );
 
   return getLeadById(id);
@@ -121,7 +151,11 @@ function createLead({ business_name, industry, location, website, notes }) {
  */
 function updateLead(id, fields) {
   const db = getDb();
-  const ALLOWED = ["business_name", "industry", "location", "website", "notes", "status", "score"];
+  const ALLOWED = [
+    "business_name", "industry", "location", "website", "notes", "status", "score",
+    "email", "email_source", "phone", "phone_normalized",
+    "rating", "review_count", "place_id", "discovery_source",
+  ];
   const updates = Object.keys(fields).filter((k) => ALLOWED.includes(k) && fields[k] !== undefined);
 
   if (updates.length === 0) throw new Error("No valid fields provided for update.");
@@ -170,6 +204,39 @@ function setLeadScore(id, score) {
   return updateLead(id, { score });
 }
 
+/**
+ * Contact coverage stats for analytics.
+ * Returns counts of leads with each contact field populated.
+ */
+function getLeadStats() {
+  const db = getDb();
+  const row = db.prepare(`
+    SELECT
+      COUNT(*)                                              AS total,
+      SUM(CASE WHEN email IS NOT NULL AND email != ''
+               THEN 1 ELSE 0 END)                         AS with_email,
+      SUM(CASE WHEN phone IS NOT NULL AND phone != ''
+               THEN 1 ELSE 0 END)                         AS with_phone,
+      SUM(CASE WHEN website IS NOT NULL AND website != ''
+               THEN 1 ELSE 0 END)                         AS with_website,
+      SUM(CASE WHEN (email IS NOT NULL AND email != '')
+                 OR (phone IS NOT NULL AND phone != '')
+               THEN 1 ELSE 0 END)                         AS with_any_contact
+    FROM leads
+  `).get();
+  const total = row.total || 1; // avoid div/0
+  return {
+    total          : row.total       || 0,
+    with_email     : row.with_email  || 0,
+    with_phone     : row.with_phone  || 0,
+    with_website   : row.with_website || 0,
+    with_any_contact: row.with_any_contact || 0,
+    contact_coverage_pct: Math.round((row.with_any_contact / total) * 100),
+    email_coverage_pct  : Math.round((row.with_email  / total) * 100),
+    phone_coverage_pct  : Math.round((row.with_phone  / total) * 100),
+  };
+}
+
 module.exports = {
   getAllLeads,
   getLeadById,
@@ -177,4 +244,5 @@ module.exports = {
   updateLead,
   deleteLead,
   setLeadScore,
+  getLeadStats,
 };

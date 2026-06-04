@@ -149,13 +149,28 @@ const M006 = `
   CREATE INDEX IF NOT EXISTS idx_el_to_address  ON email_logs(to_address);
 `;
 
+// M007 — Contact enrichment fields
+// email already exists from M001 (TEXT UNIQUE).
+// We add the remaining contact fields that Discovery was discarding.
+// Each ALTER TABLE is safe on existing DBs: migration runner checks applied set.
+const M007 = `
+  ALTER TABLE leads ADD COLUMN phone              TEXT;
+  ALTER TABLE leads ADD COLUMN phone_normalized   TEXT;
+  ALTER TABLE leads ADD COLUMN email_source       TEXT;
+  ALTER TABLE leads ADD COLUMN rating             REAL;
+  ALTER TABLE leads ADD COLUMN review_count       INTEGER;
+  ALTER TABLE leads ADD COLUMN place_id           TEXT;
+  ALTER TABLE leads ADD COLUMN discovery_source   TEXT;
+`;
+
 const migrations = [
-  { id: "001_initial_schema",        up: M001 },
-  { id: "002_leads_business_fields", up: M002 },
-  { id: "003_lead_scores_table",     up: M003 },
-  { id: "004_campaigns_and_outreach",up: M004 },
-  { id: "005_generated_messages",    up: M005 },
-  { id: "006_email_logs",             up: M006 },
+  { id: "001_initial_schema",          up: M001 },
+  { id: "002_leads_business_fields",   up: M002 },
+  { id: "003_lead_scores_table",       up: M003 },
+  { id: "004_campaigns_and_outreach",  up: M004 },
+  { id: "005_generated_messages",      up: M005 },
+  { id: "006_email_logs",              up: M006 },
+  { id: "007_contact_enrichment",      up: M007 },
 ];
 
 function runMigrations() {

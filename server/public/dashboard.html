@@ -1642,6 +1642,39 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
           </div>
         </div>
 
+        <!-- Contact Coverage -->
+        <div>
+          <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Contact Coverage</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--text-2)">Overall Coverage</span>
+              <span style="font-family:var(--fm);font-size:12px;font-weight:700;color:var(--brand)" id="cc-coverage-pct">—</span>
+            </div>
+            <div style="height:4px;background:var(--bg-2);border-radius:2px;overflow:hidden">
+              <div id="cc-coverage-bar" style="height:100%;background:var(--brand);border-radius:2px;width:0%;transition:width .4s ease"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px">
+              <div style="background:var(--blue-dim);border:1px solid var(--blue-mid);border-radius:var(--radius);padding:7px 8px;text-align:center">
+                <div style="font-family:var(--fm);font-size:14px;font-weight:700;color:var(--blue)" id="ana-cc-email">—</div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--text-3);margin-top:2px">✉ Email</div>
+              </div>
+              <div style="background:var(--brand-dim);border:1px solid var(--brand-mid);border-radius:var(--radius);padding:7px 8px;text-align:center">
+                <div style="font-family:var(--fm);font-size:14px;font-weight:700;color:var(--brand)" id="ana-cc-phone">—</div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--text-3);margin-top:2px">📞 Phone</div>
+              </div>
+              <div style="background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 8px;text-align:center">
+                <div style="font-family:var(--fm);font-size:14px;font-weight:700;color:var(--text-2)" id="ana-cc-website">—</div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--text-3);margin-top:2px">🌐 Website</div>
+              </div>
+            </div>
+            <!-- Email source breakdown -->
+            <div id="ana-email-sources" style="display:none;margin-top:4px;font-family:var(--fm);font-size:9px;color:var(--text-3)">
+              <div style="margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Email Sources</div>
+              <div id="ana-email-sources-list" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Revenue Projection -->
         <div style="background:var(--bg-3);border-radius:var(--radius);padding:14px">
           <div style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Revenue Projection</div>
@@ -1670,11 +1703,26 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
 
     <!-- Lead List (full width below analytics) -->
     <div class="card" style="margin-top:0">
-      <div class="card-header">
+      <div class="card-header" style="flex-wrap:wrap;gap:8px">
         <div class="card-title">Pipeline</div>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-left:auto">
+          <!-- Contact coverage counters -->
+          <div style="display:flex;gap:4px" id="contact-coverage-bar">
+            <span id="cc-email-badge" style="font-family:var(--fm);font-size:9px;background:var(--blue-dim);border:1px solid var(--blue-mid);color:var(--blue);padding:2px 7px;border-radius:3px;cursor:pointer" onclick="setContactFilter('email')" title="Filter: has email">✉ <span id="cc-email-count">—</span></span>
+            <span id="cc-phone-badge" style="font-family:var(--fm);font-size:9px;background:var(--brand-dim);border:1px solid var(--brand-mid);color:var(--brand);padding:2px 7px;border-radius:3px;cursor:pointer" onclick="setContactFilter('phone')" title="Filter: has phone">📞 <span id="cc-phone-count">—</span></span>
+            <span id="cc-website-badge" style="font-family:var(--fm);font-size:9px;background:var(--bg-3);border:1px solid var(--border);color:var(--text-3);padding:2px 7px;border-radius:3px;cursor:pointer" onclick="setContactFilter('website')" title="Filter: has website">🌐 <span id="cc-website-count">—</span></span>
+          </div>
+          <!-- Contact filter select -->
+          <select id="contact-filter" onchange="filterLeads()"
+            style="font-size:11px;padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;font-family:var(--fb);cursor:pointer">
+            <option value="">All leads</option>
+            <option value="email">Has Email</option>
+            <option value="phone">Has Phone</option>
+            <option value="website">Has Website</option>
+            <option value="none">No Contact Info</option>
+          </select>
           <input id="lead-search" placeholder="Search…"
-            style="padding:6px 11px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;width:140px;font-family:var(--fb)"
+            style="padding:6px 11px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-2);color:var(--text);outline:none;width:130px;font-family:var(--fb)"
             oninput="filterLeads()" />
           <button class="btn btn-outline btn-icon btn-sm" onclick="loadLeads()" title="Refresh">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -1902,7 +1950,18 @@ tbody tr:hover td { background: rgba(255,255,255,.025); }
                 Email
                 <span id="out-engine-badge" style="display:none;font-family:var(--fm);font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid;margin-left:8px;font-weight:700;letter-spacing:.04em"></span>
               </div>
-              <button class="btn btn-outline btn-xs" onclick="copyText('out-email-body', this)">Copy</button>
+              <div style="display:flex;gap:6px;align-items:center">
+                <button class="btn btn-outline btn-xs" onclick="copyText('out-email-body', this)">Copy</button>
+                <button class="btn btn-xs" id="btn-send-outreach-email"
+                  style="background:var(--brand);border:none;color:#000;font-family:var(--fm);font-size:10px;font-weight:700;padding:4px 10px;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;gap:5px"
+                  onclick="sendOutreachToEmail()">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  Send via Email →
+                </button>
+                <a id="btn-call-lead" href="#" style="display:none;font-family:var(--fm);font-size:10px;font-weight:700;padding:4px 10px;border-radius:var(--radius);background:var(--brand-dim);border:1px solid var(--brand-mid);color:var(--brand);text-decoration:none;align-items:center;gap:5px">
+                  📞 Call Lead
+                </a>
+              </div>
             </div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
               <div>
@@ -3162,6 +3221,17 @@ function updateStats(leads) {
   document.getElementById('stat-new').textContent       = leads.filter(l => l.status === 'new').length;
   document.getElementById('stat-active').textContent    = leads.filter(l => ['contacted','qualified'].includes(l.status)).length;
   document.getElementById('stat-converted').textContent = leads.filter(l => l.status === 'converted').length;
+
+  // Contact coverage counters
+  const withEmail   = leads.filter(l => l.email   && l.email.trim()).length;
+  const withPhone   = leads.filter(l => l.phone   && l.phone.trim()).length;
+  const withWebsite = leads.filter(l => l.website && l.website.trim()).length;
+  const emailEl   = document.getElementById('cc-email-count');
+  const phoneEl   = document.getElementById('cc-phone-count');
+  const websiteEl = document.getElementById('cc-website-count');
+  if (emailEl)   emailEl.textContent   = withEmail;
+  if (phoneEl)   phoneEl.textContent   = withPhone;
+  if (websiteEl) websiteEl.textContent = withWebsite;
 }
 
 function renderLeads(list) {
@@ -3176,15 +3246,54 @@ function renderLeads(list) {
     return;
   }
   el.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>Business</th><th>Industry</th><th>Location</th><th>Status</th><th>Score</th><th></th></tr></thead>
-    <tbody>${list.map(l => `
-      <tr>
+    <thead><tr>
+      <th>Business</th>
+      <th>Contact</th>
+      <th>Industry</th>
+      <th>Location</th>
+      <th>Status</th>
+      <th>Score</th>
+      <th></th>
+    </tr></thead>
+    <tbody>${list.map(l => {
+      const hasEmail   = !!(l.email   && l.email.trim());
+      const hasPhone   = !!(l.phone   && l.phone.trim());
+      const hasWebsite = !!(l.website && l.website.trim());
+      const hasAll     = hasEmail && hasPhone;
+
+      // Contact cell
+      const contactCell = `
+        <div style="display:flex;flex-direction:column;gap:3px;min-width:160px">
+          ${hasPhone
+            ? `<a href="tel:${esc(l.phone_normalized||l.phone)}" style="display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:11px;color:var(--brand);text-decoration:none" title="${esc(l.phone)}">
+                <span style="font-size:10px">📞</span>${esc(l.phone)}
+               </a>`
+            : `<span style="font-family:var(--fm);font-size:10px;color:var(--text-3)">📞 —</span>`}
+          ${hasEmail
+            ? `<a href="mailto:${esc(l.email)}" style="display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:11px;color:#60a5fa;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px" title="${esc(l.email)}">
+                <span style="font-size:10px">✉</span>${esc(l.email)}
+                ${l.email_source ? `<span style="font-family:var(--fm);font-size:8px;background:var(--blue-dim);border:1px solid var(--blue-mid);color:var(--blue);padding:1px 4px;border-radius:2px;flex-shrink:0">${esc(l.email_source)}</span>` : ''}
+               </a>`
+            : `<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:10px;color:var(--text-3)">✉ —
+                <button onclick="promptLeadEmail('${l.id}')" style="font-family:var(--fm);font-size:9px;background:var(--blue-dim);border:1px solid var(--blue-mid);color:var(--blue);padding:1px 6px;border-radius:3px;cursor:pointer">+ Add</button>
+               </span>`}
+          ${hasWebsite
+            ? `<a href="${esc(l.website)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:10px;color:var(--text-3);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px" title="${esc(l.website)}">
+                <span style="font-size:10px">🌐</span>${esc(l.website.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'').slice(0,26))}
+               </a>`
+            : `<span style="font-family:var(--fm);font-size:10px;color:var(--text-3)">🌐 —</span>`}
+        </div>`;
+
+      return `
+      <tr style="${hasAll ? 'background:rgba(34,197,94,.03);' : ''}">
         <td>
           <strong style="font-size:13px;cursor:pointer;color:var(--text)" onclick="openLeadIntelligence('${l.id}')" title="Open intelligence panel">${esc(l.business_name||l.name)}</strong>
-          ${l.website ? `<br><a href="${esc(l.website)}" target="_blank" style="font-size:11px;color:var(--text-3);text-decoration:none">${esc(l.website.replace('https://','').replace('http://','').slice(0,32))}</a>` : `<br><span style="font-family:var(--fm);font-size:9px;color:var(--amber);background:var(--amber-dim);padding:1px 5px;border-radius:3px">No website</span>`}
+          ${l.rating ? `<div style="font-family:var(--fm);font-size:10px;color:var(--amber);margin-top:2px">★ ${l.rating}${l.review_count ? ` · ${l.review_count} reviews` : ''}</div>` : ''}
+          ${!hasWebsite ? `<span style="font-family:var(--fm);font-size:9px;color:var(--amber);background:var(--amber-dim);padding:1px 5px;border-radius:3px;display:inline-block;margin-top:2px">No website</span>` : ''}
         </td>
+        <td>${contactCell}</td>
         <td style="color:var(--text-2)">${esc(l.industry||'—')}</td>
-        <td style="color:var(--text-2)">${esc(l.location||'—')}</td>
+        <td style="color:var(--text-2);font-size:12px">${esc(l.location||'—')}</td>
         <td>${badgeStatus(l.status)}</td>
         <td>${l.score ? scoreBar(l.score) : `<span style="color:var(--text-3);font-family:var(--fm);font-size:11px">—</span>`}</td>
         <td>
@@ -3197,18 +3306,68 @@ function renderLeads(list) {
               style="padding:3px 8px;font-size:10px;font-family:var(--fm);font-weight:700;border-radius:var(--radius);border:1.5px solid var(--amber-mid);background:var(--amber-dim);color:var(--amber);cursor:pointer;white-space:nowrap;line-height:1.4">⚡ Site</button>` : ''}
           </div>
         </td>
-      </tr>`).join('')}
+      </tr>`;
+    }).join('')}
     </tbody>
   </table></div>`;
 }
 
 function filterLeads() {
-  const q = document.getElementById('lead-search').value.toLowerCase();
-  renderLeads(q ? allLeads.filter(l =>
-    (l.business_name||l.name||'').toLowerCase().includes(q) ||
-    (l.industry||'').toLowerCase().includes(q) ||
-    (l.location||'').toLowerCase().includes(q)
-  ) : allLeads);
+  const q       = document.getElementById('lead-search').value.toLowerCase();
+  const contact = document.getElementById('contact-filter')?.value || '';
+
+  let filtered = allLeads;
+
+  if (q) {
+    filtered = filtered.filter(l =>
+      (l.business_name||l.name||'').toLowerCase().includes(q) ||
+      (l.industry||'').toLowerCase().includes(q) ||
+      (l.location||'').toLowerCase().includes(q) ||
+      (l.email||'').toLowerCase().includes(q) ||
+      (l.phone||'').toLowerCase().includes(q)
+    );
+  }
+
+  if (contact === 'email')   filtered = filtered.filter(l => l.email   && l.email.trim());
+  if (contact === 'phone')   filtered = filtered.filter(l => l.phone   && l.phone.trim());
+  if (contact === 'website') filtered = filtered.filter(l => l.website && l.website.trim());
+  if (contact === 'none')    filtered = filtered.filter(l =>
+    !(l.email && l.email.trim()) && !(l.phone && l.phone.trim()) && !(l.website && l.website.trim())
+  );
+
+  renderLeads(filtered);
+}
+
+/** Set contact filter from badge click and re-filter */
+function setContactFilter(value) {
+  const sel = document.getElementById('contact-filter');
+  if (!sel) return;
+  // Toggle: clicking active filter clears it
+  sel.value = (sel.value === value) ? '' : value;
+  filterLeads();
+}
+
+/**
+ * promptLeadEmail(leadId)
+ * Inline prompt to add/edit an email address on a lead directly from the table.
+ */
+async function promptLeadEmail(leadId) {
+  const lead = allLeads.find(l => String(l.id) === String(leadId));
+  if (!lead) return;
+  const current = lead.email || '';
+  const input = window.prompt(`Email address for "${lead.business_name || lead.name}":`, current);
+  if (input === null) return; // cancelled
+  const email = input.trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    toast('Please enter a valid email address.', 'error'); return;
+  }
+  const d = await apiFetch('PATCH', `/api/leads/${leadId}`, { email: email || null });
+  if (d.success) {
+    toast(email ? `Email saved for ${lead.business_name||lead.name}.` : 'Email removed.', 'success');
+    loadLeads();
+  } else {
+    toast(d.message || 'Failed to save email.', 'error');
+  }
 }
 
 async function addLead() {
@@ -3216,16 +3375,22 @@ async function addLead() {
   const industry = document.getElementById('f-industry').value.trim();
   const location = document.getElementById('f-location').value.trim();
   const website  = document.getElementById('f-website').value.trim();
+  const email    = document.getElementById('f-email')?.value.trim() || '';
   const notes    = document.getElementById('f-notes').value.trim();
 
   if (!name || !industry || !location) {
     toast('Business name, industry, and location are required.', 'error'); return;
   }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    toast('Please enter a valid email address.', 'error'); return;
+  }
 
   setBtn('btn-add-lead', true, 'Adding…');
   const d = await apiFetch('POST', '/api/leads', {
     business_name: name, industry, location,
-    website: website || undefined, notes: notes || undefined,
+    website: website || undefined,
+    email:   email   || undefined,
+    notes:   notes   || undefined,
   });
   setBtn('btn-add-lead', false, '+ Add Lead');
 
@@ -3242,7 +3407,7 @@ async function addLead() {
 }
 
 function clearForm() {
-  ['f-name','f-industry','f-location','f-website','f-notes'].forEach(id => {
+  ['f-name','f-industry','f-location','f-website','f-email','f-notes'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
 }
@@ -3453,6 +3618,26 @@ function renderOutreachResult(msg) {
   document.getElementById('out-dm').textContent         = msg.short_dm || msg.cta || '—';
   document.getElementById('out-notes').textContent      = msg.personalization_notes || '—';
 
+  // Store for sendOutreachToEmail()
+  panel.dataset.msgSubject = msg.subject_line || '';
+  panel.dataset.msgBody    = msg.email_body   || '';
+  panel.dataset.msgId      = msg.id           || '';
+  panel.dataset.msgLeadId  = msg.lead_id      || '';
+
+  // Show Call Lead button if lead has phone
+  const callBtn = document.getElementById('btn-call-lead');
+  if (callBtn) {
+    const lead = msg.lead_id ? allLeads.find(l => String(l.id) === String(msg.lead_id)) : null;
+    const phone = lead?.phone_normalized || lead?.phone || '';
+    if (phone) {
+      callBtn.href = `tel:${phone}`;
+      callBtn.textContent = `📞 ${lead.phone}`;
+      callBtn.style.display = 'inline-flex';
+    } else {
+      callBtn.style.display = 'none';
+    }
+  }
+
   // Engine badge
   const engineBadge = document.getElementById('out-engine-badge');
   if (engineBadge) {
@@ -3519,6 +3704,50 @@ function quickOutreach(leadId) {
   setTimeout(() => { const sel = document.getElementById('out-select'); if (sel) sel.value = leadId; }, 120);
 }
 
+/**
+ * sendOutreachToEmail()
+ * Takes the currently displayed outreach message and navigates to
+ * the Send Email panel with all fields pre-populated.
+ */
+function sendOutreachToEmail() {
+  const panel   = document.getElementById('out-result');
+  const subject = panel?.dataset.msgSubject || document.getElementById('out-subject')?.textContent || '';
+  const body    = panel?.dataset.msgBody    || document.getElementById('out-email-body')?.textContent || '';
+  const leadId  = panel?.dataset.msgLeadId  || '';
+
+  if (!subject || subject === '—') {
+    toast('Generate an outreach email first.', 'error'); return;
+  }
+
+  // Find lead email
+  const lead = leadId ? allLeads.find(l => String(l.id) === String(leadId)) : null;
+  const leadEmail = lead?.email || '';
+
+  navigate('email');
+  setTimeout(() => {
+    // Pre-populate all compose fields
+    const toEl      = document.getElementById('email-to');
+    const subjectEl = document.getElementById('email-subject');
+    const bodyEl    = document.getElementById('email-body');
+    const leadSel   = document.getElementById('email-lead-id');
+
+    if (toEl      && leadEmail) toEl.value = leadEmail;
+    if (subjectEl) subjectEl.value = subject;
+    if (bodyEl)    bodyEl.value    = body;
+    if (leadSel && leadId) leadSel.value = leadId;
+
+    // Highlight To field if email missing
+    if (toEl && !leadEmail) {
+      toEl.focus();
+      toEl.style.borderColor = 'var(--amber)';
+      setTimeout(() => { if (toEl) toEl.style.borderColor = ''; }, 3000);
+      toast('Enter the recipient email address.', 'info');
+    } else {
+      toast('Email pre-filled from outreach. Review and send!', 'success');
+    }
+  }, 150);
+}
+
 function setOutreachLead() {
   if (!lastScoredId) return;
   const sel = document.getElementById('out-select');
@@ -3547,7 +3776,18 @@ async function loadEmailSelects() {
     const d    = await apiFetch('GET', '/api/generate-outreach?limit=50');
     const msgs = d.data || [];
     msgSel.innerHTML = '<option value="">— select generated message —</option>' +
-      msgs.map(m => `<option value="${m.id}" data-subject="${esc(m.subject_line)}" data-body="${esc(m.email_body)}">${esc(m.business_name||'Lead')} — ${esc(m.subject_line?.slice(0,45)||'')}</option>`).join('');
+      msgs.map(m => {
+        // Find the lead to get their email
+        const lead = allLeads.find(l => String(l.id) === String(m.lead_id));
+        const leadEmail = lead?.email || '';
+        const leadId    = m.lead_id  || '';
+        return `<option value="${m.id}"
+          data-subject="${esc(m.subject_line)}"
+          data-body="${esc(m.email_body)}"
+          data-lead-id="${esc(String(leadId))}"
+          data-email="${esc(leadEmail)}"
+        >${esc(m.business_name||'Lead')} — ${esc(m.subject_line?.slice(0,45)||'')}${leadEmail ? ' ✉' : ''}</option>`;
+      }).join('');
   }
 }
 
@@ -3557,6 +3797,16 @@ function prefillFromMessage() {
   if (!opt || !opt.value) return;
   document.getElementById('email-subject').value = opt.dataset.subject || '';
   document.getElementById('email-body').value    = opt.dataset.body?.replace(/\\n/g,'\n') || '';
+
+  // Auto-fill recipient email if the lead has an email stored
+  const leadId = opt.dataset.leadId;
+  if (leadId) {
+    document.getElementById('email-lead-id').value = leadId;
+    const lead = allLeads.find(l => String(l.id) === String(leadId));
+    if (lead && lead.email) {
+      document.getElementById('email-to').value = lead.email;
+    }
+  }
 }
 
 async function doSendEmail() {
@@ -3707,11 +3957,22 @@ async function discSearch() {
   btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
 
   if (!d.success) {
+    clearInterval(discMsgInterval);
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
+
     // Quota exceeded — detect by code OR by message text (server compatibility)
     const isQuota = d.code === 'QUOTA_EXCEEDED' || (d.message && d.message.toLowerCase().includes('limit reached'));
     if (isQuota) {
       openUpgradeModal(`You've used all your searches on the free plan this month.`);
       discShowState('initial'); return;
+    }
+    // Not authenticated
+    const isAuth = d.message && d.message.toLowerCase().includes('sign in');
+    if (isAuth) {
+      const errEl = document.getElementById('disc-error-msg');
+      if (errEl) errEl.innerHTML = `You need to <a href="/login.html" style="color:var(--brand);text-decoration:underline">sign in</a> to search for businesses.`;
+      discShowState('error'); return;
     }
     const errEl = document.getElementById('disc-error-msg');
     if (errEl) errEl.textContent = d.message || 'Search failed.';
@@ -3862,14 +4123,23 @@ async function discImportSelected() {
 
   // Normalize to what backend createLead() expects: business_name (not name)
   const businesses = indices.map(i => discFiltered[i]).filter(Boolean).map(b => ({
-    business_name : b.name,
-    industry      : b.industry,
-    location      : b.location,
-    website       : b.website  || undefined,
-    notes         : [
+    business_name    : b.name,
+    industry         : b.industry,
+    location         : b.location,
+    website          : b.website          || undefined,
+    email            : b.email            || undefined,
+    email_source     : b.email_source     || undefined,
+    phone            : b.phone            || undefined,
+    phone_normalized : b.phone_normalized || undefined,
+    rating           : b.rating           ?? undefined,
+    review_count     : b.review_count     ?? undefined,
+    place_id         : b.place_id         || undefined,
+    source           : b.source           || undefined,
+    notes            : [
       b.rating       && `Rating: ${b.rating}/5`,
       b.review_count && `${b.review_count} reviews`,
       b.phone        && `Phone: ${b.phone}`,
+      b.email        && `Email: ${b.email}`,
       'Imported via Discovery',
     ].filter(Boolean).join(' · '),
   }));
@@ -3901,9 +4171,25 @@ async function discImportOne(idx) {
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner dark"></span>'; }
 
   const d = await apiFetch('POST', '/api/discovery/import-one', {
-    business_name: b.name, location: b.location, industry: b.industry,
-    website: b.website || undefined,
-    notes: [b.rating && `Rating: ${b.rating}/5`, b.review_count && `${b.review_count} reviews`, b.phone && `Phone: ${b.phone}`, 'Imported via Discovery'].filter(Boolean).join(' · '),
+    business_name    : b.name,
+    location         : b.location,
+    industry         : b.industry,
+    website          : b.website          || undefined,
+    email            : b.email            || undefined,
+    email_source     : b.email_source     || undefined,
+    phone            : b.phone            || undefined,
+    phone_normalized : b.phone_normalized || undefined,
+    rating           : b.rating           ?? undefined,
+    review_count     : b.review_count     ?? undefined,
+    place_id         : b.place_id         || undefined,
+    source           : b.source           || undefined,
+    notes: [
+      b.rating       && `Rating: ${b.rating}/5`,
+      b.review_count && `${b.review_count} reviews`,
+      b.phone        && `Phone: ${b.phone}`,
+      b.email        && `Email: ${b.email}`,
+      'Imported via Discovery',
+    ].filter(Boolean).join(' · '),
   });
 
   if (d.success) {
@@ -3932,14 +4218,23 @@ async function discImportNoWebsite() {
 
   // Normalize field names for backend
   const businesses = noWebLeads.map(b => ({
-    business_name : b.name,
-    industry      : b.industry,
-    location      : b.location,
-    website       : b.website  || undefined,
-    notes         : [
+    business_name    : b.name,
+    industry         : b.industry,
+    location         : b.location,
+    website          : b.website          || undefined,
+    email            : b.email            || undefined,
+    email_source     : b.email_source     || undefined,
+    phone            : b.phone            || undefined,
+    phone_normalized : b.phone_normalized || undefined,
+    rating           : b.rating           ?? undefined,
+    review_count     : b.review_count     ?? undefined,
+    place_id         : b.place_id         || undefined,
+    source           : b.source           || undefined,
+    notes            : [
       b.rating       && `Rating: ${b.rating}/5`,
       b.review_count && `${b.review_count} reviews`,
       b.phone        && `Phone: ${b.phone}`,
+      b.email        && `Email: ${b.email}`,
       'Imported via Discovery',
     ].filter(Boolean).join(' · '),
   }));
@@ -5454,9 +5749,33 @@ function woppAddActivity(id, type, text) {
    PIPELINE ANALYTICS
 ───────────────────────────────────────────────────────────────────────── */
 async function loadPipelineAnalytics() {
+  const analyticsBody = document.getElementById('analytics-body');
+  const refreshBtn    = document.getElementById('btn-refresh-analytics');
+  if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.innerHTML = '<span class="spinner dark"></span>'; }
+
   try {
     const d = await apiFetch('GET', '/api/pipeline/analytics');
-    if (!d.success) return;
+
+    if (refreshBtn) {
+      refreshBtn.disabled = false;
+      refreshBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+    }
+
+    // Not authenticated — show sign-in prompt instead of silent fail
+    if (!d.success && d.message && d.message.includes('sign in')) {
+      if (analyticsBody) {
+        analyticsBody.innerHTML = `<div style="text-align:center;padding:24px 0">
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:10px">Sign in to unlock pipeline analytics</div>
+          <a href="/login.html" class="btn btn-brand btn-sm">Sign In →</a>
+        </div>`;
+      }
+      return;
+    }
+    if (!d.success) {
+      console.warn('Analytics load failed:', d.message);
+      return;
+    }
+
     const data = d.data;
 
     // Lead distribution
@@ -5498,10 +5817,43 @@ async function loadPipelineAnalytics() {
 
     // Revenue Projection
     const rev = data.revenue_projection || {};
-    setEl('rev-potential', rev.potential_revenue       ? '$' + Number(rev.potential_revenue).toLocaleString()           : '—');
+    setEl('rev-potential', rev.potential_revenue            ? '$' + Number(rev.potential_revenue).toLocaleString()                 : '—');
     setEl('rev-monthly',   rev.monthly_recurring_opportunity ? '$' + Number(rev.monthly_recurring_opportunity).toLocaleString() + '/mo' : '—');
-    setEl('rev-close',     rev.estimated_close_value   ? '$' + Number(rev.estimated_close_value).toLocaleString()      : '—');
+    setEl('rev-close',     rev.estimated_close_value        ? '$' + Number(rev.estimated_close_value).toLocaleString()            : '—');
+
+    // Contact Coverage
+    const cc = data.contact_coverage || {};
+    setEl('ana-cc-email',   cc.with_email   ?? '—');
+    setEl('ana-cc-phone',   cc.with_phone   ?? '—');
+    setEl('ana-cc-website', cc.with_website ?? '—');
+
+    const pct = cc.contact_coverage_pct ?? 0;
+    const pctEl  = document.getElementById('cc-coverage-pct');
+    const barEl  = document.getElementById('cc-coverage-bar');
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (barEl) barEl.style.width = pct + '%';
+
+    // Email source breakdown
+    const sources = data.email_source_breakdown || [];
+    const srcWrap = document.getElementById('ana-email-sources');
+    const srcList = document.getElementById('ana-email-sources-list');
+    if (srcList && sources.length) {
+      const sourceLabels = {
+        extensions      : 'Google Extensions',
+        place_info      : 'Place Info',
+        knowledge_graph : 'Knowledge Graph',
+        description_regex: 'Description Text',
+      };
+      srcList.innerHTML = sources.map(s =>
+        `<span style="background:var(--bg-3);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-size:9px">${esc(sourceLabels[s.email_source]||s.email_source)}: ${s.count}</span>`
+      ).join('');
+      if (srcWrap) srcWrap.style.display = '';
+    }
   } catch(e) {
+    if (refreshBtn) {
+      refreshBtn.disabled = false;
+      refreshBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+    }
     console.warn('Analytics load failed:', e.message);
   }
 }

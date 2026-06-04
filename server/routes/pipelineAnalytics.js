@@ -158,6 +158,34 @@ router.get("/analytics", (req, res) => {
           monthly_recurring_opportunity: monthlyRecurring,
           estimated_close_value      : estimatedCloseValue,
         },
+        contact_coverage: (() => {
+          const cr = db.prepare(`
+            SELECT
+              COUNT(*)                                                                   AS total,
+              SUM(CASE WHEN email   IS NOT NULL AND email   != '' THEN 1 ELSE 0 END)    AS with_email,
+              SUM(CASE WHEN phone   IS NOT NULL AND phone   != '' THEN 1 ELSE 0 END)    AS with_phone,
+              SUM(CASE WHEN website IS NOT NULL AND website != '' THEN 1 ELSE 0 END)    AS with_website,
+              SUM(CASE WHEN (email IS NOT NULL AND email != '')
+                         OR (phone IS NOT NULL AND phone != '') THEN 1 ELSE 0 END)      AS with_any_contact
+            FROM leads
+          `).get();
+          const t = cr.total || 1;
+          return {
+            with_email           : cr.with_email       || 0,
+            with_phone           : cr.with_phone       || 0,
+            with_website         : cr.with_website     || 0,
+            with_any_contact     : cr.with_any_contact || 0,
+            contact_coverage_pct : Math.round(((cr.with_any_contact || 0) / t) * 100),
+            email_coverage_pct   : Math.round(((cr.with_email       || 0) / t) * 100),
+            phone_coverage_pct   : Math.round(((cr.with_phone       || 0) / t) * 100),
+          };
+        })(),
+        email_source_breakdown: db.prepare(`
+          SELECT email_source, COUNT(*) as count
+          FROM leads
+          WHERE email IS NOT NULL AND email != '' AND email_source IS NOT NULL
+          GROUP BY email_source ORDER BY count DESC
+        `).all(),
       },
     });
 
