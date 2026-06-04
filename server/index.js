@@ -230,7 +230,7 @@ app.get("/api/pipeline/analytics", requireAuth, (req, res) => {
 
     const rankedScores = db.prepare(`
       SELECT ls.*, l.business_name, l.industry,
-             COALESCE(ls.score, ls.lead_score * 10, 0) as score_100
+             COALESCE(ls.lead_score * 10, 0) as score_100
       FROM lead_scores ls
       INNER JOIN leads l ON l.id = ls.lead_id
       INNER JOIN (SELECT lead_id, MAX(scored_at) as m FROM lead_scores GROUP BY lead_id) lx

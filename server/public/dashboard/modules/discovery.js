@@ -138,7 +138,7 @@ function discApplyFilters() {
 function discClearFilters(reRender = true) {
   document.getElementById('disc-filter-rating').value  = '0';
   document.getElementById('disc-filter-website').value = 'any';
-  state.discFiltered = [...discAllResults];
+  state.discFiltered = [...state.discAllResults];
   if (reRender && state.discAllResults.length) discApplyFilters();
 }
 
