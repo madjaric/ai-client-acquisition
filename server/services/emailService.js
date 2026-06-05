@@ -2,7 +2,7 @@
  * services/emailService.js
  *
  * Nodemailer-based email sending service.
- * Transport: Gmail SMTP (port 465 SSL or 587 STARTTLS).
+ * Transport: configurable SMTP (defaults to Gmail). Port 465 SSL or 587 STARTTLS.
  *
  * Features:
  *   - Singleton transporter with keep-alive pooling
@@ -12,11 +12,13 @@
  *   - HTML + plaintext fallback support
  *   - Optional reply-to, cc, attachments
  *
- * Required .env variables:
- *   GMAIL_USER        your.address@gmail.com
- *   GMAIL_APP_PASSWORD  16-char Google App Password (NOT your Gmail login password)
+ * Required .env variables (either scheme works):
+ *   GMAIL_USER          your.address@gmail.com   (or SMTP_USER)
+ *   GMAIL_APP_PASSWORD  16-char Google App Password (or SMTP_PASS)
  *
  * Optional .env variables:
+ *   SMTP_HOST         SMTP host (default: "smtp.gmail.com")
+ *   SMTP_PORT         SMTP port (default: "587")
  *   GMAIL_FROM_NAME   Displayed sender name (default: "AI Acquisition System")
  *   EMAIL_MAX_RETRIES Number of retry attempts (default: 3)
  *   EMAIL_RETRY_DELAY_MS  Base backoff ms (default: 1000)
@@ -43,8 +45,13 @@ let _transporter = null;
 let _verified    = false;
 
 function getTransporter() {
-  const user     = process.env.GMAIL_USER;
-  const password = process.env.GMAIL_APP_PASSWORD;
+  // Support both GMAIL_* and generic SMTP_* env schemes.
+  const user     = process.env.GMAIL_USER         || process.env.SMTP_USER;
+  const password = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
+  const host     = process.env.SMTP_HOST || "smtp.gmail.com";
+  const port     = parseInt(process.env.SMTP_PORT || "587", 10);
+  // Implicit TLS only on 465; STARTTLS (secure:false) on 587 and others.
+  const secure   = port === 465;
 
   if (!user || !password) {
     throw new ConfigurationError(
@@ -54,16 +61,27 @@ function getTransporter() {
   }
 
   if (!_transporter) {
+    console.error("[SMTP] creating transporter", {
+      host,
+      port,
+      secure,
+      hasUser: !!user,
+      hasPassword: !!password
+    });
+
     _transporter = nodemailer.createTransport({
-      host   : "smtp.gmail.com",
-      port   : 465,
-      secure : true,            // SSL — use port 587 + starttls if needed
+      host,
+      port,
+      secure,                   // 465 = implicit TLS; 587 = STARTTLS (secure:false)
       auth   : { user, pass: password },
       pool   : true,            // keep connections alive between sends
       maxConnections : 3,
       maxMessages    : 100,
       rateDelta      : 1000,    // max N messages per rateDelta ms
       rateLimit      : 5,       // max 5 emails/second (well within Gmail limits)
+      connectionTimeout : 15000,  // fail fast instead of hanging ~60s on a blocked port
+      greetingTimeout   : 10000,
+      socketTimeout     : 20000,
     });
   }
 
@@ -77,10 +95,17 @@ function getTransporter() {
  */
 async function verifyConnection() {
   if (_verified) return;
+  console.error("[SMTP] verify ENTER");
   const transporter = getTransporter();
-  await transporter.verify();   // throws if credentials are wrong
-  _verified = true;
-  console.log("  ✅ Gmail SMTP connection verified.");
+  console.error("[SMTP] calling transporter.verify()");
+  try {
+    await transporter.verify();   // throws if credentials are wrong OR connect times out
+    _verified = true;
+    console.error("[SMTP] verify SUCCESS");
+  } catch (err) {
+    console.error("[SMTP] verify FAILED", err);
+    throw err;
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -163,7 +188,7 @@ async function sendEmail(options) {
   // ── Verify connection once ──
   await verifyConnection();
 
-  const fromAddress = `"${FROM_NAME}" <${process.env.GMAIL_USER}>`;
+  const fromAddress = `"${FROM_NAME}" <${process.env.GMAIL_USER || process.env.SMTP_USER}>`;
   const logId       = uuidv4();
   let   smtpMessageId = null;
 
@@ -171,7 +196,8 @@ async function sendEmail(options) {
   try {
     const info = await withRetry(async (attempt) => {
       console.log(`  📤 Sending email to ${to} (attempt ${attempt})...`);
-      return getTransporter().sendMail({
+      console.error("[SMTP] sendMail ENTER");
+      const result = await getTransporter().sendMail({
         from    : fromAddress,
         to      : to.trim(),
         subject : subject.trim(),
@@ -183,6 +209,8 @@ async function sendEmail(options) {
           "X-ACQS-Log-ID" : logId,  // useful for tracing
         },
       });
+      console.error("[SMTP] sendMail SUCCESS", result.messageId);
+      return result;
     });
 
     smtpMessageId = info.messageId;
@@ -199,7 +227,7 @@ async function sendEmail(options) {
 
   } catch (err) {
     // ── Log failure ──
-    console.error(`  ❌ Email to ${to} failed: ${err.message}`);
+    console.error("[SMTP] sendMail FAILED", err);
     await logEmail({
       id              : logId,
       to, subject, body,
