@@ -1,32 +1,32 @@
 /**
  * services/emailService.js
  *
- * Nodemailer-based email sending service.
- * Transport: configurable SMTP (defaults to Gmail). Port 465 SSL or 587 STARTTLS.
+ * Resend-API-based email sending service.
+ * Transport: Resend HTTP API (port 443 — not blocked by Render egress policy).
  *
  * Features:
- *   - Singleton transporter with keep-alive pooling
- *   - Connection verification on first use
+ *   - Singleton Resend client
+ *   - Configuration check on first use
  *   - Retry logic (up to 3 attempts with backoff)
  *   - Full DB logging of every send attempt
  *   - HTML + plaintext fallback support
  *   - Optional reply-to, cc, attachments
  *
- * Required .env variables (either scheme works):
- *   GMAIL_USER          your.address@gmail.com   (or SMTP_USER)
- *   GMAIL_APP_PASSWORD  16-char Google App Password (or SMTP_PASS)
+ * Required .env variables:
+ *   RESEND_API_KEY    Resend API key (re_...)
+ *   EMAIL_FROM        Verified sender, e.g. "AI Acquisition System <hi@yourdomain.com>"
+ *                     (or set GMAIL_FROM_NAME + a verified EMAIL_FROM_ADDRESS)
  *
  * Optional .env variables:
- *   SMTP_HOST         SMTP host (default: "smtp.gmail.com")
- *   SMTP_PORT         SMTP port (default: "587")
- *   GMAIL_FROM_NAME   Displayed sender name (default: "AI Acquisition System")
- *   EMAIL_MAX_RETRIES Number of retry attempts (default: 3)
+ *   GMAIL_FROM_NAME     Displayed sender name (default: "AI Acquisition System")
+ *   EMAIL_FROM_ADDRESS  Verified sender address if EMAIL_FROM not given
+ *   EMAIL_MAX_RETRIES   Number of retry attempts (default: 3)
  *   EMAIL_RETRY_DELAY_MS  Base backoff ms (default: 1000)
  */
 
 "use strict";
 
-const nodemailer = require("nodemailer");
+const { Resend }     = require("resend");
 const { getDb }      = require("../db/connection");
 const { v4: uuidv4 } = require("uuid");
 
@@ -38,74 +38,57 @@ const RETRY_DELAY_MS   = parseInt(process.env.EMAIL_RETRY_DELAY_MS || "1000", 10
 const FROM_NAME        = process.env.GMAIL_FROM_NAME || "AI Acquisition System";
 
 // ─────────────────────────────────────────────
-//  TRANSPORTER SINGLETON
-//  Created lazily on first send. Pooled for reuse.
+//  RESEND CLIENT SINGLETON
+//  Created lazily on first send.
 // ─────────────────────────────────────────────
-let _transporter = null;
+let _client      = null;
 let _verified    = false;
 
-function getTransporter() {
-  // Support both GMAIL_* and generic SMTP_* env schemes.
-  const user     = process.env.GMAIL_USER         || process.env.SMTP_USER;
-  const password = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
-  const host     = process.env.SMTP_HOST || "smtp.gmail.com";
-  const port     = parseInt(process.env.SMTP_PORT || "587", 10);
-  // Implicit TLS only on 465; STARTTLS (secure:false) on 587 and others.
-  const secure   = port === 465;
+function getClient() {
+  const apiKey = process.env.RESEND_API_KEY;
 
-  if (!user || !password) {
+  if (!apiKey) {
     throw new ConfigurationError(
-      "Email is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD in your .env file.\n" +
-      "See: https://myaccount.google.com/apppasswords"
+      "Email is not configured. Set RESEND_API_KEY in your .env file.\n" +
+      "See: https://resend.com/api-keys"
     );
   }
 
-  if (!_transporter) {
-    console.error("[SMTP] creating transporter", {
-      host,
-      port,
-      secure,
-      hasUser: !!user,
-      hasPassword: !!password
-    });
-
-    _transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure,                   // 465 = implicit TLS; 587 = STARTTLS (secure:false)
-      auth   : { user, pass: password },
-      pool   : true,            // keep connections alive between sends
-      maxConnections : 3,
-      maxMessages    : 100,
-      rateDelta      : 1000,    // max N messages per rateDelta ms
-      rateLimit      : 5,       // max 5 emails/second (well within Gmail limits)
-      connectionTimeout : 15000,  // fail fast instead of hanging ~60s on a blocked port
-      greetingTimeout   : 10000,
-      socketTimeout     : 20000,
-    });
+  if (!_client) {
+    console.error("[RESEND] creating client", { hasApiKey: !!apiKey });
+    _client = new Resend(apiKey);
   }
 
-  return _transporter;
+  return _client;
+}
+
+/** Resolve the verified "from" address Resend will send as. */
+function getFromAddress() {
+  if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
+  const addr = process.env.EMAIL_FROM_ADDRESS;
+  if (!addr) {
+    throw new ConfigurationError(
+      "Sender address not configured. Set EMAIL_FROM (e.g. \"Name <hi@domain.com>\") " +
+      "or EMAIL_FROM_ADDRESS to a domain verified in Resend."
+    );
+  }
+  return `"${FROM_NAME}" <${addr}>`;
 }
 
 /**
- * Verify the SMTP connection is healthy.
- * Called automatically before first send; cached after success.
+ * Verify email is configured.
+ * NOTE: Resend has no connection-test endpoint, so this confirms the API key
+ * is present — it does NOT validate that the key is accepted. An invalid key
+ * will only surface on the first real sendEmail() call.
  * @returns {Promise<void>}
  */
 async function verifyConnection() {
   if (_verified) return;
-  console.error("[SMTP] verify ENTER");
-  const transporter = getTransporter();
-  console.error("[SMTP] calling transporter.verify()");
-  try {
-    await transporter.verify();   // throws if credentials are wrong OR connect times out
-    _verified = true;
-    console.error("[SMTP] verify SUCCESS");
-  } catch (err) {
-    console.error("[SMTP] verify FAILED", err);
-    throw err;
-  }
+  console.error("[RESEND] verify ENTER");
+  getClient();          // throws ConfigurationError if RESEND_API_KEY missing
+  getFromAddress();     // throws ConfigurationError if sender not configured
+  _verified = true;
+  console.error("[RESEND] verify SUCCESS (config present; key not validated until first send)");
 }
 
 // ─────────────────────────────────────────────
@@ -185,10 +168,10 @@ async function sendEmail(options) {
     throw new TypeError(`Invalid recipient email address: "${to}"`);
   }
 
-  // ── Verify connection once ──
+  // ── Verify configuration once ──
   await verifyConnection();
 
-  const fromAddress = `"${FROM_NAME}" <${process.env.GMAIL_USER || process.env.SMTP_USER}>`;
+  const fromAddress = getFromAddress();
   const logId       = uuidv4();
   let   smtpMessageId = null;
 
@@ -196,8 +179,8 @@ async function sendEmail(options) {
   try {
     const info = await withRetry(async (attempt) => {
       console.log(`  📤 Sending email to ${to} (attempt ${attempt})...`);
-      console.error("[SMTP] sendMail ENTER");
-      const result = await getTransporter().sendMail({
+      console.error("[RESEND] send ENTER");
+      const { data, error } = await getClient().emails.send({
         from    : fromAddress,
         to      : to.trim(),
         subject : subject.trim(),
@@ -209,8 +192,15 @@ async function sendEmail(options) {
           "X-ACQS-Log-ID" : logId,  // useful for tracing
         },
       });
-      console.error("[SMTP] sendMail SUCCESS", result.messageId);
-      return result;
+      if (error) {
+        // Normalise Resend's error object into a throwable Error for withRetry.
+        const e = new Error(error.message || "Resend send failed");
+        e.code = error.name || "RESEND_ERROR";
+        e.statusCode = error.statusCode;
+        throw e;
+      }
+      console.error("[RESEND] send SUCCESS", data?.id);
+      return { messageId: data?.id };
     });
 
     smtpMessageId = info.messageId;
@@ -227,7 +217,7 @@ async function sendEmail(options) {
 
   } catch (err) {
     // ── Log failure ──
-    console.error("[SMTP] sendMail FAILED", err);
+    console.error("[RESEND] send FAILED", err);
     await logEmail({
       id              : logId,
       to, subject, body,
@@ -315,9 +305,9 @@ function plainToHtml(text) {
   return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;font-size:14px;color:#333;line-height:1.6;max-width:600px">${escaped}</body></html>`;
 }
 
-/** Force-reset the transporter (useful after credential changes) */
+/** Force-reset the Resend client (useful after credential changes) */
 function resetTransporter() {
-  if (_transporter) { _transporter.close(); _transporter = null; }
+  _client   = null;
   _verified = false;
 }
 
